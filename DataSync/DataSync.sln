@@ -1,0 +1,67 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 2013
+VisualStudioVersion = 12.0.31101.0
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DataSync.Test", "DataSync.Console\DataSync.Test.csproj", "{4DF73808-D7E3-4E0E-96FD-0019D0E9C2BC}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DataSync.Lib", "DataSync.Lib\DataSync.Lib.csproj", "{7000E45F-C20C-4ABD-ABED-F3D5FF7C5019}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DataSync", "DataSync\DataSync.csproj", "{1897B5B7-6C6E-4BC4-8B0B-E8B399E1B9C5}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DataSync.Monitor", "DataSync.Monitor\DataSync.Monitor.csproj", "{A0389A4D-617C-451A-BB16-F02CFD70271C}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DataSync.UI", "DataSync.UI\DataSync.UI.csproj", "{76199C89-5674-4ADD-AC51-F6206A6143C5}"
+EndProject
+Global
+	GlobalSection(TeamFoundationVersionControl) = preSolution
+		SccNumberOfProjects = 6
+		SccEnterpriseProvider = {4CA58AB2-18FA-4F8D-95D4-32DDF27D184C}
+		SccTeamFoundationServer = https://hauersoftwarenet.visualstudio.com/defaultcollection
+		SccLocalPath0 = .
+		SccProjectUniqueName1 = DataSync.Console\\DataSync.Test.csproj
+		SccProjectName1 = DataSync.Console
+		SccLocalPath1 = DataSync.Console
+		SccProjectUniqueName2 = DataSync.Lib\\DataSync.Lib.csproj
+		SccProjectName2 = DataSync.Lib
+		SccLocalPath2 = DataSync.Lib
+		SccProjectUniqueName3 = DataSync.Monitor\\DataSync.Monitor.csproj
+		SccProjectName3 = DataSync.Monitor
+		SccLocalPath3 = DataSync.Monitor
+		SccProjectUniqueName4 = DataSync.UI\\DataSync.UI.csproj
+		SccProjectName4 = DataSync.UI
+		SccLocalPath4 = DataSync.UI
+		SccProjectUniqueName5 = DataSync\\DataSync.csproj
+		SccProjectName5 = DataSync
+		SccLocalPath5 = DataSync
+	EndGlobalSection
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{4DF73808-D7E3-4E0E-96FD-0019D0E9C2BC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4DF73808-D7E3-4E0E-96FD-0019D0E9C2BC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4DF73808-D7E3-4E0E-96FD-0019D0E9C2BC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4DF73808-D7E3-4E0E-96FD-0019D0E9C2BC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7000E45F-C20C-4ABD-ABED-F3D5FF7C5019}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7000E45F-C20C-4ABD-ABED-F3D5FF7C5019}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7000E45F-C20C-4ABD-ABED-F3D5FF7C5019}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7000E45F-C20C-4ABD-ABED-F3D5FF7C5019}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1897B5B7-6C6E-4BC4-8B0B-E8B399E1B9C5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1897B5B7-6C6E-4BC4-8B0B-E8B399E1B9C5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1897B5B7-6C6E-4BC4-8B0B-E8B399E1B9C5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1897B5B7-6C6E-4BC4-8B0B-E8B399E1B9C5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A0389A4D-617C-451A-BB16-F02CFD70271C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A0389A4D-617C-451A-BB16-F02CFD70271C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A0389A4D-617C-451A-BB16-F02CFD70271C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A0389A4D-617C-451A-BB16-F02CFD70271C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{76199C89-5674-4ADD-AC51-F6206A6143C5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{76199C89-5674-4ADD-AC51-F6206A6143C5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{76199C89-5674-4ADD-AC51-F6206A6143C5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{76199C89-5674-4ADD-AC51-F6206A6143C5}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
