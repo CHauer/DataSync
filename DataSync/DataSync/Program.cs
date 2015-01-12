@@ -1,9 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
+﻿// -----------------------------------------------------------------------
+// <copyright file="Program.cs" company="FH Wr.Neustadt">
+//      Copyright Christoph Hauer. All rights reserved.
+// </copyright>
+// <author>Christoph Hauer</author>
+// <summary>DataSync - Program.cs</summary>
+// -----------------------------------------------------------------------
+
+using System;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using DataSync.Lib.Configuration.Data;
 using DataSync.Lib.Sync;
 using DataSync.Properties;
@@ -18,7 +22,6 @@ namespace DataSync
     /// </summary>
     public class Program
     {
-
         /// <summary>
         /// The _log monitor
         /// </summary>
@@ -53,14 +56,17 @@ namespace DataSync
 
                 ArgumentConfigurationCreator creator = new ArgumentConfigurationCreator(args);
                 creator.ErrorOccured += ArgumentCreator_ErrorOccuredHandler;
+
                 syncManagerObj = new SyncManager(creator);
             }
             else
             {
-                syncManagerObj = new SyncManager(new XmlConfigurationSerializer()
+                XmlConfigurationSerializer manager = new XmlConfigurationSerializer()
                 {
                     ConfigurationFile = Resources.ConfigurationFile
-                });
+                };
+
+                syncManagerObj = new SyncManager(manager, manager);
             }
 
             //React to current process end
@@ -70,10 +76,10 @@ namespace DataSync
             //AppDomain.CurrentDomain.UnhandledException += CurrentDomain_UnhandledException;
 
             //Start Instruction Decoder
-            _handler = new InputInstructionHandler(Console.In, Console.Out);            
+            _handler = new InputInstructionHandler(Console.In, Console.Out);
             _handler.BeforeErrorOutput += (sender, e) => { Console.ForegroundColor = ConsoleColor.Red; };
             _handler.AfterErrorOutput += (sender, e) => { Console.ResetColor(); };
-            
+
             _handler.StartHandler();
 
             //Start LogMonitor, Queue Monitor
@@ -128,6 +134,5 @@ namespace DataSync
             Console.WriteLine(Resources.Program_Main_EnterForEXIT);
             Console.ReadLine();
         }
-
     }
 }
