@@ -1,8 +1,15 @@
-﻿using System;
+﻿// -----------------------------------------------------------------------
+// <copyright file="SyncManager.cs" company="FH Wr.Neustadt">
+//      Copyright Christoph Hauer. All rights reserved.
+// </copyright>
+// <author>Christoph Hauer</author>
+// <summary>DataSync.Lib - SyncManager.cs</summary>
+// -----------------------------------------------------------------------
+
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
-using System.Text;
 using DataSync.Lib.Configuration;
 using DataSync.Lib.Configuration.Data;
 using DataSync.Lib.Log;
@@ -23,14 +30,14 @@ namespace DataSync.Lib.Sync
         /// <summary>
         /// Initializes a new instance of the <see cref="SyncManager"/> class.
         /// </summary>
-        public SyncManager() : this(null, null) { }
+        public SyncManager() : this(null, null) {}
 
         /// <summary>
         /// Initializes a new instance of the <see cref="SyncManager" /> class.
         /// </summary>
         /// <param name="configLoader">The configuration loader.</param>
         public SyncManager(IConfigurationLoader configLoader)
-            : this(configLoader, null) { }
+            : this(configLoader, null) {}
 
         /// <summary>
         /// Initializes a new instance of the <see cref="SyncManager" /> class.
@@ -51,6 +58,14 @@ namespace DataSync.Lib.Sync
         /// The synchronize configuration.
         /// </value>
         public SyncConfiguration Configuration { get; private set; }
+
+        /// <summary>
+        /// Gets a value indicating whether [is synchronize running].
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if [is synchronize running]; otherwise, <c>false</c>.
+        /// </value>
+        public bool IsSyncRunning { get; private set; }
 
         /// <summary>
         /// Gets or sets the configuration data manager.
@@ -92,10 +107,7 @@ namespace DataSync.Lib.Sync
 
                 return logger;
             }
-            set
-            {
-                logger = value;
-            }
+            set { logger = value; }
         }
 
         /// <summary>
@@ -142,7 +154,7 @@ namespace DataSync.Lib.Sync
                 catch (Exception ex)
                 {
                     Logger.AddLogMessage(new ErrorLogMessage("Error during Configuration loading - " +
-                                                             "Standard Configruation gets used." , true, ex));
+                                                             "Standard Configruation gets used.", true, ex));
                     Configuration = null;
                 }
             }
@@ -177,14 +189,19 @@ namespace DataSync.Lib.Sync
             {
                 logger.AddLogMessage(new ErrorLogMessage(String.Format("The Sync Pair with Name {0} " +
                                                                        "cant be added - name is already in Sync Pair List!",
-                                                                       addSyncPair.Name)));
+                    addSyncPair.Name)));
                 return false;
             }
 
             Configuration.ConfigPairs.Add(addSyncPair);
             SaveConfiguration();
 
-            AddSyncPairFromConfigurationPair(addSyncPair);
+            SyncPair syncPair = AddSyncPairFromConfigurationPair(addSyncPair);
+
+            if (IsSyncRunning)
+            {
+                syncPair.StartWatcher();
+            }
 
             return true;
         }
@@ -193,7 +210,10 @@ namespace DataSync.Lib.Sync
         /// Adds the synchronize pair from configuration pair.
         /// </summary>
         /// <param name="addSyncPair">The add synchronize pair.</param>
-        private void AddSyncPairFromConfigurationPair(ConfigurationPair addSyncPair)
+        /// <returns>
+        /// The created sync pair instance.
+        /// </returns>
+        private SyncPair AddSyncPairFromConfigurationPair(ConfigurationPair addSyncPair)
         {
             var pair = new SyncPair(Configuration, addSyncPair)
             {
@@ -201,7 +221,8 @@ namespace DataSync.Lib.Sync
             };
 
             SyncPairs.Add(pair);
-            pair.StartWatcher();
+
+            return pair;
         }
 
         /// <summary>
@@ -217,7 +238,7 @@ namespace DataSync.Lib.Sync
             {
                 logger.AddLogMessage(new ErrorLogMessage(String.Format("The Sync Pair with Name {0} " +
                                                                        "could'nt be found in Sync Pair List!",
-                                                                       pairname)));
+                    pairname)));
                 return false;
             }
 
@@ -234,6 +255,21 @@ namespace DataSync.Lib.Sync
         {
             Configuration.ConfigPairs.Clear();
             SaveConfiguration();
+        }
+
+        /// <summary>
+        /// Starts the synchronize.
+        /// </summary>
+        public void StartSync()
+        {
+            if (IsSyncRunning)
+            {
+                return;
+            }
+
+            IsSyncRunning = true;
+
+            SyncPairs.ForEach(sp => sp.StartWatcher());
         }
 
         /// <summary>

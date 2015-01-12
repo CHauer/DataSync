@@ -43,6 +43,11 @@ namespace DataSync.Lib.Sync
             throw new ArgumentException("CompareItem Type is not supported for the compare function!");
         }
 
+        /// <summary>
+        /// Compares the file.
+        /// </summary>
+        /// <param name="syncFile">The synchronize file.</param>
+        /// <returns></returns>
         private ISyncOperation CompareFile(SyncFile syncFile)
         {
             FileInfo sourceFile = syncFile.GetSourceFileInfo();
@@ -55,9 +60,19 @@ namespace DataSync.Lib.Sync
             FileInfo targetFile = syncFile.GetSourceFileInfo();
         }
 
+        /// <summary>
+        /// Compares the folder.
+        /// </summary>
+        /// <param name="syncFolder">The synchronize folder.</param>
+        /// <returns></returns>
         private ISyncOperation CompareFolder(SyncFolder syncFolder)
         {
-            throw new NotImplementedException();
+            if (!syncFolder.TargetExists)
+            {
+                return new CreateFolder();
+            }
+
+            if(syncFolder.GetSourceDirectoryInfo 
         }
     }
 }

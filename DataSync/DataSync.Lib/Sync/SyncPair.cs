@@ -146,6 +146,9 @@ namespace DataSync.Lib.Sync
             RunFileSync();
         }
 
+        /// <summary>
+        /// Runs the folder synchronize.
+        /// </summary>
         private void RunFolderSync()
         {
             List<string> relativeDirectories = ConfigurationPair.GetRelativeDirectories();
