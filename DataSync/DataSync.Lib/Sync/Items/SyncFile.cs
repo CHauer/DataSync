@@ -62,26 +62,27 @@ namespace DataSync.Lib.Sync.Items
         }
 
         /// <summary>
-        /// Gets the source file information.
+        /// Gets the source file system information.
         /// </summary>
         /// <returns></returns>
         /// <exception cref="System.IO.FileNotFoundException"></exception>
-        public FileInfo GetSourceFileInfo()
+        public FileSystemInfo GetSourceInfo()
         {
+
             if (!File.Exists(SourcePath))
             {
                 throw new FileNotFoundException();
             }
-           
+
             return new FileInfo(SourcePath);
         }
 
         /// <summary>
-        /// Gets the target file information.
+        /// Gets the target file system information.
         /// </summary>
         /// <returns></returns>
         /// <exception cref="System.IO.FileNotFoundException"></exception>
-        public FileInfo GetTargetFileInfo()
+        public FileSystemInfo GetTargetInfo()
         {
             if (!File.Exists(TargetPath))
             {
@@ -90,6 +91,5 @@ namespace DataSync.Lib.Sync.Items
 
             return new FileInfo(TargetPath);
         }
-
     }
 }

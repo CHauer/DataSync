@@ -34,16 +34,6 @@ namespace DataSync.Lib.Sync
         {
             this.Configuration = configuration;
             this.ConfigurationPair = configurationPair;
-
-            Initialize();
-        }
-
-        /// <summary>
-        /// Initializes this instance.
-        /// </summary>
-        private void Initialize()
-        {
-            SyncQueue = new SyncQueue();
         }
 
         /// <summary>
@@ -120,10 +110,24 @@ namespace DataSync.Lib.Sync
 
             isWatching = true;
 
+            InitializeQueue();
             RunInitialSync();
-            
+
             InitializeFileWatcher();
+
+            //Filewatcher start - fire events
             fileSystemWatcherInstance.EnableRaisingEvents = true;
+        }
+
+        /// <summary>
+        /// Initializes the queue.
+        /// </summary>
+        private void InitializeQueue()
+        {
+            SyncQueue = new SyncQueue()
+            {
+                Logger = Logger
+            };
         }
 
         /// <summary>
@@ -132,70 +136,125 @@ namespace DataSync.Lib.Sync
         public void StopWatcher()
         {
             isWatching = false;
+
+            //filewatcher stop
             fileSystemWatcherInstance.EnableRaisingEvents = false;
         }
 
         /// <summary>
         /// Runs the initial synchronisation.
         /// </summary>
-        /// <returns></returns>
         private void RunInitialSync()
         {
-            RunFolderSync();
+            RunSyncForRealtivePaths(ConfigurationPair.GetRelativeDirectories(), isFolders: true);
 
-            RunFileSync();
+            RunSyncForRealtivePaths(ConfigurationPair.GetRelativeFiles());
+
         }
 
         /// <summary>
-        /// Runs the folder synchronize.
+        /// Runs the synchronize.
         /// </summary>
-        private void RunFolderSync()
+        /// <param name="relativePaths">The relative paths.</param>
+        /// <param name="isFolders">if set to <c>true</c> [is folders].</param>
+        private void RunSyncForRealtivePaths(List<string> relativePaths, bool isFolders = false)
         {
-            List<string> relativeDirectories = ConfigurationPair.GetRelativeDirectories();
+            List<string> targetFolders;
             ISyncItem item = null;
             ISyncOperation operation = null;
             ISyncJob job = null;
 
-            foreach (string relativeDir in relativeDirectories)
+            foreach (string relativePath in relativePaths)
             {
-                if (!Configuration.IsParrallelSync)
-                {
-                    foreach (string targetFolder in ConfigurationPair.TargetFolders)
-                    {
-                        string sourceDir = Path.Combine(ConfigurationPair.SoureFolder, relativeDir);
-                        string targetDir = Path.Combine(targetFolder, relativeDir);
+                string source = Path.Combine(ConfigurationPair.SoureFolder, relativePath);
 
-                        item = new SyncFolder(sourceDir, targetDir);
-                        operation = ComparerInstance.Compare(item);
-                        job = new SyncJob(item, operation);
-                        SyncQueue.Enqueue(job);
-                    }
-                }
-                else
+                //copy target folders list
+                targetFolders = new List<string>(ConfigurationPair.TargetFolders);
+
+                if (Configuration.IsParrallelSync)
                 {
-                    var groupedFolders = ConfigurationPair.TargetFolders.GroupBy(tf => tf[0]);
-                    //TODO parallelSync initial sync Function
+                    targetFolders = CreateParallelJob(targetFolders, relativePath, source, isFolders);
+                }
+
+                foreach (string targetFolder in targetFolders)
+                {
+                    string target = Path.Combine(targetFolder, relativePath);
+
+                    if (isFolders)
+                    {
+                        item = new SyncFolder(source, target);
+                    }
+                    else
+                    {
+                        item = new SyncFile(source, target);
+                    }
+
+                    operation = ComparerInstance.Compare(item);
+                    operation.Configuration = Configuration;
+
+                    job = new SyncJob(item, operation)
+                    {
+                        Logger = Logger                        
+                    };
+                    SyncQueue.Enqueue(job);
                 }
             }
         }
 
-        private void RunFileSync()
+        /// <summary>
+        /// Creates the parallel job.
+        /// </summary>
+        /// <param name="targetFolders">The target folders.</param>
+        /// <param name="relativePath">The relative dir.</param>
+        /// <param name="source">The source.</param>
+        /// <param name="isFolders">if set to <c>true</c> [is folders].</param>
+        /// <returns></returns>
+        private List<string> CreateParallelJob(List<string> targetFolders, string relativePath, string source, bool isFolders)
         {
-            List<string> relativeFiles = ConfigurationPair.GetRelativeFiles();
-            ISyncItem item = null;
-            ISyncOperation operation = null;
-            ISyncJob job = null;
+            ISyncItem item;
+            ISyncOperation operation;
+            ISyncJob job;
+            Dictionary<ISyncItem, ISyncOperation> parallelJobs = new Dictionary<ISyncItem, ISyncOperation>();
 
-            foreach (string relativeFile in relativeFiles)
+            //group by first letter without network shares 
+            var groupedTargets = targetFolders.Where(tf => !tf.StartsWith(@"\\"))
+                .GroupBy(tf => tf[0])
+                .Where(gt => gt.Count() == 1)
+                .Select(i => i.First())
+                .ToList();
+
+            //run through each with more than one target
+            foreach (var targetFolder in groupedTargets)
             {
-                foreach (string targetFolder in ConfigurationPair.TargetFolders)
-                {
-                    string sourceFile = Path.Combine(ConfigurationPair.SoureFolder, relativeFile);
-                    string targetFile = Path.Combine(targetFolder, relativeFile);
+                string target = Path.Combine(targetFolder, relativePath);
 
-                    item = new SyncFile(sourceDir, targetDir);
+                if (isFolders)
+                {
+                    item = new SyncFolder(source, target);
                 }
+                else
+                {
+                    item = new SyncFile(source, target);
+                }
+
+                operation = ComparerInstance.Compare(item);
+                operation.Configuration = Configuration;
+
+                parallelJobs.Add(item, operation);
+
+                //remove used target folder
+                targetFolders.Remove(targetFolder);
             }
+
+            job = new ParallelSyncJob(parallelJobs)
+            {
+                Logger = Logger
+            };
+
+            SyncQueue.Enqueue(job);
+
+            //return updates target folders
+            return targetFolders;
         }
 
         /// <summary>

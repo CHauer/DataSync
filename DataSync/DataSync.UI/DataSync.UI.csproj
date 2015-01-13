@@ -49,9 +49,12 @@
     <Compile Include="CommandHandling\Instruction.cs" />
     <Compile Include="CommandHandling\InputInstructionHandler.cs" />
     <Compile Include="CommandHandling\InstructionType.cs" />
+    <Compile Include="CommandHandling\MonitorChangeEventArgs.cs" />
+    <Compile Include="CommandHandling\OutputEventArgs.cs" />
     <Compile Include="CommandHandling\Validation\IdentifierToken.cs" />
     <Compile Include="CommandHandling\Validation\IValidationToken.cs" />
     <Compile Include="Monitor\ConsoleMonitor.cs" />
+    <Compile Include="Monitor\ConsoleWindowPositioner.cs" />
     <Compile Include="Monitor\ReceivedEventArgs.cs" />
     <Compile Include="Monitor\MonitorScreen.cs" />
     <Compile Include="Monitor\MonitorType.cs" />

@@ -9,7 +9,7 @@ namespace DataSync.Lib.Log
 
         public void AddLogMessage(LogMessage message)
         {
-            throw new NotImplementedException();
+            ///TODO AddLogMessage
         }
 
 

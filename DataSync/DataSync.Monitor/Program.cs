@@ -14,22 +14,16 @@ namespace DataSync.Monitor
     public class Program
     {
         /// <summary>
-        /// The Pointer to the current console window
-        /// </summary>
-        private static IntPtr consoleWindow;
-
-        /// <summary>
         /// Defines the entry point of the application.
         /// </summary>
         /// <param name="args">The arguments.</param>
         public static void Main(string[] args)
         {
+            bool running = true;
             string pipeID = string.Empty;
             MonitorType monitorType;
 
             if (CheckArguments(args)) return;
-
-            consoleWindow = GetConsoleWindow();
 
             pipeID = args[0];
 
@@ -38,7 +32,10 @@ namespace DataSync.Monitor
             monitorType = ExtractMonitorType(args);
             PrepareConsoleWindow(monitorType);
 
-            Console.ReadLine();
+            while (running)
+            {
+                Console.ReadLine();
+            }
         }
 
         /// <summary>
@@ -81,6 +78,8 @@ namespace DataSync.Monitor
         /// <param name="type">The type.</param>
         private static void PrepareConsoleWindow(MonitorType type)
         {
+            ConsoleWindowPositioner positioner = new ConsoleWindowPositioner();
+
             int screenWidth = Screen.PrimaryScreen.Bounds.Width;
             int screenHeight = Screen.PrimaryScreen.Bounds.Height;
 
@@ -89,56 +88,29 @@ namespace DataSync.Monitor
             int left = 0;
             int top = 0;
 
-
             if (type == MonitorType.Screen)
             {
-                left = screenWidth / 2 + (int)(screenWidth * 0.1);
+                left = (screenWidth / 2) - (int)(screenWidth * 0.05);
                 height = 50;
 
                 Console.Title = "Sync Job Queues";
                 Console.SetBufferSize(width, height);
                 Console.SetWindowSize(width, height);
 
-                SetWindowPos(consoleWindow, 0, left, top, 0, 0, SwpNosize);
+                positioner.SetConsoleWindowPosition(left, top);
             }
             else
             {
-                top = screenHeight / 2 + (int)(screenWidth * 0.1);
+                top = (screenHeight / 2) - (int)(screenWidth * 0.05);
 
                 Console.Title = "Log";
 
                 Console.SetBufferSize(width, height * 5);
                 Console.SetWindowSize(width, height);
 
-                SetWindowPos(consoleWindow, 0, left, top, 0, 0, SwpNosize);
+                positioner.SetConsoleWindowPosition(left, top);
             }
         }
-
-        /// <summary>
-        /// The SWP nosize
-        /// </summary>
-        private const int SwpNosize = 0x0001;
-
-        /// <summary>
-        /// Gets the console window.
-        /// </summary>
-        /// <returns></returns>
-        [DllImport("kernel32.dll", ExactSpelling = true)]
-        private static extern IntPtr GetConsoleWindow();
-
-        /// <summary>
-        /// Sets the window position.
-        /// </summary>
-        /// <param name="hWnd">The h WND.</param>
-        /// <param name="hWndInsertAfter">The h WND insert after.</param>
-        /// <param name="x">The x.</param>
-        /// <param name="Y">The y.</param>
-        /// <param name="cx">The cx.</param>
-        /// <param name="cy">The cy.</param>
-        /// <param name="wFlags">The w flags.</param>
-        /// <returns></returns>
-        [DllImport("user32.dll", EntryPoint = "SetWindowPos")]
-        public static extern IntPtr SetWindowPos(IntPtr hWnd, int hWndInsertAfter, int x, int Y, int cx, int cy, int wFlags);
 
     }
 }

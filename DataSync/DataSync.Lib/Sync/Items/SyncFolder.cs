@@ -1,4 +1,6 @@
-﻿namespace DataSync.Lib.Sync.Items
+﻿using System.IO;
+
+namespace DataSync.Lib.Sync.Items
 {
     /// <summary>
     /// 
@@ -13,7 +15,7 @@
         public SyncFolder(string sourcePath, string targetFolderPath)
         {
             this.SourcePath = sourcePath;
-            this.TargetFolderPath = targetFolderPath;
+            this.TargetPath = targetFolderPath;
         }
 
         /// <summary>
@@ -41,6 +43,16 @@
             {
                 throw new System.NotImplementedException();
             }
+        }
+
+        public FileSystemInfo GetSourceInfo()
+        {
+            throw new System.NotImplementedException();
+        }
+
+        public FileSystemInfo GetTargetInfo()
+        {
+            throw new System.NotImplementedException();
         }
     }
 }

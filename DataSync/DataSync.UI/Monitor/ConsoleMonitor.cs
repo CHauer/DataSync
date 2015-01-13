@@ -55,7 +55,7 @@ namespace DataSync.UI.Monitor
         /// </summary>
         public void Stop()
         {
-
+            processMonitor.CloseMainWindow();
         }
 
     }

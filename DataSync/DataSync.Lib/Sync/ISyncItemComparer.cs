@@ -6,6 +6,9 @@
 // <summary>DataSync.Lib - ISyncItemComparer.cs</summary>
 // -----------------------------------------------------------------------
 
+using DataSync.Lib.Configuration;
+using DataSync.Lib.Log;
+
 namespace DataSync.Lib.Sync
 {
     /// <summary>
@@ -13,6 +16,12 @@ namespace DataSync.Lib.Sync
     /// </summary>
     public interface ISyncItemComparer
     {
+        /// <summary>
+        /// Gets or sets the logger.
+        /// </summary>
+        /// <value>The logger.</value>
+        ILog Logger { get; set; }
+
         /// <summary>
         /// Compares the specified compare item.
         /// </summary>

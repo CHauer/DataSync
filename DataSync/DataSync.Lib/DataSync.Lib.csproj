@@ -46,9 +46,9 @@
     <Compile Include="Configuration\Data\IConfigurationSaver.cs" />
     <Compile Include="Sync\ISyncItemComparer.cs" />
     <Compile Include="Log\Messages\SyncJobLogMessage.cs" />
-    <Compile Include="Sync\Operations\BlockCopyFile.cs" />
     <Compile Include="Log\ILogListener.cs" />
     <Compile Include="Log\Logger.cs" />
+    <Compile Include="Sync\Operations\BlockCopyFile.cs" />
     <Compile Include="Sync\Operations\ChangeAttributes.cs" />
     <Compile Include="Configuration\Data\IConfigurationLoader.cs" />
     <Compile Include="Log\ConsoleLogger.cs" />
@@ -63,8 +63,6 @@
     <Compile Include="Log\Messages\LogMessage.cs" />
     <Compile Include="Log\ILogable.cs" />
     <Compile Include="Log\ILog.cs" />
-    <Compile Include="Sync\Items\ParallelSyncFile.cs" />
-    <Compile Include="Sync\Items\ParallelSyncFolder.cs" />
     <Compile Include="Configuration\RelativeItem.cs" />
     <Compile Include="Sync\Operations\RenameFile.cs" />
     <Compile Include="Sync\Operations\RenameFolder.cs" />
@@ -75,7 +73,7 @@
     <Compile Include="Sync\ISyncItem.cs" />
     <Compile Include="Sync\ISyncJob.cs" />
     <Compile Include="Configuration\LogTargetType.cs" />
-    <Compile Include="Sync\Jobs\ParrallelSyncJob.cs" />
+    <Compile Include="Sync\Jobs\ParallelSyncJob.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Configuration\SyncConfiguration.cs" />
     <Compile Include="Sync\Items\SyncFolder.cs" />

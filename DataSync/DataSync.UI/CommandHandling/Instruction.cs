@@ -1,4 +1,6 @@
-﻿namespace DataSync.UI.CommandHandling
+﻿using System.Collections.Generic;
+
+namespace DataSync.UI.CommandHandling
 {
     /// <summary>
     /// 

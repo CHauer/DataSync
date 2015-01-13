@@ -37,7 +37,7 @@ namespace DataSync.Lib.Sync
         /// <value>
         /// The target path.
         /// </value>
-        string TargetPath { get; set; }
+        string TargetPath { get; }
 
         /// <summary>
         /// Gets the source file system information.
