@@ -1,13 +1,17 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿// -----------------------------------------------------------------------
+// <copyright file="ArgumentErrorEventArgs.cs" company="FH Wr.Neustadt">
+//      Copyright Christoph Hauer. All rights reserved.
+// </copyright>
+// <author>Christoph Hauer</author>
+// <summary>DataSync.UI - ArgumentErrorEventArgs.cs</summary>
+// -----------------------------------------------------------------------
 
-namespace DataSync.UI.CommandHandling
+using System;
+
+namespace DataSync.UI.CommandHandling.Arguments
 {
     public class ArgumentErrorEventArgs : EventArgs
-    {   
+    {
         /// <summary>
         /// Initializes a new instance of the <see cref="ArgumentErrorEventArgs"/> class.
         /// </summary>
@@ -45,11 +49,10 @@ namespace DataSync.UI.CommandHandling
         {
             if (Exception != null)
             {
-                return String.Format("{0}:{1}", Exception.GetType().Name, Exception.Message);
+                return String.Format("{0}\nDetails: {1}", ErrorMessage, Exception.Message);
             }
 
             return ErrorMessage;
         }
-
     }
 }

@@ -7,10 +7,7 @@ namespace DataSync.UI
 {
     public enum ParameterType
     {
-        Identifier,
-        Switch,
         StringValue,
         IntegerValue,
-        Option,
     }
 }

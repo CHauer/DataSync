@@ -84,9 +84,17 @@ namespace DataSync.UI.CommandHandling
 
         public event EventHandler<MonitorChangeEventArgs> MonitorChangeOccured;
 
+        /// <summary>
+        /// Occurs when exit instruction occured.
+        /// </summary>
         public event EventHandler ExitOccured;
 
-        public event EventHandler InstructionOccured;
+        /// <summary>
+        /// Occurs when help instruction occured.
+        /// </summary>
+        public event EventHandler HelpInstructionOccured;
+
+        public event EventHandler<Instruction> InstructionOccured;
 
         /// <summary>
         /// Runs the handler.
@@ -117,10 +125,10 @@ namespace DataSync.UI.CommandHandling
                     undecodedInstruction = string.Empty;
                 }
 
-
                 //instruction not empty - decode
                 if (!String.IsNullOrWhiteSpace(undecodedInstruction))
                 {
+
                     try
                     {
                         currentInstruction = decoder.DecodeInstruction(undecodedInstruction);
@@ -145,9 +153,18 @@ namespace DataSync.UI.CommandHandling
                                 ExitOccured(this, new EventArgs());
                             }
                             break;
+                        case InstructionType.HELP:
+                            if (HelpInstructionOccured != null)
+                            {
+                                HelpInstructionOccured(this, new EventArgs());
+                            }
+                            break;
+                        case InstructionType.ADDPAIR:
+                            HandleAddPairInputs();
+                            break;
                         case InstructionType.SWITCH:
                             string parameter = currentInstruction.Parameters[0].Content;
-                            
+
                             if (parameter.Equals("LOGVIEW") || parameter.Equals("JOBSVIEW"))
                             {
                                 break;
@@ -159,6 +176,63 @@ namespace DataSync.UI.CommandHandling
                     }
                 }
             }
+        }
+
+        /// <summary>
+        /// Handles the add pair inputs.
+        /// </summary>
+        private void HandleAddPairInputs()
+        {
+            const string okString = "OK";
+            const string cancelString = "CANCEL";
+            string inputText = string.Empty;
+            bool okInput = false;
+
+            string sourceFolder = string.Empty;
+            List<string> targetFolders = new List<string>();
+            List<string> exceptFolders = new List<string>();
+
+
+            output.WriteLine("{0} to abort sync pair input:", cancelString);
+            output.Write("Source Folder:");
+
+            while(string.IsNullOrEmpty(inputText))
+            {
+                inputText = input.ReadLine();
+
+                if (inputText != null && inputText.ToUpper().Trim().Equals(cancelString))
+                {
+                    return;
+                }
+            }
+
+            while (!okInput)
+            {
+                output.Write("Target Folder:");
+
+                while (string.IsNullOrEmpty(inputText))
+                {
+                    inputText = input.ReadLine();
+
+                    if (inputText != null)
+                    {
+                        string checkInput = inputText.ToUpper().Trim();
+                        if (checkInput.Equals(cancelString))
+                        {
+                            return;
+                        }
+                        
+                        if (checkInput.Equals(okString) && targetFolders.Count >= 1)
+                        {
+                            okInput = true;
+                        }
+                    }
+                }
+
+                output.Write("Target Folder (OK for next input stage):");
+            }
+
+            output.Write("Except Folder(OK for end input):");
         }
 
         /// <summary>

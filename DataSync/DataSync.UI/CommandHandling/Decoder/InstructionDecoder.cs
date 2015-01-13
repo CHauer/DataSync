@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using DataSync.UI.CommandHandling.Validation;
 
 namespace DataSync.UI.CommandHandling.Decoder
 {
@@ -13,6 +14,11 @@ namespace DataSync.UI.CommandHandling.Decoder
         /// The instructions with out parameters
         /// </summary>
         private List<InstructionType> instructionsWithOutParameters;
+
+        /// <summary>
+        /// The validation error message.
+        /// </summary>
+        private string validationErrorMessage;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="InstructionDecoder"/> class.
@@ -80,19 +86,73 @@ namespace DataSync.UI.CommandHandling.Decoder
             //check if instruction is valid 
             if (!ValidateInstruction(irCode, parameters))
             {
-                throw new InvalidOperationException(String.Format("The command {0} is invalid.", undecoded));
+                throw new InvalidOperationException(String.Format("The command {0} is invalid.\nDetails: {1}", undecoded, validationErrorMessage));
             }
 
             //Create Instruction object and set parameters
             var instruction = new Instruction()
             {
                 PlainInstruction = undecoded,
-                Type = irCode
+                Type = irCode,
+                Parameters = CreateParameters(irCode, parameters)
             };
-
-            //set parameters
-
+            
             return instruction;
+        }
+
+        /// <summary>
+        /// Creates the parameters.
+        /// </summary>
+        /// <param name="irCode">The ir code.</param>
+        /// <param name="parameters">The parameters.</param>
+        /// <returns></returns>
+        private List<Parameter> CreateParameters(InstructionType irCode, string[] parameters)
+        {
+            List<Parameter> returnParams = new List<Parameter>();
+            switch (irCode)
+            {
+                case InstructionType.ADDPAIR:
+                case InstructionType.DELETEPAIR:
+                case InstructionType.LOGTO:
+                case InstructionType.SHOWPAIRDETAIL:
+                    returnParams.Add(new Parameter()
+                    {
+                        Content = parameters[0],
+                        Type = ParameterType.StringValue
+                    });
+
+                    break;
+
+                case InstructionType.SWITCH:
+                    returnParams.Add(new Parameter()
+                    {
+                        Content = parameters[0],
+                        Type = ParameterType.StringValue
+                    });
+                    returnParams.Add(new Parameter()
+                    {
+                        Content = parameters[1],
+                        Type = ParameterType.StringValue
+                    });
+
+                    break;
+
+                case InstructionType.SET:
+                    returnParams.Add(new Parameter()
+                    {
+                        Content = parameters[0],
+                        Type = ParameterType.StringValue
+                    });
+                    returnParams.Add(new Parameter()
+                    {
+                        Content = parameters[1],
+                        Type = ParameterType.IntegerValue
+                    });
+
+                    break;
+            }
+
+            return returnParams;
         }
 
         /// <summary>
@@ -103,7 +163,7 @@ namespace DataSync.UI.CommandHandling.Decoder
         /// <returns></returns>
         private bool ValidateInstruction(InstructionType type, string[] parameters)
         {
-            List<IValidationToken> validationTokens;
+            List<IValidationToken> validationTokens = null;
 
             if (instructionsWithOutParameters.Contains(type))
             {
@@ -150,7 +210,18 @@ namespace DataSync.UI.CommandHandling.Decoder
                     break;
             }
 
-            //TODO validate tokens
+            //validate tokens
+            if (validationTokens != null && parameters.Length > 0)
+            {
+                for (int i = 0; i < parameters.Length; i++)
+                {
+                    if (!validationTokens[i].Validate(parameters[i]))
+                    {
+                        validationErrorMessage = validationTokens[i].ValidationErrorMessage;
+                        return false; 
+                    }
+                }
+            }
 
             return true;
         }

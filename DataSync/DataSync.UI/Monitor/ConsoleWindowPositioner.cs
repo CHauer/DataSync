@@ -42,6 +42,14 @@ namespace DataSync.UI.Monitor
         }
 
         /// <summary>
+        /// Brings the console window to front.
+        /// </summary>
+        public void BringConsoleWindowToFront()
+        {
+            SetForegroundWindow(consoleWindow);
+        }
+
+        /// <summary>
         /// Gets the console window.
         /// </summary>
         /// <returns></returns>
@@ -62,5 +70,15 @@ namespace DataSync.UI.Monitor
         [DllImport("user32.dll", EntryPoint = "SetWindowPos")]
         private static extern IntPtr SetWindowPos(IntPtr hWnd, int hWndInsertAfter, int x, int Y, int cx, int cy,
                                                   int wFlags);
+
+        /// <summary>
+        /// Sets the foreground window.
+        /// </summary>
+        /// <param name="hWnd">The h WND.</param>
+        /// <returns></returns>
+        [DllImport("user32.dll")]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        private static extern bool SetForegroundWindow(IntPtr hWnd);
+
     }
 }

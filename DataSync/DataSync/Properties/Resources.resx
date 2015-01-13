@@ -121,10 +121,44 @@
     <value>Config.xml</value>
   </data>
   <data name="HelpConsole" xml:space="preserve">
-    <value />
+    <value>DataSync.exe 
+Startet "UI" Modus und lädt bereits eingegebene Sync Pairs aus Configuration File.
+
+DataSync.exe { (SyncPair1) (SyncPair2) … (SyncPairN) }
+[/r|/recursiv] 
+[/log:logfilename] 
+[/logsize:logfilesize]
+[/blockcomparefilesize:filesize|/bcfs:filesize] 
+[/blocksize:blocksize|/bs:blocksize] 
+[/ps|/parallelsync]
+
+(SyncPair) = SourceFolder&gt;TargetFolder1| … |TargetFolderN[&lt;ExceptFolder1| … |ExceptFolderN]</value>
   </data>
   <data name="HelpInstruction" xml:space="preserve">
-    <value />
+    <value>- ADDPAIR {PAIRNAME} 
+- DELETEPAIR {PAIRNAME}
+- CLEARPAIRS
+- EXIT
+
+- SWITCH {OPTIONNAME} [ON|OFF]
+	{OPTIONNAME}:
+          RECURSIV
+          PARALLELSYNC
+          LOGVIEW
+          JOBSVIEW
+		
+- SET  {OPTIONNAME} {VALUE}
+	{OPTIONNAME}:
+           LOGSIZE - INT
+           BLOCKCOMPAREFILESIZE - INT
+           BLOCKSIZE - INT
+		
+- LOGTO {LOGFILENAME}
+
+- LISTPAIRS
+- SHOWPAIRDETAIL {PAIRNAME}
+	
+- HELP</value>
   </data>
   <data name="Program_Main_EnterForEXIT" xml:space="preserve">
     <value>Enter for EXIT</value>
