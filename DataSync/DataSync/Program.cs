@@ -69,24 +69,48 @@ namespace DataSync
                 syncManagerObj = new SyncManager(manager, manager);
             }
 
-            //React to current process end
-            AppDomain.CurrentDomain.ProcessExit += CurrentDomain_ProcessExit;
+            InitializeAppDomain();
 
-            //TODO Handle unhandled exceptions - prevent close if possible
-            //AppDomain.CurrentDomain.UnhandledException += CurrentDomain_UnhandledException;
+            //Start the Initial Sync and the file watcher
+            syncManagerObj.StartSync();
 
             //Start Instruction Decoder
             _handler = new InputInstructionHandler(Console.In, Console.Out);
             _handler.BeforeErrorOutput += (sender, e) => { Console.ForegroundColor = ConsoleColor.Red; };
             _handler.AfterErrorOutput += (sender, e) => { Console.ResetColor(); };
 
-            _handler.StartHandler();
+            PrepareConsoleWindow();
 
             //Start LogMonitor, Queue Monitor
             StartMonitors();
 
+            //handle input on console
+            _handler.RunHandler();
+
             Console.ReadLine();
             CloseMonitors();
+        }
+
+        /// <summary>
+        /// Prepares the console window.
+        /// </summary>
+        private static void PrepareConsoleWindow()
+        {
+            ConsoleWindowPositioner positioner = new ConsoleWindowPositioner();
+
+            positioner.SetConsoleWindowPosition(50, 50);
+        }
+
+        /// <summary>
+        /// Initializes the application domain.
+        /// </summary>
+        private static void InitializeAppDomain()
+        {
+            //React to current process end
+            AppDomain.CurrentDomain.ProcessExit += CurrentDomain_ProcessExit;
+
+            //TODO Handle unhandled exceptions - prevent close if possible
+            //AppDomain.CurrentDomain.UnhandledException += CurrentDomain_UnhandledException;
         }
 
         /// <summary>
@@ -96,7 +120,6 @@ namespace DataSync
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         private static void CurrentDomain_ProcessExit(object sender, EventArgs e)
         {
-            _handler.StopHandler();
             CloseMonitors();
         }
 

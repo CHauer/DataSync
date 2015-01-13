@@ -19,6 +19,11 @@ namespace DataSync.UI
             }
         }
 
+        public bool Validate(string validationElement)
+        {
+            throw new NotImplementedException();
+        }
+
         public List<string> OptionList
         {
             get

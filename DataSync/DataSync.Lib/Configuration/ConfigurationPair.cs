@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using DataSync.Lib.Log;
 
 namespace DataSync.Lib.Configuration
 {
@@ -42,6 +43,14 @@ namespace DataSync.Lib.Configuration
         /// The name.
         /// </value>
         public string Name { get; set; }
+
+        /// <summary>
+        /// Gets or sets the logger.
+        /// </summary>
+        /// <value>
+        /// The logger.
+        /// </value>
+        public ILog Logger { get; set; }
 
         /// <summary>
         /// Gets the relative directories.

@@ -10,5 +10,6 @@ namespace DataSync.Lib.Log
     {
 
         void AddLogMessage(LogMessage message);
+
     }
 }

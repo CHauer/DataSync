@@ -78,23 +78,25 @@ namespace DataSync.UI.CommandHandling
         /// </summary>
         public event EventHandler AfterErrorOutput;
 
-        /// <summary>
-        /// Starts the decoder.
-        /// </summary>
-        public void StartHandler()
-        {
-            isRunning = true;
+        public event EventHandler<OutputEventArgs> BeforeOutput;
 
-            Task.Run(() => RunHandler());
-        }
+        public event EventHandler<OutputEventArgs> AfterOutput;
+
+        public event EventHandler<MonitorChangeEventArgs> MonitorChangeOccured;
+
+        public event EventHandler ExitOccured;
+
+        public event EventHandler InstructionOccured;
 
         /// <summary>
-        /// Runs the decoder.
+        /// Runs the handler.
         /// </summary>
-        private void RunHandler()
+        public void RunHandler()
         {
             Instruction currentInstruction = null;
             string undecodedInstruction = string.Empty;
+
+            isRunning = true;
 
             while (isRunning)
             {
@@ -106,7 +108,8 @@ namespace DataSync.UI.CommandHandling
                 }
                 catch (ObjectDisposedException ex)
                 {
-                    //Todo log decoder ends
+                    //input disposed - end handler
+                    return;
                 }
                 catch (Exception ex)
                 {
@@ -114,6 +117,8 @@ namespace DataSync.UI.CommandHandling
                     undecodedInstruction = string.Empty;
                 }
 
+
+                //instruction not empty - decode
                 if (!String.IsNullOrWhiteSpace(undecodedInstruction))
                 {
                     try
@@ -126,17 +131,34 @@ namespace DataSync.UI.CommandHandling
                         currentInstruction = null;
                     }
                 }
-            }
-        }
 
-        /// <summary>
-        /// Stops the decoder.
-        /// </summary>
-        public void StopHandler()
-        {
-            isRunning = false;
-            input.Close();
-            input.Dispose();
+                //handle instruction
+                if (currentInstruction != null)
+                {
+                    switch (currentInstruction.Type)
+                    {
+                        case InstructionType.EXIT:
+                            isRunning = false;
+
+                            if (ExitOccured != null)
+                            {
+                                ExitOccured(this, new EventArgs());
+                            }
+                            break;
+                        case InstructionType.SWITCH:
+                            string parameter = currentInstruction.Parameters[0].Content;
+                            
+                            if (parameter.Equals("LOGVIEW") || parameter.Equals("JOBSVIEW"))
+                            {
+                                break;
+                            }
+
+                            break;
+                        default:
+                            break;
+                    }
+                }
+            }
         }
 
         /// <summary>

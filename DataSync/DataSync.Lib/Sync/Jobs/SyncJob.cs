@@ -1,10 +1,10 @@
 ﻿using System;
+using DataSync.Lib.Log;
 
 namespace DataSync.Lib.Sync.Jobs
 {
     public class SyncJob : ISyncJob
     {
-
         /// <summary>
         /// Initializes a new instance of the <see cref="SyncJob" /> class.
         /// </summary>
@@ -40,10 +40,25 @@ namespace DataSync.Lib.Sync.Jobs
         /// </value>
         public ISyncOperation Operation { get; set; }
 
+        /// <summary>
+        /// Gets or sets the logger.
+        /// </summary>
+        /// <value>
+        /// The logger.
+        /// </value>
+        public ILog Logger { get; set; }
 
+        /// <summary>
+        /// Runs this instance.
+        /// </summary>
         public virtual void Run()
         {
-            throw new NotImplementedException();
+            if (Operation == null || Item == null)
+            {
+                throw new InvalidOperationException("Invalid Sync Job Parameters!");
+            }
+
+            Operation.Execute(Item);
         }
 
     }

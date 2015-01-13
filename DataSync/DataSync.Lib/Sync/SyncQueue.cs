@@ -3,18 +3,25 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using DataSync.Lib.Log;
+using DataSync.Lib.Sync.Jobs;
 
 namespace DataSync.Lib.Sync
 {
     /// <summary>
     /// 
     /// </summary>
-    public class SyncQueue : Queue<ISyncJob>
+    public class SyncQueue
     {
         /// <summary>
         /// The is running
         /// </summary>
         private bool isRunning;
+
+        /// <summary>
+        /// The job queue
+        /// </summary>
+        private Queue<ISyncJob> jobQueue;
 
         /// <summary>
         /// The job handler task
@@ -36,6 +43,7 @@ namespace DataSync.Lib.Sync
         /// </summary>
         public SyncQueue()
         {
+            jobQueue = new Queue<ISyncJob>();
         }
 
         /// <summary>
@@ -48,7 +56,7 @@ namespace DataSync.Lib.Sync
         {
             get
             {
-                return this.ToList();
+                return jobQueue.ToList();
             }
         }
 
@@ -64,6 +72,40 @@ namespace DataSync.Lib.Sync
             {
                 return currentJob;
             }
+        }
+
+        /// <summary>
+        /// Gets the count.
+        /// </summary>
+        /// <value>
+        /// The count.
+        /// </value>
+        public int Count
+        {
+            get
+            {
+                return jobQueue.Count;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the logger.
+        /// </summary>
+        /// <value>
+        /// The logger.
+        /// </value>
+        public ILog Logger { get; set; }
+
+        /// <summary>
+        /// Enqueues the specified job.
+        /// </summary>
+        /// <param name="job">The job.</param>
+        public void Enqueue(ISyncJob job)
+        {
+            job.Status = JobStatus.Queued;
+            job.Logger = Logger;
+
+            jobQueue.Enqueue(job);
         }
 
         /// <summary>
@@ -95,7 +137,7 @@ namespace DataSync.Lib.Sync
         {
             while (isRunning)
             {
-                while (Count == 0)
+                while (jobQueue.Count == 0)
                 {
                     Thread.Sleep(new TimeSpan(0, 0, 0, 0, 200));
 
@@ -105,7 +147,7 @@ namespace DataSync.Lib.Sync
                     }
                 }
 
-                currentJob = Dequeue();
+                currentJob = jobQueue.Dequeue();
 
                 currentJob.Run();
             }

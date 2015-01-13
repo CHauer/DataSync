@@ -150,6 +150,8 @@ namespace DataSync.UI.CommandHandling.Decoder
                     break;
             }
 
+            //TODO validate tokens
+
             return true;
         }
 

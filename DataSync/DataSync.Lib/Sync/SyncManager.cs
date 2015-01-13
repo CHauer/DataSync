@@ -30,14 +30,14 @@ namespace DataSync.Lib.Sync
         /// <summary>
         /// Initializes a new instance of the <see cref="SyncManager"/> class.
         /// </summary>
-        public SyncManager() : this(null, null) {}
+        public SyncManager() : this(null, null) { }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="SyncManager" /> class.
         /// </summary>
         /// <param name="configLoader">The configuration loader.</param>
         public SyncManager(IConfigurationLoader configLoader)
-            : this(configLoader, null) {}
+            : this(configLoader, null) { }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="SyncManager" /> class.
@@ -260,16 +260,17 @@ namespace DataSync.Lib.Sync
         /// <summary>
         /// Starts the synchronize.
         /// </summary>
+        /// <exception cref="System.InvalidOperationException">The sync process is already running!</exception>
         public void StartSync()
         {
             if (IsSyncRunning)
             {
-                return;
+                throw new InvalidOperationException("The sync process is already running!");
             }
-
-            IsSyncRunning = true;
-
+            
             SyncPairs.ForEach(sp => sp.StartWatcher());
+            
+            IsSyncRunning = true;
         }
 
         /// <summary>
@@ -278,6 +279,8 @@ namespace DataSync.Lib.Sync
         public void StopSync()
         {
             SyncPairs.ForEach(sp => sp.StopWatcher());
+
+            IsSyncRunning = false;
         }
 
         /// <summary>
