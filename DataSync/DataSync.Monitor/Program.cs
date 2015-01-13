@@ -34,7 +34,10 @@ namespace DataSync.Monitor
 
             while (running)
             {
-                Console.ReadLine();
+                while (Console.KeyAvailable)
+                {
+                    Console.ReadKey(true);
+                }
             }
         }
 

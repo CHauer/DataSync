@@ -70,7 +70,18 @@ namespace DataSync.Properties {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die  ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die DataSync.exe 
+        ///Startet &quot;UI&quot; Modus und lädt bereits eingegebene Sync Pairs aus Configuration File.
+        ///
+        ///DataSync.exe { (SyncPair1) (SyncPair2) … (SyncPairN) }
+        ///[/r|/recursiv] 
+        ///[/log:logfilename] 
+        ///[/logsize:logfilesize]
+        ///[/blockcomparefilesize:filesize|/bcfs:filesize] 
+        ///[/blocksize:blocksize|/bs:blocksize] 
+        ///[/ps|/parallelsync]
+        ///
+        ///(SyncPair) = SourceFolder&gt;TargetFolder1| … |TargetFolderN[&lt;ExceptFolder1| … |ExceptFolderN] ähnelt.
         /// </summary>
         internal static string HelpConsole {
             get {
@@ -79,7 +90,30 @@ namespace DataSync.Properties {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die  ähnelt.
+        ///   Sucht eine lokalisierte Zeichenfolge, die - ADDPAIR {PAIRNAME} 
+        ///- DELETEPAIR {PAIRNAME}
+        ///- CLEARPAIRS
+        ///- EXIT
+        ///
+        ///- SWITCH {OPTIONNAME} [ON|OFF]
+        ///	{OPTIONNAME}:
+        ///          RECURSIV
+        ///          PARALLELSYNC
+        ///          LOGVIEW
+        ///          JOBSVIEW
+        ///		
+        ///- SET  {OPTIONNAME} {VALUE}
+        ///	{OPTIONNAME}:
+        ///           LOGSIZE - INT
+        ///           BLOCKCOMPAREFILESIZE - INT
+        ///           BLOCKSIZE - INT
+        ///		
+        ///- LOGTO {LOGFILENAME}
+        ///
+        ///- LISTPAIRS
+        ///- SHOWPAIRDETAIL {PAIRNAME}
+        ///	
+        ///- HELP ähnelt.
         /// </summary>
         internal static string HelpInstruction {
             get {

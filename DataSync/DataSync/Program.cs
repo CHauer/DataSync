@@ -13,6 +13,7 @@ using DataSync.Lib.Sync;
 using DataSync.Properties;
 using DataSync.UI;
 using DataSync.UI.CommandHandling;
+using DataSync.UI.CommandHandling.Arguments;
 using DataSync.UI.Monitor;
 
 namespace DataSync
@@ -75,20 +76,32 @@ namespace DataSync
             syncManagerObj.StartSync();
 
             //Start Instruction Decoder
-            _handler = new InputInstructionHandler(Console.In, Console.Out);
-            _handler.BeforeErrorOutput += (sender, e) => { Console.ForegroundColor = ConsoleColor.Red; };
-            _handler.AfterErrorOutput += (sender, e) => { Console.ResetColor(); };
-
-            PrepareConsoleWindow();
+            InitializeInstructionHandler();
 
             //Start LogMonitor, Queue Monitor
             StartMonitors();
 
+            //Prepare Input console
+            PrepareConsoleWindow();
+
             //handle input on console
             _handler.RunHandler();
 
+            //programm end
+            Console.WriteLine(Resources.Program_Main_EnterForEXIT);
             Console.ReadLine();
             CloseMonitors();
+        }
+
+        /// <summary>
+        /// Initializes the instruction handler.
+        /// </summary>
+        private static void InitializeInstructionHandler()
+        {
+            _handler = new InputInstructionHandler(Console.In, Console.Out);
+            _handler.BeforeErrorOutput += (sender, e) => { Console.ForegroundColor = ConsoleColor.Red; };
+            _handler.AfterErrorOutput += (sender, e) => { Console.ResetColor(); };
+            _handler.HelpInstructionOccured += (sender, e) => { Console.WriteLine(Resources.HelpInstruction); };
         }
 
         /// <summary>
@@ -96,9 +109,14 @@ namespace DataSync
         /// </summary>
         private static void PrepareConsoleWindow()
         {
+            Console.Title = @"DataSync";
+
             ConsoleWindowPositioner positioner = new ConsoleWindowPositioner();
 
+            positioner.BringConsoleWindowToFront();
+            
             positioner.SetConsoleWindowPosition(50, 50);
+
         }
 
         /// <summary>
@@ -148,7 +166,7 @@ namespace DataSync
         /// Handles the ErrorOccuredHandler event of the ArgumentCreator.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="ArgumentErrorEventArgs"/> instance containing the event data.</param>
+        /// <param name="e">The <see cref="ArgumentErrorEventArgs" /> instance containing the event data.</param>
         private static void ArgumentCreator_ErrorOccuredHandler(object sender, ArgumentErrorEventArgs e)
         {
             Console.ForegroundColor = ConsoleColor.Red;
@@ -156,6 +174,9 @@ namespace DataSync
             Console.ResetColor();
             Console.WriteLine(Resources.Program_Main_EnterForEXIT);
             Console.ReadLine();
+
+            //End application
+            Environment.Exit(0);
         }
     }
 }

@@ -18,14 +18,6 @@
     </TypeIdentifier>
     <Lollipop Position="0.2" />
   </Class>
-  <Class Name="DataSync.UI.CommandHandling.ArgumentConfigurationCreator">
-    <Position X="7" Y="5.5" Width="2.5" />
-    <TypeIdentifier>
-      <HashCode>AAQAAAAAAAAAAAAAAABAAAAAAAAAAAgAAAAAAAAAAAA=</HashCode>
-      <FileName>CommandHandling\Arguments\ArgumentConfigurationCreator.cs</FileName>
-    </TypeIdentifier>
-    <Lollipop Position="0.2" />
-  </Class>
   <Class Name="DataSync.UI.CommandHandling.Instruction">
     <Position X="3.25" Y="0.5" Width="1.5" />
     <TypeIdentifier>
@@ -35,11 +27,14 @@
     <ShowAsAssociation>
       <Property Name="Type" />
     </ShowAsAssociation>
+    <ShowAsCollectionAssociation>
+      <Property Name="Parameters" />
+    </ShowAsCollectionAssociation>
   </Class>
   <Class Name="DataSync.UI.CommandHandling.InputInstructionHandler">
     <Position X="0.5" Y="0.5" Width="2" />
     <TypeIdentifier>
-      <HashCode>AAAAAQAAABAAAQBAQAAAACAACAQAABAAAAAAAACACQA=</HashCode>
+      <HashCode>AAAAgABAABAAAQBAQAAAQCAACAQAABAAAAACQAAUCQA=</HashCode>
       <FileName>CommandHandling\InputInstructionHandler.cs</FileName>
     </TypeIdentifier>
   </Class>
@@ -60,14 +55,14 @@
       <Property Name="Type" />
     </ShowAsAssociation>
   </Class>
-  <Class Name="DataSync.UI.SyncPairDefinitionParser">
-    <Position X="14.25" Y="0.5" Width="2.25" />
+  <Class Name="DataSync.UI.CommandHandling.Arguments.SyncPairDefinitionParser">
+    <Position X="12.5" Y="6.25" Width="2.25" />
     <TypeIdentifier>
-      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
-      <FileName>CommandHandling\Validation\SyncPairDefinitionParser.cs</FileName>
+      <HashCode>AAAgAAAAAAAAAAAAAAAAAAAAAAAAEAAAAAAAAAAAAAA=</HashCode>
+      <FileName>CommandHandling\Arguments\SyncPairDefinitionParser.cs</FileName>
     </TypeIdentifier>
   </Class>
-  <Class Name="DataSync.UI.IdentifierToken">
+  <Class Name="DataSync.UI.CommandHandling.Validation.IdentifierToken">
     <Position X="10.75" Y="2.5" Width="1.5" />
     <TypeIdentifier>
       <HashCode>AAAAAAAAAACAFAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
@@ -75,7 +70,7 @@
     </TypeIdentifier>
     <Lollipop Position="0.2" />
   </Class>
-  <Class Name="DataSync.UI.CommandHandling.ArgumentErrorEventArgs">
+  <Class Name="DataSync.UI.CommandHandling.Arguments.ArgumentErrorEventArgs">
     <Position X="7" Y="7.75" Width="2.5" />
     <TypeIdentifier>
       <HashCode>AQAAAAAAAAAAAAAEAAAAAAAAAAAAAAAAAABAAAAAAAA=</HashCode>
@@ -85,18 +80,18 @@
   <Class Name="DataSync.UI.CommandHandling.Decoder.InstructionDecoder">
     <Position X="8" Y="0.5" Width="2.5" />
     <TypeIdentifier>
-      <HashCode>AAAAAAAAAAAAAAACAAAAABAAAAQAAIAAAAAAAAAAAAA=</HashCode>
+      <HashCode>AAAAAAAAAAAAABACAAAAABAAAAQAAIAgAAAAAAAAAAA=</HashCode>
       <FileName>CommandHandling\Decoder\InstructionDecoder.cs</FileName>
     </TypeIdentifier>
   </Class>
-  <Class Name="DataSync.UI.SwitchToken">
+  <Class Name="DataSync.UI.CommandHandling.Validation.SwitchToken">
     <Position X="12.5" Y="4.5" Width="1.5" />
     <TypeIdentifier>
       <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
       <FileName>CommandHandling\Validation\SwitchToken.cs</FileName>
     </TypeIdentifier>
   </Class>
-  <Class Name="DataSync.UI.OptionToken">
+  <Class Name="DataSync.UI.CommandHandling.Validation.OptionToken">
     <Position X="12.5" Y="2.5" Width="1.5" />
     <TypeIdentifier>
       <HashCode>AAAAAEAAAACAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
@@ -104,7 +99,7 @@
     </TypeIdentifier>
     <Lollipop Position="0.2" />
   </Class>
-  <Class Name="DataSync.UI.ValueToken">
+  <Class Name="DataSync.UI.CommandHandling.Validation.ValueToken">
     <Position X="14.25" Y="2.5" Width="1.5" />
     <TypeIdentifier>
       <HashCode>AAAAAAAAAACAEAAAAAAAAAAAAAAAAAAAAAAAgAAAAAA=</HashCode>
@@ -112,7 +107,15 @@
     </TypeIdentifier>
     <Lollipop Position="0.2" />
   </Class>
-  <Interface Name="DataSync.UI.IValidationToken">
+  <Class Name="DataSync.UI.CommandHandling.Arguments.ArgumentConfigurationCreator">
+    <Position X="7" Y="5.5" Width="2.5" />
+    <TypeIdentifier>
+      <HashCode>AAQAAAAAIAAAAQIAAABAAAgAAACAAAgASCAAAAAAAEA=</HashCode>
+      <FileName>CommandHandling\Arguments\ArgumentConfigurationCreator.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" />
+  </Class>
+  <Interface Name="DataSync.UI.CommandHandling.Validation.IValidationToken">
     <Position X="11.5" Y="0.5" Width="1.5" />
     <TypeIdentifier>
       <HashCode>AAAAAAAAAACAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
@@ -144,7 +147,7 @@
   <Enum Name="DataSync.UI.ParameterType">
     <Position X="5.5" Y="2.25" Width="1.5" />
     <TypeIdentifier>
-      <HashCode>AAAAAAAAAAAAAIAAAAAACAAAAAAAAAAgAAAAQAQAAAA=</HashCode>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAgAAAAAAQAAAA=</HashCode>
       <FileName>CommandHandling\ParameterType.cs</FileName>
     </TypeIdentifier>
   </Enum>

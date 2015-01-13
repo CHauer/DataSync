@@ -1,4 +1,12 @@
-﻿using System.Collections.Generic;
+﻿// -----------------------------------------------------------------------
+// <copyright file="Instruction.cs" company="FH Wr.Neustadt">
+//      Copyright Christoph Hauer. All rights reserved.
+// </copyright>
+// <author>Christoph Hauer</author>
+// <summary>DataSync.UI - Instruction.cs</summary>
+// -----------------------------------------------------------------------
+
+using System.Collections.Generic;
 
 namespace DataSync.UI.CommandHandling
 {
@@ -23,15 +31,12 @@ namespace DataSync.UI.CommandHandling
         /// </value>
         public string PlainInstruction { get; set; }
 
-        public List<Parameter> Parameters
-        {
-            get
-            {
-                throw new System.NotImplementedException();
-            }
-            set
-            {
-            }
-        }
+        /// <summary>
+        /// Gets or sets the parameters.
+        /// </summary>
+        /// <value>
+        /// The parameters.
+        /// </value>
+        public List<Parameter> Parameters { get; set; }
     }
 }
