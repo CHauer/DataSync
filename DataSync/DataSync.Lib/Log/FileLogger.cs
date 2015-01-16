@@ -1,35 +1,151 @@
 ﻿using System;
+using System.Diagnostics;
+using System.IO;
 using DataSync.Lib.Log.Messages;
 
 namespace DataSync.Lib.Log
 {
+    /// <summary>
+    /// 
+    /// </summary>
     public class FileLogListener : ILogListener
     {
-        public int LogFilePath
+        /// <summary>
+        /// The log writer instance.
+        /// </summary>
+        private TextWriter logWriter;
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="FileLogListener"/> class.
+        /// </summary>
+        /// <param name="logFilePath">The log file path.</param>
+        /// <param name="logFileSize">Size of the log file.</param>
+        /// <exception cref="System.ArgumentException">
+        /// logFileSize
+        /// or
+        /// logFilePath
+        /// </exception>
+        public FileLogListener(string logFilePath, int logFileSize)
         {
-            get
+            if (logFileSize <= 0)
             {
-                throw new System.NotImplementedException();
+                throw new ArgumentException("logFileSize");
             }
-            set
+
+            if (string.IsNullOrEmpty(logFilePath))
             {
+                throw new ArgumentException("logFilePath");
+            }
+
+            this.LogFilePath = LogFilePath;
+            this.LogFileSize = logFileSize;
+
+            InitializeLogFile();
+        }
+
+        /// <summary>
+        /// Initializes the log file.
+        /// </summary>
+        private void InitializeLogFile()
+        {
+            try
+            {
+                logWriter = new StreamWriter(File.Open(LogFilePath, FileMode.Append, FileAccess.Write));
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine(ex.Message);
             }
         }
 
-        public int LogFileSize
-        {
-            get
-            {
-                throw new System.NotImplementedException();
-            }
-            set
-            {
-            }
-        }
+        /// <summary>
+        /// Gets the log file path.
+        /// </summary>
+        /// <value>
+        /// The log file path.
+        /// </value>
+        public string LogFilePath { get; private set; }
 
+        /// <summary>
+        /// Gets the size of the log file.
+        /// </summary>
+        /// <value>
+        /// The size of the log file.
+        /// </value>
+        public int LogFileSize{ get; private set; }
+
+        /// <summary>
+        /// Writes the log message.
+        /// </summary>
+        /// <param name="message">The message.</param>
         public void WriteLogMessage(LogMessage message)
         {
-            throw new NotImplementedException();
+            try
+            {
+                logWriter.WriteLine(message.ToString());
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine(ex.Message);
+            }
+
+            if (CheckBackupFile())
+            {
+                InitializeLogFile();
+            }
+        }
+
+        /// <summary>
+        /// Checks the backup file.
+        /// </summary>
+        /// <returns></returns>
+        private bool CheckBackupFile()
+        {
+            FileInfo info = null;
+            string bakPath;
+
+            try
+            {
+                 info = new FileInfo(LogFilePath);
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine(ex.Message);
+                info = null;
+            }
+
+            if (info != null && info.Length > LogFileSize)
+            {
+                bakPath = info.FullName + ".bak";
+
+                if (File.Exists(bakPath))
+                {
+                    try
+                    {
+                        File.Delete(bakPath);
+                    }
+                    catch (Exception ex)
+                    {
+                        Debug.WriteLine(ex.Message);
+                    }
+                }
+
+                logWriter.Flush();
+                logWriter.Close();
+
+                try
+                {
+                    File.Move(info.FullName, bakPath);
+                }
+                catch (Exception ex)
+                {
+                    Debug.WriteLine(ex.Message);
+                }
+
+                return true;
+            }
+
+            return false;
         }
     }
 }

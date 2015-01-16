@@ -1,9 +1,15 @@
-﻿using System;
+﻿// -----------------------------------------------------------------------
+// <copyright file="InstructionDecoder.cs" company="FH Wr.Neustadt">
+//      Copyright Christoph Hauer. All rights reserved.
+// </copyright>
+// <author>Christoph Hauer</author>
+// <summary>DataSync.UI - InstructionDecoder.cs</summary>
+// -----------------------------------------------------------------------
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Text.RegularExpressions;
-using System.Threading.Tasks;
+using DataSync.UI.CommandHandling.Instructions;
 using DataSync.UI.CommandHandling.Validation;
 
 namespace DataSync.UI.CommandHandling.Decoder
@@ -25,20 +31,20 @@ namespace DataSync.UI.CommandHandling.Decoder
         /// </summary>
         public InstructionDecoder()
         {
-            Intialize();
+            Initialize();
         }
 
         /// <summary>
         /// Intializes this instance.
         /// </summary>
-        private void Intialize()
+        private void Initialize()
         {
-            instructionsWithOutParameters = new List<InstructionType>()
+            this.instructionsWithOutParameters = new List<InstructionType>()
             {
-                InstructionType.EXIT, 
-                InstructionType.HELP, 
+                InstructionType.EXIT,
+                InstructionType.HELP,
                 InstructionType.CLEARPAIRS,
-                InstructionType.LISTPAIRS 
+                InstructionType.LISTPAIRS
             };
         }
 
@@ -65,7 +71,7 @@ namespace DataSync.UI.CommandHandling.Decoder
                 undecoded = String.Format("{0} {1}", instructionPart, parameterPart);
 
                 //split parameters
-                parameters = parameterPart.Split(new char[] { ' ' });
+                parameters = parameterPart.Split(new char[] {' '});
             }
             else
             {
@@ -76,7 +82,7 @@ namespace DataSync.UI.CommandHandling.Decoder
             try
             {
                 //get instruction type from enum
-                irCode = (InstructionType)Enum.Parse(typeof(InstructionType), instructionPart);
+                irCode = (InstructionType) Enum.Parse(typeof (InstructionType), instructionPart);
             }
             catch (Exception ex)
             {
@@ -86,7 +92,8 @@ namespace DataSync.UI.CommandHandling.Decoder
             //check if instruction is valid 
             if (!ValidateInstruction(irCode, parameters))
             {
-                throw new InvalidOperationException(String.Format("The command {0} is invalid.\nDetails: {1}", undecoded, validationErrorMessage));
+                throw new InvalidOperationException(String.Format("The command {0} is invalid.\nDetails: {1}", undecoded,
+                    this.validationErrorMessage));
             }
 
             //Create Instruction object and set parameters
@@ -96,7 +103,7 @@ namespace DataSync.UI.CommandHandling.Decoder
                 Type = irCode,
                 Parameters = CreateParameters(irCode, parameters)
             };
-            
+
             return instruction;
         }
 
@@ -115,6 +122,17 @@ namespace DataSync.UI.CommandHandling.Decoder
                 case InstructionType.DELETEPAIR:
                 case InstructionType.LOGTO:
                 case InstructionType.SHOWPAIRDETAIL:
+
+                    if (parameters[0].StartsWith("\"") || parameters[0].EndsWith("\""))
+                    {
+                        parameters[0] = parameters[0].Replace("\"", string.Empty);
+                    }
+
+                    if (parameters[0].StartsWith("\'") || parameters[0].EndsWith("\'"))
+                    {
+                        parameters[0] = parameters[0].Replace("\'", string.Empty);
+                    }
+
                     returnParams.Add(new Parameter()
                     {
                         Content = parameters[0],
@@ -165,7 +183,7 @@ namespace DataSync.UI.CommandHandling.Decoder
         {
             List<IValidationToken> validationTokens = null;
 
-            if (instructionsWithOutParameters.Contains(type))
+            if (this.instructionsWithOutParameters.Contains(type))
             {
                 return true;
             }
@@ -173,20 +191,24 @@ namespace DataSync.UI.CommandHandling.Decoder
             switch (type)
             {
                 case InstructionType.ADDPAIR:
-
+                    validationTokens = new List<IValidationToken>()
+                    {
+                        new IdentifierToken() {Regex = "[A-Za-z0-9]+"}
+                    };
                     break;
                 case InstructionType.DELETEPAIR:
                 case InstructionType.SHOWPAIRDETAIL:
                     validationTokens = new List<IValidationToken>()
                     {
-                        new IdentifierToken(){Regex = "[A-Za-z0-9]+"}
+                        new IdentifierToken() {Regex = "[A-Za-z0-9]+"}
                     };
                     break;
                 case InstructionType.SWITCH:
                     validationTokens = new List<IValidationToken>()
                     {
-                        new OptionToken(){
-                            OptionList = new List<string>(){"RECURSIV", "PARALLELSYNC", "LOGVIEW", "JOBSVIEW"}
+                        new OptionToken()
+                        {
+                            OptionList = new List<string>() {"RECURSIV", "PARALLELSYNC", "LOGVIEW", "JOBSVIEW"}
                         },
                         new SwitchToken()
                     };
@@ -194,37 +216,44 @@ namespace DataSync.UI.CommandHandling.Decoder
                 case InstructionType.SET:
                     validationTokens = new List<IValidationToken>()
                     {
-                        new OptionToken(){ 
-                            OptionList = new List<string>(){"LOGSIZE", "BLOCKCOMPAREFILESIZE", "BLOCKSIZE"}
+                        new OptionToken()
+                        {
+                            OptionList = new List<string>() {"LOGSIZE", "BLOCKCOMPAREFILESIZE", "BLOCKSIZE"}
                         },
-                        new ValueToken(){
-                            TargetType = typeof(Int32) 
+                        new ValueToken()
+                        {
+                            TargetType = typeof (Int32)
                         }
                     };
                     break;
                 case InstructionType.LOGTO:
                     validationTokens = new List<IValidationToken>()
                     {
-                        new IdentifierToken(){Regex = "[A-Za-z0-9.]+"}
+                        //file path
+                        new PathToken()
                     };
                     break;
             }
 
             //validate tokens
-            if (validationTokens != null && parameters.Length > 0)
+            if (validationTokens != null && parameters.Length > 0 && validationTokens.Count == parameters.Length)
             {
                 for (int i = 0; i < parameters.Length; i++)
                 {
                     if (!validationTokens[i].Validate(parameters[i]))
                     {
-                        validationErrorMessage = validationTokens[i].ValidationErrorMessage;
-                        return false; 
+                        this.validationErrorMessage = validationTokens[i].ValidationErrorMessage;
+                        return false;
                     }
                 }
+            }
+            else
+            {
+                this.validationErrorMessage = string.Format("Missing Parameters for {0}", type.ToString("g"));
+                return false;
             }
 
             return true;
         }
-
     }
 }

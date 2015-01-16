@@ -1,38 +1,34 @@
 ﻿using System;
+using DataSync.Lib.Log.Messages;
+using DataSync.Lib.Sync.Items;
+using System.IO;
 
 namespace DataSync.Lib.Sync.Operations
 {
-    public class RenameFolder : ISyncOperation
+    public class RenameFolder : SyncOperation
     {
-
-        public bool Execute(ISyncItem item)
+        public override bool Execute(ISyncItem item)
         {
-            throw new NotImplementedException();
+            if (!(item is SyncFolder))
+            {
+                LogMessage(new ErrorLogMessage("Execution not possible - Invalid  Operation Properties", true));
+                return false;
+            }
+
+            SyncFolder folder = item as SyncFolder;
+
+            try
+            {
+                Directory.Move(folder.SourcePath, folder.TargetPath);
+            }
+            catch (Exception ex)
+            {
+                LogMessage(new ErrorLogMessage("Rename Folder Error", ex));
+                return false;
+            }
+
+            return true;
         }
 
-        public Log.ILog Logger
-        {
-            get
-            {
-                throw new NotImplementedException();
-            }
-            set
-            {
-                throw new NotImplementedException();
-            }
-        }
-
-
-        public Configuration.SyncConfiguration Configuration
-        {
-            get
-            {
-                throw new NotImplementedException();
-            }
-            set
-            {
-                throw new NotImplementedException();
-            }
-        }
-    }
+     }
 }

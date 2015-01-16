@@ -8,10 +8,19 @@
 
 using System;
 
-namespace DataSync.UI.CommandHandling.Arguments
+namespace DataSync.UI.Arguments
 {
     public class ArgumentErrorEventArgs : EventArgs
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ArgumentErrorEventArgs"/> class.
+        /// </summary>
+        /// <param name="message">The message.</param>
+        public ArgumentErrorEventArgs(string message)
+        {
+            this.ErrorMessage = message;
+        }
+
         /// <summary>
         /// Initializes a new instance of the <see cref="ArgumentErrorEventArgs"/> class.
         /// </summary>

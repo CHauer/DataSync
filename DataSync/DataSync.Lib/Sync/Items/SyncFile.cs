@@ -57,6 +57,7 @@ namespace DataSync.Lib.Sync.Items
         {
             get
             {
+                // ReSharper disable once ConvertPropertyToExpressionBody
                 return File.Exists(TargetPath);
             }
         }

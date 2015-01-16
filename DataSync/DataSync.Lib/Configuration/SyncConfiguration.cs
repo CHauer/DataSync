@@ -4,12 +4,14 @@ using System.ComponentModel;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Text;
+using System.Xml.Serialization;
 
 namespace DataSync.Lib.Configuration
 {
     /// <summary>
     /// 
     /// </summary>
+    [Serializable]
     public class SyncConfiguration : INotifyPropertyChanged
     {
         /// <summary>
@@ -33,9 +35,9 @@ namespace DataSync.Lib.Configuration
         private bool isRecursiv;
 
         /// <summary>
-        /// The logtype
+        /// The isLogToFile
         /// </summary>
-        private LogTargetType logtype;
+        private bool isLogToFile;
 
         /// <summary>
         /// The log file size
@@ -125,18 +127,18 @@ namespace DataSync.Lib.Configuration
         }
 
         /// <summary>
-        /// Gets or sets the type of the log.
+        /// Gets or sets a value indicating whether this instance is log to file.
         /// </summary>
         /// <value>
-        /// The type of the log.
+        /// <c>true</c> if this instance is log to file; otherwise, <c>false</c>.
         /// </value>
-        public LogTargetType LogType
+        public bool IsLogToFile
         {
-            get { return logtype; }
+            get { return this.isLogToFile; }
             set
             {
-                logtype = value;
-                RaisePropertyChanged(() => LogType);
+                this.isLogToFile = value;
+                RaisePropertyChanged(() => IsLogToFile);
             }
         }
 

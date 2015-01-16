@@ -45,7 +45,7 @@ namespace DataSync.Lib.Sync
         /// <returns></returns>
         /// <exception cref="System.ArgumentNullException">compareItem</exception>
         /// <exception cref="System.ArgumentException">CompareItem Type is not supported for the compare function!</exception>
-        public ISyncOperation Compare(ISyncItem compareItem)
+        public SyncOperation Compare(ISyncItem compareItem)
         {
             if (compareItem == null)
             {
@@ -81,10 +81,10 @@ namespace DataSync.Lib.Sync
         /// <param name="syncFile">The synchronize file.</param>
         /// <returns></returns>
         /// <exception cref="System.InvalidOperationException">File Compare failed.</exception>
-        private ISyncOperation CompareFile(ISyncItem syncFile)
+        private SyncOperation CompareFile(ISyncItem syncFile)
         {
             //Standard operation - copy/override file
-            ISyncOperation standardOperation = new CopyFile();
+            SyncOperation standardOperation = new CopyFile();
 
             if (!syncFile.TargetExists)
             {
@@ -94,11 +94,30 @@ namespace DataSync.Lib.Sync
 
             try
             {
-                FileInfo sourceFile = syncFile.GetSourceInfo() as FileInfo;
-                FileInfo targetFile = syncFile.GetTargetInfo() as FileInfo;
+                FileInfo sourceFile = null;
+                FileInfo targetFile = null;
 
-                //error with file - copy/override
-                if (sourceFile == null || targetFile == null)
+                try
+                {
+                    sourceFile = syncFile.GetSourceInfo() as FileInfo;
+                    targetFile = syncFile.GetTargetInfo() as FileInfo;
+                }
+                catch (Exception ex)
+                {
+                    LogMessage(new ErrorLogMessage(ex, true));
+                    targetFile = null;
+                }
+
+                if (sourceFile == null)
+                {
+                    LogMessage(new ErrorLogMessage(String.Format("{0} Source File not found!", syncFile.SourcePath), true));
+
+                    //no operation possible
+                    return null;
+                }
+
+                //error with target file - copy/override
+                if (targetFile == null)
                 {
                     return standardOperation;
                 }
@@ -132,14 +151,7 @@ namespace DataSync.Lib.Sync
             }
             catch (Exception ex)
             {
-                //log error
-                if (Logger != null)
-                {
-                    Logger.AddLogMessage(new ErrorLogMessage(ex, true));
-                }
-
-                //compare failed
-                throw new InvalidOperationException("File Compare failed.", ex);
+                LogMessage(new ErrorLogMessage(ex, true));
             }
 
             //no operation found
@@ -151,7 +163,7 @@ namespace DataSync.Lib.Sync
         /// </summary>
         /// <param name="syncFolder">The synchronize folder.</param>
         /// <returns></returns>
-        private ISyncOperation CompareFolder(ISyncItem syncFolder)
+        private SyncOperation CompareFolder(ISyncItem syncFolder)
         {
             //target folder does not exists  - create
             if (!syncFolder.TargetExists)
@@ -185,5 +197,19 @@ namespace DataSync.Lib.Sync
             }
 
         }
+
+        /// <summary>
+        /// Adds the log message.
+        /// </summary>
+        /// <param name="message">The message.</param>
+        private void LogMessage(LogMessage message)
+        {
+            // ReSharper disable once UseNullPropagation
+            if (this.Logger != null)
+            {
+                this.Logger.AddLogMessage(message);
+            }
+        }
+
     }
 }

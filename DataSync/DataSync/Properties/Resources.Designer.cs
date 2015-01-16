@@ -90,29 +90,18 @@ namespace DataSync.Properties {
         }
         
         /// <summary>
-        ///   Sucht eine lokalisierte Zeichenfolge, die - ADDPAIR {PAIRNAME} 
+        ///   Sucht eine lokalisierte Zeichenfolge, die Instructions:
+        ///- ADDPAIR {PAIRNAME}  
         ///- DELETEPAIR {PAIRNAME}
         ///- CLEARPAIRS
         ///- EXIT
-        ///
         ///- SWITCH {OPTIONNAME} [ON|OFF]
-        ///	{OPTIONNAME}:
-        ///          RECURSIV
-        ///          PARALLELSYNC
-        ///          LOGVIEW
-        ///          JOBSVIEW
-        ///		
+        ///     {OPTIONNAME}: RECURSIV | PARALLELSYNC | LOGVIEW | JOBSVIEW	
         ///- SET  {OPTIONNAME} {VALUE}
-        ///	{OPTIONNAME}:
-        ///           LOGSIZE - INT
-        ///           BLOCKCOMPAREFILESIZE - INT
-        ///           BLOCKSIZE - INT
-        ///		
+        ///     {OPTIONNAME}:  LOGSIZE | BLOCKCOMPAREFILESIZE | BLOCKSIZE	
         ///- LOGTO {LOGFILENAME}
-        ///
         ///- LISTPAIRS
         ///- SHOWPAIRDETAIL {PAIRNAME}
-        ///	
         ///- HELP ähnelt.
         /// </summary>
         internal static string HelpInstruction {

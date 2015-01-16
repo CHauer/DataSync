@@ -3,9 +3,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using DataSync.Lib.Configuration;
+using DataSync.Lib.Log;
 using DataSync.Lib.Sync;
 
-namespace DataSync.UI.CommandHandling.Arguments
+namespace DataSync.UI.Arguments
 {
     /// <summary>
     /// 
@@ -27,12 +28,23 @@ namespace DataSync.UI.CommandHandling.Arguments
         }
 
         /// <summary>
+        /// Gets or sets the logger.
+        /// </summary>
+        /// <value>
+        /// The logger.
+        /// </value>
+        public ILog Logger { get; set; }
+
+        /// <summary>
         /// Parses this instance.
         /// </summary>
         /// <returns></returns>
         public ConfigurationPair Parse()
         {
-            ConfigurationPair pair = new ConfigurationPair();
+            ConfigurationPair pair = new ConfigurationPair()
+            {
+                Logger = Logger
+            };
 
             return pair;
         }

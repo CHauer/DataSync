@@ -48,8 +48,12 @@ namespace DataSync.UI.CommandHandling.Validation
             {
                 try
                 {
-                    // ReSharper disable once ReturnValueOfPureMethodIsNotUsed
-                    Convert.ToInt32(validationElement);
+                    int value  = Convert.ToInt32(validationElement);
+
+                    if (value <= 0)
+                    {
+                        ValidationErrorMessage = "Value has to be greater than 0.";
+                    }
                 }
                 catch (Exception ex)
                 {

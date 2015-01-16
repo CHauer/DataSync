@@ -135,29 +135,18 @@ DataSync.exe { (SyncPair1) (SyncPair2) … (SyncPairN) }
 (SyncPair) = SourceFolder&gt;TargetFolder1| … |TargetFolderN[&lt;ExceptFolder1| … |ExceptFolderN]</value>
   </data>
   <data name="HelpInstruction" xml:space="preserve">
-    <value>- ADDPAIR {PAIRNAME} 
+    <value>Instructions:
+- ADDPAIR {PAIRNAME}  
 - DELETEPAIR {PAIRNAME}
 - CLEARPAIRS
 - EXIT
-
 - SWITCH {OPTIONNAME} [ON|OFF]
-	{OPTIONNAME}:
-          RECURSIV
-          PARALLELSYNC
-          LOGVIEW
-          JOBSVIEW
-		
+     {OPTIONNAME}: RECURSIV | PARALLELSYNC | LOGVIEW | JOBSVIEW	
 - SET  {OPTIONNAME} {VALUE}
-	{OPTIONNAME}:
-           LOGSIZE - INT
-           BLOCKCOMPAREFILESIZE - INT
-           BLOCKSIZE - INT
-		
+     {OPTIONNAME}:  LOGSIZE | BLOCKCOMPAREFILESIZE | BLOCKSIZE	
 - LOGTO {LOGFILENAME}
-
 - LISTPAIRS
 - SHOWPAIRDETAIL {PAIRNAME}
-	
 - HELP</value>
   </data>
   <data name="Program_Main_EnterForEXIT" xml:space="preserve">

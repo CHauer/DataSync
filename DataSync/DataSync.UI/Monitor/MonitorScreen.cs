@@ -3,30 +3,18 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace DataSync.UI
+namespace DataSync.UI.Monitor
 {
-    public class MonitorScreen
+    [Serializable]
+    public class MonitorScreen 
     {
-        public int Width
-        {
-            get
-            {
-                throw new System.NotImplementedException();
-            }
-            set
-            {
-            }
-        }
+        public int Width { get; set; }
 
-        public int Height
+        public int Height { get; set; }
+
+        public void PrintToConsole()
         {
-            get
-            {
-                throw new System.NotImplementedException();
-            }
-            set
-            {
-            }
+            
         }
     }
 }

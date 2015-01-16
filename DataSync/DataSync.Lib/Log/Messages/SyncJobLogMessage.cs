@@ -6,7 +6,11 @@ using System.Threading.Tasks;
 
 namespace DataSync.Lib.Log.Messages
 {
-    class SyncJobLogMessage : LogMessage
+    /// <summary>
+    /// 
+    /// </summary>
+    [Serializable]
+    public class SyncJobLogMessage : LogMessage
     {
     }
 }

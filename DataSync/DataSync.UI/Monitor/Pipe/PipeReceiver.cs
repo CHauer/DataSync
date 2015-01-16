@@ -9,22 +9,18 @@ using System.Threading;
 using System.Threading.Tasks;
 using DataSync.Lib.Log.Messages;
 
-namespace DataSync.UI.Monitor
+namespace DataSync.UI.Monitor.Pipe
 {
     /// <summary>
     /// 
     /// </summary>
     public class PipeReceiver<T> where T : class
     {
-        /// <summary>
-        /// The client handle
-        /// </summary>
-        private string clientHandle;
 
         /// <summary>
-        /// The pipe client
+        /// The is running
         /// </summary>
-        private AnonymousPipeClientStream pipeClient;
+        private bool isRunning;
 
         /// <summary>
         /// The serializer
@@ -32,27 +28,34 @@ namespace DataSync.UI.Monitor
         private BinaryFormatter serializer;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="PipeReceiver" /> class.
+        /// Initializes a new instance of the <see cref="PipeReceiver{T}" /> class.
         /// </summary>
-        /// <param name="handle">The handle.</param>
-        public PipeReceiver(string handle)
+        /// <param name="pipeName">Name of the pipe.</param>
+        public PipeReceiver(string pipeName)
         {
-            this.clientHandle = handle;
+            this.PipeName = pipeName;
             this.serializer = new BinaryFormatter();
-            InitializePipe();
         }
 
         /// <summary>
         /// Occurs when log message is received.
         /// </summary>
-        public event EventHandler<ReceivedEventArgs<T>> LogMessageReceived;
+        public event EventHandler<ReceivedEventArgs<T>> MessageReceived;
+
+        /// <summary>
+        /// Gets the name of the pipe.
+        /// </summary>
+        /// <value>
+        /// The name of the pipe.
+        /// </value>
+        public string PipeName { get; private set; }
 
         /// <summary>
         /// Initializes the pipe.
         /// </summary>
         private void InitializePipe()
         {
-            pipeClient = new AnonymousPipeClientStream(PipeDirection.In, clientHandle);
+
         }
 
         /// <summary>
@@ -60,6 +63,7 @@ namespace DataSync.UI.Monitor
         /// </summary>
         public void StartReceiving()
         {
+            isRunning = true;
             Task.Run(() => Run());
         }
 
@@ -70,20 +74,25 @@ namespace DataSync.UI.Monitor
         {
             T receivedMessage = null;
 
-            while (pipeClient.IsConnected)
+            while (isRunning)
             {
                 try
                 {
-                    receivedMessage = (T)serializer.Deserialize(pipeClient);
+                    var pipeServer = new NamedPipeServerStream(PipeName, PipeDirection.In);
+
+                    pipeServer.WaitForConnection();
+                    receivedMessage = (T)serializer.Deserialize(pipeServer);
+
+                    pipeServer.Close();
                 }
                 catch (Exception ex)
                 {
                     Debug.WriteLine(ex.Message);
                 }
 
-                if (LogMessageReceived != null && receivedMessage != null)
+                if (MessageReceived != null && receivedMessage != null)
                 {
-                    LogMessageReceived(this, new ReceivedEventArgs<T>(receivedMessage));
+                    MessageReceived(this, new ReceivedEventArgs<T>(receivedMessage));
                 }
             }
         }
@@ -93,7 +102,7 @@ namespace DataSync.UI.Monitor
         /// </summary>
         public void StopReceiving()
         {
-            pipeClient.Close();
+            isRunning = false;
         }
     }
 }

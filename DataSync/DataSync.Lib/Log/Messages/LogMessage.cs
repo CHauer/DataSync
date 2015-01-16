@@ -5,12 +5,13 @@ using System.Text;
 
 namespace DataSync.Lib.Log.Messages
 {
+    [Serializable]
     public class LogMessage
     {
         /// <summary>
         /// The stack trace
         /// </summary>
-        private string stackTrace;
+        protected string StackTrace;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="LogMessage"/> class.
@@ -36,7 +37,7 @@ namespace DataSync.Lib.Log.Messages
 
             if (IsDebug)
             {
-                stackTrace = GetStackTrance();
+                this.StackTrace = GetStackTrance();
             }
         }
 
@@ -68,12 +69,27 @@ namespace DataSync.Lib.Log.Messages
         /// Gets the stack trance.
         /// </summary>
         /// <returns></returns>
-        private string GetStackTrance()
+        protected string GetStackTrance()
         {
-            string[] lines = Environment.StackTrace.Split(new [] { "\n" }, StringSplitOptions.RemoveEmptyEntries);
+            string[] lines = Environment.StackTrace.Split(new[] { "\n" }, StringSplitOptions.RemoveEmptyEntries);
 
             return String.Join(Environment.NewLine, lines.Skip(3));
         }
 
+        /// <summary>
+        /// Returns a <see cref="System.String" /> that represents this instance.
+        /// </summary>
+        /// <returns>
+        /// A <see cref="System.String" /> that represents this instance.
+        /// </returns>
+        public override string ToString()
+        {
+            if (IsDebug)
+            {
+                return string.Format("{0:G} - {1}\nDEBUG:{2}", Date, Message, this.StackTrace);
+            }
+
+            return string.Format("{0:G} - {1}", Date, Message);
+        }
     }
 }

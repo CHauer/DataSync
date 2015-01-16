@@ -1,15 +1,19 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Xml.Serialization;
 using DataSync.Lib.Log;
+using DataSync.Lib.Log.Messages;
 
 namespace DataSync.Lib.Configuration
 {
     /// <summary>
     /// 
     /// </summary>
+    [Serializable]
     public class ConfigurationPair
     {
         /// <summary>
@@ -50,6 +54,7 @@ namespace DataSync.Lib.Configuration
         /// <value>
         /// The logger.
         /// </value>
+        [XmlIgnore]
         public ILog Logger { get; set; }
 
         /// <summary>
@@ -99,13 +104,15 @@ namespace DataSync.Lib.Configuration
                     }
                     catch (Exception ex)
                     {
-                        //TODO Log
+                        LogMessage(new WarningLogMessage(ex.Message)); 
+                        Debug.WriteLine(ex.Message);
                     }
                 }
             }
             catch (Exception ex)
             {
-                //TODO log
+                LogMessage(new WarningLogMessage(ex.Message));
+                Debug.WriteLine(ex.Message);
             }
 
             return directories;
@@ -132,7 +139,8 @@ namespace DataSync.Lib.Configuration
             }
             catch (Exception ex)
             {
-                //TODO Log
+                LogMessage(new WarningLogMessage(ex.Message));
+                Debug.WriteLine(ex.Message);
                 return files;
             }
 
@@ -142,7 +150,8 @@ namespace DataSync.Lib.Configuration
             }
             catch (Exception ex)
             {
-                //TODO Log
+                LogMessage(new WarningLogMessage(ex.Message));
+                Debug.WriteLine(ex.Message);
             }
 
             foreach (var dirinfo in currentDirInfo.EnumerateDirectories())
@@ -152,6 +161,18 @@ namespace DataSync.Lib.Configuration
             }
 
             return files;
+        }
+
+        /// <summary>
+        /// Adds the log message.
+        /// </summary>
+        /// <param name="message">The message.</param>
+        private void LogMessage(LogMessage message)
+        {
+            if (Logger != null)
+            {
+                Logger.AddLogMessage(message);
+            }
         }
 
     }

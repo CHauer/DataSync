@@ -8,7 +8,7 @@
 
 using System;
 
-namespace DataSync.UI.CommandHandling.Arguments
+namespace DataSync.UI.Arguments
 {
     [AttributeUsage(AttributeTargets.Method, AllowMultiple = true)]
     public class ArgumentHandlerAttribute : Attribute

@@ -1,9 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Text.RegularExpressions;
-using DataSync.UI.CommandHandling.Validation;
 
 namespace DataSync.UI.CommandHandling.Validation
 {
