@@ -23,31 +23,35 @@ namespace DataSync.Lib.Sync
     public class SyncManager
     {
         /// <summary>
-        /// The logger
-        /// </summary>
-        private ILog logger;
-
-        /// <summary>
         /// Initializes a new instance of the <see cref="SyncManager"/> class.
         /// </summary>
-        public SyncManager() : this(null, null) { }
+        public SyncManager() : this(null, null, null) { }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="SyncManager" /> class.
+        /// </summary>
+        /// <param name="logger">The logger.</param>
+        public SyncManager(ILog logger) : this(null, null, logger) { }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="SyncManager" /> class.
         /// </summary>
         /// <param name="configLoader">The configuration loader.</param>
-        public SyncManager(IConfigurationLoader configLoader)
-            : this(configLoader, null) { }
+        /// <param name="logger">The logger.</param>
+        public SyncManager(IConfigurationLoader configLoader, ILog logger)
+            : this(configLoader, null, logger) { }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="SyncManager" /> class.
         /// </summary>
         /// <param name="configLoader">The configuration loader.</param>
         /// <param name="configSaver">The configuration saver.</param>
-        public SyncManager(IConfigurationLoader configLoader, IConfigurationSaver configSaver)
+        /// <param name="logger">The logger.</param>
+        public SyncManager(IConfigurationLoader configLoader, IConfigurationSaver configSaver, ILog logger)
         {
-            ConfigurationLoader = configLoader;
-            ConfigurationSaver = configSaver;
+            this.ConfigurationLoader = configLoader;
+            this.ConfigurationSaver = configSaver;
+            this.Logger = logger;
             Initialize();
         }
 
@@ -99,16 +103,7 @@ namespace DataSync.Lib.Sync
         /// <value>
         /// The logger.
         /// </value>
-        public ILog Logger
-        {
-            get
-            {
-                logger = logger ?? new Logger();
-
-                return logger;
-            }
-            set { logger = value; }
-        }
+        public ILog Logger { get; set; }
 
         /// <summary>
         /// Gets a value indicating whether the pair are all synced.
@@ -153,8 +148,7 @@ namespace DataSync.Lib.Sync
                 }
                 catch (Exception ex)
                 {
-                    Logger.AddLogMessage(new ErrorLogMessage("Error during Configuration loading - " +
-                                                             "Standard Configruation gets used.", true, ex));
+                    LogMessage(new ErrorLogMessage("Configuration Load Error", ex));
                     Configuration = null;
                 }
             }
@@ -187,11 +181,14 @@ namespace DataSync.Lib.Sync
             //validate addSyncPair - name already exists
             if (Configuration.ConfigPairs.Any(cp => cp.Name.Equals(addSyncPair.Name)))
             {
-                logger.AddLogMessage(new ErrorLogMessage(String.Format("The Sync Pair with Name {0} " +
-                                                                       "cant be added - name is already in Sync Pair List!",
+                LogMessage(new ErrorLogMessage(String.Format("The Sync Pair with Name {0} " +
+                                       "cant be added - name is already in Sync Pair List!",
                     addSyncPair.Name)));
                 return false;
             }
+
+            //add Logger instance 
+            addSyncPair.Logger = Logger;
 
             Configuration.ConfigPairs.Add(addSyncPair);
             SaveConfiguration();
@@ -236,7 +233,7 @@ namespace DataSync.Lib.Sync
 
             if (delItem == null)
             {
-                logger.AddLogMessage(new ErrorLogMessage(String.Format("The Sync Pair with Name {0} " +
+                LogMessage(new ErrorLogMessage(String.Format("The Sync Pair with Name {0} " +
                                                                        "could'nt be found in Sync Pair List!",
                     pairname)));
                 return false;
@@ -267,9 +264,9 @@ namespace DataSync.Lib.Sync
             {
                 throw new InvalidOperationException("The sync process is already running!");
             }
-            
+
             SyncPairs.ForEach(sp => sp.StartWatcher());
-            
+
             IsSyncRunning = true;
         }
 
@@ -308,6 +305,18 @@ namespace DataSync.Lib.Sync
                 {
                     Logger.AddLogMessage(new ErrorLogMessage(ex));
                 }
+            }
+        }
+
+        /// <summary>
+        /// Adds the log message.
+        /// </summary>
+        /// <param name="message">The message.</param>
+        private void LogMessage(LogMessage message)
+        {
+            if (Logger != null)
+            {
+                Logger.AddLogMessage(message);
             }
         }
     }

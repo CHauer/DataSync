@@ -7,6 +7,7 @@
 // -----------------------------------------------------------------------
 
 using System;
+using DataSync.UI.Monitor;
 
 namespace DataSync.UI.CommandHandling
 {

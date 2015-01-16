@@ -161,7 +161,7 @@ namespace DataSync.Lib.Sync
         {
             List<string> targetFolders;
             ISyncItem item = null;
-            ISyncOperation operation = null;
+            SyncOperation operation = null;
             ISyncJob job = null;
 
             foreach (string relativePath in relativePaths)
@@ -190,13 +190,17 @@ namespace DataSync.Lib.Sync
                     }
 
                     operation = ComparerInstance.Compare(item);
-                    operation.Configuration = Configuration;
 
-                    job = new SyncJob(item, operation)
+                    if (operation != null)
                     {
-                        Logger = Logger                        
-                    };
-                    SyncQueue.Enqueue(job);
+                        operation.Configuration = Configuration;
+
+                        job = new SyncJob(item, operation)
+                        {
+                            Logger = Logger
+                        };
+                        SyncQueue.Enqueue(job);
+                    }
                 }
             }
         }
@@ -212,9 +216,9 @@ namespace DataSync.Lib.Sync
         private List<string> CreateParallelJob(List<string> targetFolders, string relativePath, string source, bool isFolders)
         {
             ISyncItem item;
-            ISyncOperation operation;
+            SyncOperation operation;
             ISyncJob job;
-            Dictionary<ISyncItem, ISyncOperation> parallelJobs = new Dictionary<ISyncItem, ISyncOperation>();
+            Dictionary<ISyncItem, SyncOperation> parallelJobs = new Dictionary<ISyncItem, SyncOperation>();
 
             //group by first letter without network shares 
             var groupedTargets = targetFolders.Where(tf => !tf.StartsWith(@"\\"))
@@ -238,20 +242,27 @@ namespace DataSync.Lib.Sync
                 }
 
                 operation = ComparerInstance.Compare(item);
-                operation.Configuration = Configuration;
 
-                parallelJobs.Add(item, operation);
+                if (operation != null)
+                {
+                    operation.Configuration = Configuration;
+
+                    parallelJobs.Add(item, operation);
+                }
 
                 //remove used target folder
                 targetFolders.Remove(targetFolder);
             }
 
-            job = new ParallelSyncJob(parallelJobs)
+            if (parallelJobs.Count > 0)
             {
-                Logger = Logger
-            };
+                job = new ParallelSyncJob(parallelJobs)
+                {
+                    Logger = Logger
+                };
 
-            SyncQueue.Enqueue(job);
+                SyncQueue.Enqueue(job);
+            }
 
             //return updates target folders
             return targetFolders;

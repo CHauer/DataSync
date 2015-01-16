@@ -1,20 +1,21 @@
 ﻿// -----------------------------------------------------------------------
-// <copyright file="ISyncOperation.cs" company="FH Wr.Neustadt">
+// <copyright file="SyncOperation.cs" company="FH Wr.Neustadt">
 //      Copyright Christoph Hauer. All rights reserved.
 // </copyright>
 // <author>Christoph Hauer</author>
-// <summary>DataSync.Lib - ISyncOperation.cs</summary>
+// <summary>DataSync.Lib - SyncOperation.cs</summary>
 // -----------------------------------------------------------------------
 
 using DataSync.Lib.Configuration;
 using DataSync.Lib.Log;
+using DataSync.Lib.Log.Messages;
 
 namespace DataSync.Lib.Sync
 {
     /// <summary>
     /// 
     /// </summary>
-    public interface ISyncOperation
+    public abstract class SyncOperation
     {
         /// <summary>
         /// Gets or sets the logger.
@@ -22,7 +23,7 @@ namespace DataSync.Lib.Sync
         /// <value>
         /// The logger.
         /// </value>
-        ILog Logger { get; set; }
+        public ILog Logger { get; set; }
 
         /// <summary>
         /// Gets the synchronize configuration.
@@ -30,12 +31,25 @@ namespace DataSync.Lib.Sync
         /// <value>
         /// The synchronize configuration.
         /// </value>
-        SyncConfiguration Configuration { get; set; }
+        public SyncConfiguration Configuration { get; set; }
 
         /// <summary>
-        /// Runs the specified item.
+        /// Runs the operation for the specified item.
         /// </summary>
         /// <param name="item">The item.</param>
-        bool Execute(ISyncItem item);
+        public abstract bool Execute(ISyncItem item);
+
+        /// <summary>
+        /// Adds the log message.
+        /// </summary>
+        /// <param name="message">The message.</param>
+        protected void LogMessage(LogMessage message)
+        {
+            // ReSharper disable once UseNullPropagation
+            if (this.Logger != null)
+            {
+                this.Logger.AddLogMessage(message);
+            }
+        }
     }
 }

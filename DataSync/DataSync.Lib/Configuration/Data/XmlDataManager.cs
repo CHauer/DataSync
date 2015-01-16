@@ -1,20 +1,51 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿// -----------------------------------------------------------------------
+// <copyright file="XmlDataManager.cs" company="FH Wr.Neustadt">
+//      Copyright Christoph Hauer. All rights reserved.
+// </copyright>
+// <author>Christoph Hauer</author>
+// <summary>DataSync.Lib - XmlDataManager.cs</summary>
+// -----------------------------------------------------------------------
+
+using System.IO;
+using System.Xml.Serialization;
 
 namespace DataSync.Lib.Configuration.Data
 {
+    /// <summary>
+    /// The  XmlSerializer - implements ConfigurationSaver and Loader interface.
+    /// </summary>
     public class XmlConfigurationSerializer : IConfigurationLoader, IConfigurationSaver
     {
-        public SyncConfiguration LoadConfiguration()
+        /// <summary>
+        /// The serializer.
+        /// </summary>
+        private XmlSerializer serializer;
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="XmlConfigurationSerializer"/> class.
+        /// </summary>
+        public XmlConfigurationSerializer()
         {
-            throw new NotImplementedException();
+            this.serializer = new XmlSerializer(typeof (SyncConfiguration));
         }
 
-        public bool SaveConfiguration(SyncConfiguration configuration)
+        /// <summary>
+        /// Loads the configuration.
+        /// </summary>
+        /// <returns></returns>
+        public SyncConfiguration LoadConfiguration()
         {
-            throw new NotImplementedException();
+            return (SyncConfiguration) this.serializer.Deserialize(File.OpenRead(this.ConfigurationFile));
+        }
+
+        /// <summary>
+        /// Saves the configuration.
+        /// </summary>
+        /// <param name="configuration">The configuration.</param>
+        public void SaveConfiguration(SyncConfiguration configuration)
+        {
+            this.serializer.Serialize(File.Open(this.ConfigurationFile, FileMode.Create, FileAccess.Write),
+                configuration);
         }
 
         /// <summary>

@@ -27,6 +27,6 @@ namespace DataSync.Lib.Sync
         /// </summary>
         /// <param name="compareItem">The compare item.</param>
         /// <returns></returns>
-        ISyncOperation Compare(ISyncItem compareItem);
+        SyncOperation Compare(ISyncItem compareItem);
     }
 }

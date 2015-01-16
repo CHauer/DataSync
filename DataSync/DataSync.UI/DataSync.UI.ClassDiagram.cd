@@ -1,28 +1,28 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <ClassDiagram MajorVersion="1" MinorVersion="1">
-  <Class Name="DataSync.UI.MonitorScreen">
+  <Class Name="DataSync.UI.Monitor.MonitorScreen">
     <Position X="0.5" Y="6.5" Width="1.5" />
     <TypeIdentifier>
       <HashCode>AAAAAAAABAAAAAAAAAAAAEAAAAAAAAAAAAAAAAAAAAA=</HashCode>
       <FileName>Monitor\MonitorScreen.cs</FileName>
     </TypeIdentifier>
   </Class>
-  <Class Name="DataSync.UI.Monitor.PipeLogListener">
+  <Class Name="DataSync.UI.Monitor.Pipe.PipeLogListener">
     <Position X="10" Y="7" Width="2" />
     <Compartments>
       <Compartment Name="Fields" Collapsed="true" />
     </Compartments>
     <TypeIdentifier>
-      <HashCode>AAAAAAgAIKAAAAAAAAAAAAAAgAAAAAQAAAAAAAAAAAA=</HashCode>
-      <FileName>Monitor\PipeLogListener.cs</FileName>
+      <HashCode>AAAAAAAAAIAAAQAAAAAIAAAAAAAAAAQAAAAAAAAAAAA=</HashCode>
+      <FileName>Monitor\Pipe\PipeLogListener.cs</FileName>
     </TypeIdentifier>
     <Lollipop Position="0.2" />
   </Class>
-  <Class Name="DataSync.UI.CommandHandling.Instruction">
+  <Class Name="DataSync.UI.CommandHandling.Instructions.Instruction">
     <Position X="3.25" Y="0.5" Width="1.5" />
     <TypeIdentifier>
       <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABYAAAAAAAAA=</HashCode>
-      <FileName>CommandHandling\Instruction.cs</FileName>
+      <FileName>CommandHandling\Instructions\Instruction.cs</FileName>
     </TypeIdentifier>
     <ShowAsAssociation>
       <Property Name="Type" />
@@ -31,13 +31,6 @@
       <Property Name="Parameters" />
     </ShowAsCollectionAssociation>
   </Class>
-  <Class Name="DataSync.UI.CommandHandling.InputInstructionHandler">
-    <Position X="0.5" Y="0.5" Width="2" />
-    <TypeIdentifier>
-      <HashCode>AAAAgABAABAAAQBAQAAAQCAACAQAABAAAAACQAAUCQA=</HashCode>
-      <FileName>CommandHandling\InputInstructionHandler.cs</FileName>
-    </TypeIdentifier>
-  </Class>
   <Class Name="DataSync.UI.Monitor.ConsoleMonitor">
     <Position X="4.75" Y="5.25" Width="1.5" />
     <TypeIdentifier>
@@ -45,21 +38,21 @@
       <FileName>Monitor\ConsoleMonitor.cs</FileName>
     </TypeIdentifier>
   </Class>
-  <Class Name="DataSync.UI.CommandHandling.Parameter">
+  <Class Name="DataSync.UI.CommandHandling.Instructions.Parameter">
     <Position X="5.5" Y="0.5" Width="1.5" />
     <TypeIdentifier>
       <HashCode>AAAAAAAAAgAAAAAAAAAAAAAAAAAAAAAAAQAAAAAAAAA=</HashCode>
-      <FileName>CommandHandling\Parameter.cs</FileName>
+      <FileName>CommandHandling\Instructions\Parameter.cs</FileName>
     </TypeIdentifier>
     <ShowAsAssociation>
       <Property Name="Type" />
     </ShowAsAssociation>
   </Class>
-  <Class Name="DataSync.UI.CommandHandling.Arguments.SyncPairDefinitionParser">
+  <Class Name="DataSync.UI.Monitor.Monitor.Arguments.SyncPairDefinitionParser">
     <Position X="12.5" Y="6.25" Width="2.25" />
     <TypeIdentifier>
       <HashCode>AAAgAAAAAAAAAAAAAAAAAAAAAAAAEAAAAAAAAAAAAAA=</HashCode>
-      <FileName>CommandHandling\Arguments\SyncPairDefinitionParser.cs</FileName>
+      <FileName>Arguments\SyncPairDefinitionParser.cs</FileName>
     </TypeIdentifier>
   </Class>
   <Class Name="DataSync.UI.CommandHandling.Validation.IdentifierToken">
@@ -70,11 +63,11 @@
     </TypeIdentifier>
     <Lollipop Position="0.2" />
   </Class>
-  <Class Name="DataSync.UI.CommandHandling.Arguments.ArgumentErrorEventArgs">
+  <Class Name="DataSync.UI.Monitor.Monitor.Arguments.ArgumentErrorEventArgs">
     <Position X="7" Y="7.75" Width="2.5" />
     <TypeIdentifier>
       <HashCode>AQAAAAAAAAAAAAAEAAAAAAAAAAAAAAAAAABAAAAAAAA=</HashCode>
-      <FileName>CommandHandling\Arguments\ArgumentErrorEventArgs.cs</FileName>
+      <FileName>Arguments\ArgumentErrorEventArgs.cs</FileName>
     </TypeIdentifier>
   </Class>
   <Class Name="DataSync.UI.CommandHandling.Decoder.InstructionDecoder">
@@ -107,13 +100,20 @@
     </TypeIdentifier>
     <Lollipop Position="0.2" />
   </Class>
-  <Class Name="DataSync.UI.CommandHandling.Arguments.ArgumentConfigurationCreator">
+  <Class Name="DataSync.UI.Monitor.Monitor.Arguments.ArgumentConfigurationCreator">
     <Position X="7" Y="5.5" Width="2.5" />
     <TypeIdentifier>
       <HashCode>AAQAAAAAIAAAAQIAAABAAAgAAACAAAgASCAAAAAAAEA=</HashCode>
-      <FileName>CommandHandling\Arguments\ArgumentConfigurationCreator.cs</FileName>
+      <FileName>Arguments\ArgumentConfigurationCreator.cs</FileName>
     </TypeIdentifier>
     <Lollipop Position="0.2" />
+  </Class>
+  <Class Name="DataSync.UI.CommandHandling.InputInstructionHandler">
+    <Position X="0.5" Y="0.5" Width="2" />
+    <TypeIdentifier>
+      <HashCode>AAAAhQBAAAIAAQBAQQBCQCQBCAQgAJAAAAACQAAUAQc=</HashCode>
+      <FileName>CommandHandling\InputInstructionHandler.cs</FileName>
+    </TypeIdentifier>
   </Class>
   <Interface Name="DataSync.UI.CommandHandling.Validation.IValidationToken">
     <Position X="11.5" Y="0.5" Width="1.5" />
@@ -130,25 +130,25 @@
     <Position X="7" Y="4.5" Width="2.5" />
     <TypeIdentifier />
   </Interface>
-  <Enum Name="DataSync.UI.CommandHandling.InstructionType">
+  <Enum Name="DataSync.UI.CommandHandling.Instructions.InstructionType">
     <Position X="3.25" Y="2.25" Width="1.5" />
     <TypeIdentifier>
       <HashCode>AAAAAEAAQCAAAMAAAIAACACCAAQAAAAAAAAAAAAAAAA=</HashCode>
-      <FileName>CommandHandling\InstructionType.cs</FileName>
+      <FileName>CommandHandling\Instructions\InstructionType.cs</FileName>
     </TypeIdentifier>
   </Enum>
-  <Enum Name="DataSync.UI.MonitorType">
+  <Enum Name="DataSync.UI.Monitor.MonitorType">
     <Position X="2.75" Y="6.25" Width="1.5" />
     <TypeIdentifier>
       <HashCode>AAAAAAAAAAAAAAAABAAAAAAAAAgAAAAAAAAAAAAAAAA=</HashCode>
       <FileName>Monitor\MonitorType.cs</FileName>
     </TypeIdentifier>
   </Enum>
-  <Enum Name="DataSync.UI.ParameterType">
+  <Enum Name="DataSync.UI.CommandHandling.Instructions.ParameterType">
     <Position X="5.5" Y="2.25" Width="1.5" />
     <TypeIdentifier>
       <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAgAAAAAAQAAAA=</HashCode>
-      <FileName>CommandHandling\ParameterType.cs</FileName>
+      <FileName>CommandHandling\Instructions\ParameterType.cs</FileName>
     </TypeIdentifier>
   </Enum>
   <Font Name="Segoe UI" Size="9" />

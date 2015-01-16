@@ -43,30 +43,33 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="CommandHandling\Arguments\ArgumentConfigurationCreator.cs" />
-    <Compile Include="CommandHandling\Arguments\ArgumentErrorEventArgs.cs" />
-    <Compile Include="CommandHandling\Arguments\ArgumentHandlerAttribute.cs" />
+    <Compile Include="Arguments\ArgumentConfigurationCreator.cs" />
+    <Compile Include="Arguments\ArgumentErrorEventArgs.cs" />
+    <Compile Include="Arguments\ArgumentHandlerAttribute.cs" />
     <Compile Include="CommandHandling\Decoder\InstructionDecoder.cs" />
-    <Compile Include="CommandHandling\Instruction.cs" />
+    <Compile Include="CommandHandling\InstructionExecuteAttribute.cs" />
+    <Compile Include="CommandHandling\Instructions\Instruction.cs" />
     <Compile Include="CommandHandling\InputInstructionHandler.cs" />
-    <Compile Include="CommandHandling\InstructionType.cs" />
+    <Compile Include="CommandHandling\Instructions\InstructionType.cs" />
     <Compile Include="CommandHandling\MonitorChangeEventArgs.cs" />
     <Compile Include="CommandHandling\OutputEventArgs.cs" />
     <Compile Include="CommandHandling\Validation\IdentifierToken.cs" />
     <Compile Include="CommandHandling\Validation\IValidationToken.cs" />
+    <Compile Include="CommandHandling\Validation\PathToken.cs" />
     <Compile Include="Monitor\ConsoleMonitor.cs" />
     <Compile Include="Monitor\ConsoleWindowPositioner.cs" />
-    <Compile Include="Monitor\ReceivedEventArgs.cs" />
+    <Compile Include="Monitor\Pipe\PipeSender.cs" />
+    <Compile Include="Monitor\Pipe\ReceivedEventArgs.cs" />
     <Compile Include="Monitor\MonitorScreen.cs" />
     <Compile Include="Monitor\MonitorType.cs" />
-    <Compile Include="Monitor\PipeLogListener.cs" />
-    <Compile Include="Monitor\PipeReceiver.cs" />
-    <Compile Include="CommandHandling\Parameter.cs" />
-    <Compile Include="CommandHandling\ParameterType.cs" />
+    <Compile Include="Monitor\Pipe\PipeLogListener.cs" />
+    <Compile Include="Monitor\Pipe\PipeReceiver.cs" />
+    <Compile Include="CommandHandling\Instructions\Parameter.cs" />
+    <Compile Include="CommandHandling\Instructions\ParameterType.cs" />
     <Compile Include="CommandHandling\Validation\OptionToken.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="CommandHandling\Validation\SwitchToken.cs" />
-    <Compile Include="CommandHandling\Arguments\SyncPairDefinitionParser.cs" />
+    <Compile Include="Arguments\SyncPairDefinitionParser.cs" />
     <Compile Include="CommandHandling\Validation\ValueToken.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -78,6 +81,7 @@
       <Name>DataSync.Lib</Name>
     </ProjectReference>
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

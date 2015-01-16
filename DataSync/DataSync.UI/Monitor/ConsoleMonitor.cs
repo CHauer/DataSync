@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 
 namespace DataSync.UI.Monitor
@@ -19,18 +20,12 @@ namespace DataSync.UI.Monitor
         private MonitorType monitorType;
 
         /// <summary>
-        /// The client pipe identifier
-        /// </summary>
-        private string clientPipeId;
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="ConsoleMonitor"/> class.
+        /// Initializes a new instance of the <see cref="ConsoleMonitor" /> class.
         /// </summary>
         /// <param name="type">The type.</param>
         public ConsoleMonitor(MonitorType type)
         {
             monitorType = type;
-            clientPipeId = "1";
         }
 
         /// <summary>
@@ -43,7 +38,8 @@ namespace DataSync.UI.Monitor
                 StartInfo =
                 {
                     FileName = "DataSync.Monitor.exe",
-                    Arguments = String.Format("{0} {1}", clientPipeId, monitorType.ToString("g").ToUpper())
+                    Arguments = String.Format("{0}", monitorType.ToString("g").ToUpper()),
+                    UseShellExecute = true
                 },
             };
 

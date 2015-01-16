@@ -8,7 +8,7 @@
 
 using System.Collections.Generic;
 
-namespace DataSync.UI.CommandHandling
+namespace DataSync.UI.CommandHandling.Instructions
 {
     /// <summary>
     /// 

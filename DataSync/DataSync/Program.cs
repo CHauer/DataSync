@@ -8,13 +8,17 @@
 
 using System;
 using System.Linq;
+using System.Reflection;
 using DataSync.Lib.Configuration.Data;
+using DataSync.Lib.Log;
+using DataSync.Lib.Log.Messages;
 using DataSync.Lib.Sync;
 using DataSync.Properties;
-using DataSync.UI;
+using DataSync.UI.Arguments;
 using DataSync.UI.CommandHandling;
-using DataSync.UI.CommandHandling.Arguments;
+using DataSync.UI.CommandHandling.Instructions;
 using DataSync.UI.Monitor;
+using DataSync.UI.Monitor.Pipe;
 
 namespace DataSync
 {
@@ -39,12 +43,32 @@ namespace DataSync
         private static InputInstructionHandler _handler;
 
         /// <summary>
+        /// The _sync manager object
+        /// </summary>
+        private static SyncManager _syncManagerObj;
+
+        /// <summary>
+        /// The log listener for the local pipe to console monitor
+        /// </summary>
+        private static PipeLogListener _logListener;
+
+        /// <summary>
+        /// The _jobs monitor pipe
+        /// </summary>
+        private static PipeSender<MonitorScreen> _jobsMonitorPipe;
+
+        /// <summary>
+        /// The log instance
+        /// </summary>
+        private static Logger _logInstance;
+
+        /// <summary>
         /// Defines the entry point of the application.
         /// </summary>
         /// <param name="args">The arguments.</param>
         public static void Main(string[] args)
         {
-            SyncManager syncManagerObj;
+            InitializeLogger();
 
             if (args != null && args.Length > 0)
             {
@@ -58,7 +82,7 @@ namespace DataSync
                 ArgumentConfigurationCreator creator = new ArgumentConfigurationCreator(args);
                 creator.ErrorOccured += ArgumentCreator_ErrorOccuredHandler;
 
-                syncManagerObj = new SyncManager(creator);
+                _syncManagerObj = new SyncManager(creator, _logInstance);
             }
             else
             {
@@ -67,13 +91,13 @@ namespace DataSync
                     ConfigurationFile = Resources.ConfigurationFile
                 };
 
-                syncManagerObj = new SyncManager(manager, manager);
+                _syncManagerObj = new SyncManager(manager, manager, _logInstance);
             }
 
             InitializeAppDomain();
 
             //Start the Initial Sync and the file watcher
-            syncManagerObj.StartSync();
+            _syncManagerObj.StartSync();
 
             //Start Instruction Decoder
             InitializeInstructionHandler();
@@ -94,14 +118,28 @@ namespace DataSync
         }
 
         /// <summary>
+        /// Initializes the logger.
+        /// </summary>
+        private static void InitializeLogger()
+        {
+            _logInstance = new Logger();
+
+            _logListener = new PipeLogListener();
+
+            _logInstance.AddListener(_logListener);
+        }
+
+        /// <summary>
         /// Initializes the instruction handler.
         /// </summary>
         private static void InitializeInstructionHandler()
         {
+            // ReSharper disable once UseObjectOrCollectionInitializer
             _handler = new InputInstructionHandler(Console.In, Console.Out);
-            _handler.BeforeErrorOutput += (sender, e) => { Console.ForegroundColor = ConsoleColor.Red; };
-            _handler.AfterErrorOutput += (sender, e) => { Console.ResetColor(); };
+            _handler.SyncManager = _syncManagerObj;
             _handler.HelpInstructionOccured += (sender, e) => { Console.WriteLine(Resources.HelpInstruction); };
+            _handler.BeforeOutput += (sender, e) => { Console.ForegroundColor = e.Color; };
+            _handler.AfterOutput += (sender, e) => { Console.ResetColor(); };
         }
 
         /// <summary>
@@ -114,7 +152,7 @@ namespace DataSync
             ConsoleWindowPositioner positioner = new ConsoleWindowPositioner();
 
             positioner.BringConsoleWindowToFront();
-            
+
             positioner.SetConsoleWindowPosition(50, 50);
 
         }
@@ -149,6 +187,7 @@ namespace DataSync
             _logMonitor = new ConsoleMonitor(MonitorType.Log);
             _logMonitor.Start();
 
+            _jobsMonitorPipe = new PipeSender<MonitorScreen>(MonitorType.Screen.ToString("g"));
             _queueMonitor = new ConsoleMonitor(MonitorType.Screen);
             _queueMonitor.Start();
         }

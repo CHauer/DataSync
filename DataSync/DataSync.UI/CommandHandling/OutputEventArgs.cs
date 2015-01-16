@@ -18,6 +18,11 @@ namespace DataSync.UI.CommandHandling
         /// <summary>
         /// Initializes a new instance of the <see cref="OutputEventArgs"/> class.
         /// </summary>
+        public OutputEventArgs() {}
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="OutputEventArgs"/> class.
+        /// </summary>
         /// <param name="color">The color.</param>
         public OutputEventArgs(ConsoleColor color)
         {

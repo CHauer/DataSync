@@ -41,16 +41,6 @@ namespace DataSync
 
             //System.Console.ReadLine();
 
-            foreach (var item in GetDirectories(@"C:\Temp"))
-            {
-                Console.WriteLine(item);
-            }
-            foreach (var item in GetFiles(@"C:\Temp"))
-            {
-                Console.WriteLine(item);
-            }
-
-
             FileSystemWatcher fileSystemWatcherInstance = new FileSystemWatcher(@"C:\Temp")
             {
                 IncludeSubdirectories = true,
@@ -72,35 +62,11 @@ namespace DataSync
         {
             if (Directory.Exists(e.FullPath))
             {
-                Console.WriteLine("Directory Renamed");
+                Console.WriteLine("Directory Renamed - {0}", e.ChangeType.ToString("g"));
             }
             else
             {
-                Console.WriteLine("File Renamed");
-            }
-        }
-
-        private static void FileSystemWatcher_Deleted(object sender, FileSystemEventArgs e)
-        {
-            if (Directory.Exists(e.FullPath))
-            {
-                Console.WriteLine("Directory Deleted");
-            }
-            else
-            {
-                Console.WriteLine("File Deleted");
-            }
-        }
-
-        private static void FileSystemWatcher_Created(object sender, FileSystemEventArgs e)
-        {
-            if (Directory.Exists(e.FullPath))
-            {
-                Console.WriteLine("Directory Created");
-            }
-            else
-            {
-                Console.WriteLine("File Created");
+                Console.WriteLine("File Renamed - {0}", e.ChangeType.ToString("g"));
             }
         }
 
@@ -108,13 +74,39 @@ namespace DataSync
         {
             if (Directory.Exists(e.FullPath))
             {
-                Console.WriteLine("Directory Changed");
+                //Console.WriteLine("Directory Changed - {0}", e.ChangeType.ToString("g"));
             }
             else
             {
-                Console.WriteLine("File Changed");
+                Console.WriteLine("File Changed - {0}", e.ChangeType.ToString("g"));
             }
         }
+
+        private static void FileSystemWatcher_Deleted(object sender, FileSystemEventArgs e)
+        {
+            if (String.IsNullOrEmpty(Path.GetExtension(e.FullPath))) //IMPORTANT!
+            {
+                Console.WriteLine("Directory Deleted - {0}", e.ChangeType.ToString("g"));
+            }
+            else
+            {
+                Console.WriteLine("File Deleted - {0}", e.ChangeType.ToString("g"));
+            }
+        }
+
+        private static void FileSystemWatcher_Created(object sender, FileSystemEventArgs e)
+        {
+            if (Directory.Exists(e.FullPath))
+            {
+                Console.WriteLine("Directory Created - {0}", e.ChangeType.ToString("g"));
+            }
+            else
+            {
+                Console.WriteLine("File Created - {0}", e.ChangeType.ToString("g"));
+            }
+        }
+
+      
 
         public static List<string> GetDirectories(string path)
         {

@@ -19,24 +19,8 @@ namespace DataSync.Lib.Sync.Operations
     /// <summary>
     /// 
     /// </summary>
-    [SupportedType(typeof (SyncFile))]
-    public class CopyFile : ISyncOperation
+    public class CopyFile : SyncOperation
     {
-        /// <summary>
-        /// Gets or sets the logger.
-        /// </summary>
-        /// <value>
-        /// The logger.
-        /// </value>
-        public ILog Logger { get; set; }
-
-        /// <summary>
-        /// Gets the synchronize configuration.
-        /// </summary>
-        /// <value>
-        /// The synchronize configuration.
-        /// </value>
-        public SyncConfiguration Configuration { get; set; }
 
         /// <summary>
         /// Gets a value indicating whether this instance is block copy.
@@ -51,63 +35,141 @@ namespace DataSync.Lib.Sync.Operations
         /// </summary>
         /// <param name="item">The item.</param>
         /// <returns></returns>
-        /// <exception cref="System.ArgumentNullException">item</exception>
-        /// <exception cref="System.InvalidOperationException">The given item type is not valid for this sync operation!</exception>
-        public bool Execute(ISyncItem item)
+        public override bool Execute(ISyncItem item)
         {
-            if (item == null)
-            {
-                throw new ArgumentNullException("item");
-            }
+            IsBlockCopy = false;
 
-            var supportedTypes = GetType().GetCustomAttributes(typeof (SupportedTypeAttribute), false)
-                .Select(attr => ((SupportedTypeAttribute) attr).SupportedType).ToList();
-
-            if (!supportedTypes.Contains(item.GetType()))
+            if (item == null || Configuration == null || !(item is SyncFile))
             {
-                throw new InvalidOperationException("The given item type is not valid for this sync operation!");
+                LogMessage(new ErrorLogMessage("Execution not possible - Invalid  Operation Properties", true));
+                return false;
             }
 
             SyncFile file = item as SyncFile;
 
-            if (file != null)
+            if (Configuration.IsBlockCompare && item.TargetExists)
             {
-                if (Configuration.IsBlockCompare)
-                {
-                    FileInfo fileInfo = file.GetSourceInfo() as FileInfo;
-
-                    if (fileInfo != null && fileInfo.Length >= Configuration.BlockCompareFileSize)
-                    {
-                        IsBlockCopy = true;
-                    }
-                }
-
-                if (IsBlockCopy)
-                {
-                    return ExecuteBlockCopy(file);
-                }
-
                 try
                 {
-                    File.Copy(file.SourcePath, file.TargetPath, true);
-                    return true;
+                    var sourceLength = ((FileInfo)file.GetSourceInfo()).Length;
+                    var targetLength = ((FileInfo)file.GetTargetInfo()).Length;
+
+                    IsBlockCopy = sourceLength == targetLength && sourceLength >= this.Configuration.BlockCompareFileSize;
                 }
                 catch (Exception ex)
                 {
-                    if (Logger != null)
-                    {
-                        Logger.AddLogMessage(new ErrorLogMessage(ex));
-                    }
+                    LogMessage(new ErrorLogMessage(ex));
+                    IsBlockCopy = false; 
                 }
             }
 
-            return false;
+            if (IsBlockCopy)
+            {
+                return ExecuteBlockCopy(file);
+            }
+
+            try
+            {
+                File.Copy(file.SourcePath, file.TargetPath, true);
+            }
+            catch (Exception ex)
+            {
+                LogMessage(new ErrorLogMessage(ex));
+                return false;
+            }
+
+            //Copy File Attributes
+            try
+            {
+                File.SetAttributes(file.TargetPath, file.GetSourceInfo().Attributes);
+            }
+            catch (Exception ex)
+            {
+                LogMessage(new ErrorLogMessage(ex));
+            }
+
+            return true;
         }
 
+        /// <summary>
+        /// Executes the block copy.
+        /// </summary>
+        /// <param name="file">The file.</param>
+        /// <returns></returns>
         private bool ExecuteBlockCopy(SyncFile file)
         {
-            //TODO block copy
-            throw new NotImplementedException();
+            int bufferSize = Configuration.BlockSize;
+            
+            try
+            {
+                // ReSharper disable once TooWideLocalVariableScope
+                byte[] bufferSource;
+                // ReSharper disable once TooWideLocalVariableScope                
+                byte[] bufferTarget;
+
+                FileStream sourceStream = File.Open(file.SourcePath, FileMode.Open, FileAccess.Read);
+                FileStream targetStream = File.Open(file.TargetPath, FileMode.Open, FileAccess.ReadWrite);
+                BinaryReader readerSource = new BinaryReader(sourceStream);
+                BinaryReader readerTarget = new BinaryReader(targetStream);
+                BinaryWriter writer = new BinaryWriter(targetStream);
+
+                int maxFullBlock = (int)(sourceStream.Length / bufferSize);
+
+                for (int runner = 1; runner <= maxFullBlock; maxFullBlock++)
+                {
+                    //end of file reached - change buffer size to "rest size"
+                    if (runner == maxFullBlock)
+                    {
+                        bufferSize = (int)(sourceStream.Length - sourceStream.Position);
+                    }
+
+                    bufferSource = readerSource.ReadBytes(bufferSize);
+                    bufferTarget = readerTarget.ReadBytes(bufferSize);
+
+                    //compare buffer
+                    if (!EqualByteArrays(bufferSource, bufferTarget))
+                    {
+                        writer.Seek(-bufferSize, SeekOrigin.Current);
+                        writer.Write(bufferSource);
+                    }
+                }
+
+                sourceStream.Close();
+                writer.Flush();
+                writer.Close();
+            }
+            catch (Exception ex)
+            {
+                return false;
+            }
+
+            return true;
         }
+
+        /// <summary>
+        /// Check if byte arrays are equal.
+        /// Safe manged .NET version - for speed gain use an unmanaged version.
+        /// </summary>
+        /// <param name="a">a.</param>
+        /// <param name="b">The b.</param>
+        /// <returns></returns>
+        private bool EqualByteArrays(byte[] a, byte[] b)
+        {
+            if (a.Length != b.Length)
+            {
+                return false;
+            }
+
+            for (int i = 0; i < a.Length; i++)
+            {
+                if (a[i] != b[i])
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
     }
 }

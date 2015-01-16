@@ -1,38 +1,40 @@
 ﻿using System;
+using DataSync.Lib.Configuration;
+using DataSync.Lib.Log;
+using DataSync.Lib.Log.Messages;
+using DataSync.Lib.Sync.Items;
+using System.IO;
 
 namespace DataSync.Lib.Sync.Operations
 {
-    public class DeleteFile : ISyncOperation
+    public class DeleteFile : SyncOperation
     {
 
-        public bool Execute(ISyncItem item)
+        /// <summary>
+        /// Runs the specified item.
+        /// </summary>
+        /// <param name="item">The item.</param>
+        /// <returns></returns>
+        public override bool Execute(ISyncItem item)
         {
-            throw new NotImplementedException();
+            if (!(item is SyncFile))
+            {
+                LogMessage(new ErrorLogMessage("Execution not possible - Invalid  Operation Properties", true));
+                return false;
+            }
+
+            try
+            {
+                File.Delete(item.TargetPath);
+            }
+            catch (Exception ex)
+            {
+                LogMessage(new ErrorLogMessage("Delete File Error", ex));
+                return false;
+            }
+
+            return true;
         }
 
-        public Log.ILog Logger
-        {
-            get
-            {
-                throw new NotImplementedException();
-            }
-            set
-            {
-                throw new NotImplementedException();
-            }
-        }
-
-
-        public Configuration.SyncConfiguration Configuration
-        {
-            get
-            {
-                throw new NotImplementedException();
-            }
-            set
-            {
-                throw new NotImplementedException();
-            }
-        }
     }
 }
