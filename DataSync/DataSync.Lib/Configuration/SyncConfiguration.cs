@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.IO;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Text;
@@ -209,7 +210,15 @@ namespace DataSync.Lib.Configuration
         private void InitializeStandardValue()
         {
             ConfigPairs = new List<ConfigurationPair>();
-            //TODO Create standard config values
+
+            this.IsBlockCompare = false;
+            this.IsLogToFile = false;
+            this.IsParrallelSync = false;
+            this.IsRecursiv = true;
+            this.LogFileName = Path.Combine(Environment.CurrentDirectory, "datasynclog.txt");
+            this.LogFileSize = 1024 * 1024 * 2; //2MB
+            this.BlockSize = 1024;
+            this.BlockCompareFileSize = 1024 * 500; //ca 500KB
         }
 
         /// <summary>
@@ -232,6 +241,7 @@ namespace DataSync.Lib.Configuration
         /// <param name="property">The property.</param>
         protected void RaisePropertyChanged(string property)
         {
+            // ReSharper disable once UseNullPropagation
             if (PropertyChanged != null)
             {
                 PropertyChanged(this, new PropertyChangedEventArgs(property));

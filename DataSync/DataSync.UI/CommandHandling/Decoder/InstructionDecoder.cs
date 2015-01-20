@@ -70,8 +70,11 @@ namespace DataSync.UI.CommandHandling.Decoder
                 //combine to upper instruction part with parameterpart
                 undecoded = String.Format("{0} {1}", instructionPart, parameterPart);
 
-                //split parameters
-                parameters = parameterPart.Split(new char[] {' '});
+                if (!string.IsNullOrWhiteSpace(parameterPart))
+                {
+                    //split parameters
+                    parameters = parameterPart.Split(new char[] { ' ' });
+                }
             }
             else
             {

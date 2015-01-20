@@ -51,6 +51,7 @@
     <Compile Include="CommandHandling\Instructions\Instruction.cs" />
     <Compile Include="CommandHandling\InputInstructionHandler.cs" />
     <Compile Include="CommandHandling\Instructions\InstructionType.cs" />
+    <Compile Include="CommandHandling\LogFilePropertiesChangedEventArgs.cs" />
     <Compile Include="CommandHandling\MonitorChangeEventArgs.cs" />
     <Compile Include="CommandHandling\OutputEventArgs.cs" />
     <Compile Include="CommandHandling\Validation\IdentifierToken.cs" />
@@ -58,6 +59,7 @@
     <Compile Include="CommandHandling\Validation\PathToken.cs" />
     <Compile Include="Monitor\ConsoleMonitor.cs" />
     <Compile Include="Monitor\ConsoleWindowPositioner.cs" />
+    <Compile Include="Monitor\MonitorScreenGenerator.cs" />
     <Compile Include="Monitor\Pipe\PipeSender.cs" />
     <Compile Include="Monitor\Pipe\ReceivedEventArgs.cs" />
     <Compile Include="Monitor\MonitorScreen.cs" />

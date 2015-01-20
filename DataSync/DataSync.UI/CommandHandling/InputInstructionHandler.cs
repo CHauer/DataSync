@@ -131,10 +131,10 @@ namespace DataSync.UI.CommandHandling
         /// <summary>
         /// Occurs when help instruction occured.
         /// </summary>
-        public event EventHandler<string> LogFileChangeOccured;
+        public event EventHandler<LogFilePropertiesChangedEventArgs> LogFileChangeOccured;
 
         /// <summary>
-        /// Occurs when [instruction occured].
+        /// Occurs when ainstruction occured.
         /// </summary>
         public event EventHandler<Instruction> InstructionOccured;
 
@@ -160,7 +160,7 @@ namespace DataSync.UI.CommandHandling
                 }
                 catch (Exception ex)
                 {
-                    //Todo log other exception
+                    LogMessage(new ErrorLogMessage(ex));
                     undecodedInstruction = string.Empty;
                 }
 
@@ -293,12 +293,14 @@ namespace DataSync.UI.CommandHandling
                         new MonitorChangeEventArgs(parameter.Equals("LOGVIEW") ? MonitorType.Log : MonitorType.Screen,
                             switcher));
                 }
+                WriteConfirm(String.Format("{0} flag was set to {1}.", parameter, instruction.Parameters[1]));
             }
             else if (parameter.Equals("RECURSIV"))
             {
                 if (this.SyncManager != null)
                 {
                     this.SyncManager.Configuration.IsRecursiv = switcher;
+                    WriteConfirm(String.Format("{0} flag was set to {1}.", parameter, instruction.Parameters[1]));
                 }
             }
             else if (parameter.Equals("PARALLELSYNC"))
@@ -306,6 +308,7 @@ namespace DataSync.UI.CommandHandling
                 if (this.SyncManager != null)
                 {
                     this.SyncManager.Configuration.IsParrallelSync = switcher;
+                    WriteConfirm(String.Format("{0} flag was set to {1}.", parameter, instruction.Parameters[1]));
                 }
             }
         }
@@ -335,14 +338,18 @@ namespace DataSync.UI.CommandHandling
             if (parameter.Equals("LOGSIZE"))
             {
                 this.SyncManager.Configuration.LogFileSize = value;
+                WriteConfirm(String.Format("{0} parameter was set to {1}.", parameter, value));
+                OnLogFileChangeOccured(value);
             }
             else if (parameter.Equals("BLOCKCOMPAREFILESIZE"))
             {
                 this.SyncManager.Configuration.BlockCompareFileSize = value;
+                WriteConfirm(String.Format("{0} parameter was set to {1}.", parameter, value));
             }
             else if (parameter.Equals("BLOCKSIZE"))
             {
                 this.SyncManager.Configuration.BlockSize = value;
+                WriteConfirm(String.Format("{0} parameter was set to {1}.", parameter, value));
             }
         }
 
@@ -359,7 +366,10 @@ namespace DataSync.UI.CommandHandling
 
             if (pair != null)
             {
-                SyncManager.Configuration.ConfigPairs.Add(pair);
+                if (SyncManager.AddSyncPair(pair))
+                {
+                    WriteConfirm(String.Format("SyncPair {0} was added.", pair.Name));
+                }
             }
         }
 
@@ -372,44 +382,53 @@ namespace DataSync.UI.CommandHandling
             const string cancelString = "CANCEL";
             string inputText = string.Empty;
             bool inputStatus = false;
+            bool okGiven = false;
 
             string sourceFolder = string.Empty;
             List<string> targetFolders = new List<string>();
             List<string> exceptFolders = new List<string>();
 
             this.output.WriteLine("{0} to abort sync pair input:", cancelString);
-            this.output.Write("Source Folder:");
 
             while (!inputStatus)
             {
+                this.output.Write("Source Folder:");
                 inputText = this.input.ReadLine();
 
-                if (inputText != null)
+                if (!string.IsNullOrWhiteSpace(inputText))
                 {
                     if (inputText.ToUpper().Trim().Equals(cancelString))
                     {
                         return null;
                     }
 
-                    if (ValidatePath(inputText))
+                    if (ValidatePath(inputText, out inputText))
                     {
-                        sourceFolder = Path.GetFullPath(inputText);
                         inputStatus = true;
+                        sourceFolder = inputText;
                     }
                 }
             }
 
             inputStatus = false;
+            okGiven = false;
 
-            while (!inputStatus)
+            while (!okGiven)
             {
-                this.output.Write("Target Folder:");
-
-                while (string.IsNullOrEmpty(inputText))
+                while (!inputStatus)
                 {
+                    if (targetFolders.Count >= 1)
+                    {
+                        this.output.Write("Target Folder (OK for next input stage):");
+                    }
+                    else
+                    {
+                        this.output.Write("Target Folder:");
+                    }
+
                     inputText = this.input.ReadLine();
 
-                    if (inputText != null)
+                    if (!string.IsNullOrWhiteSpace(inputText))
                     {
                         string checkInput = inputText.ToUpper().Trim();
 
@@ -420,30 +439,30 @@ namespace DataSync.UI.CommandHandling
 
                         if (checkInput.Equals(okString) && targetFolders.Count >= 1)
                         {
-                            inputStatus = true;
+                            okGiven = true;
                         }
 
-                        if (ValidatePath(inputText))
+                        if (ValidatePath(inputText, out inputText))
                         {
-                            sourceFolder = Path.GetFullPath(inputText);
                             inputStatus = true;
+                            targetFolders.Add(inputText);
                         }
                     }
                 }
-
-                this.output.Write("Target Folder (OK for next input stage):");
+                inputStatus = false;
             }
 
             inputStatus = false;
-            while (!inputStatus)
-            {
-                this.output.Write("Except Folder(OK for end input):");
+            okGiven = false;
 
-                while (string.IsNullOrEmpty(inputText))
+            while (!okGiven)
+            {
+                while (!inputStatus)
                 {
+                    this.output.Write("Except Folder(OK for end input):");
                     inputText = this.input.ReadLine();
 
-                    if (inputText != null)
+                    if (!string.IsNullOrWhiteSpace(inputText))
                     {
                         string checkInput = inputText.ToUpper().Trim();
 
@@ -455,17 +474,18 @@ namespace DataSync.UI.CommandHandling
                         if (checkInput.Equals(okString))
                         {
                             inputStatus = true;
+                            okGiven = true;
                         }
 
-                        if (ValidatePath(inputText))
+                        if (okGiven)
                         {
-                            sourceFolder = Path.GetFullPath(inputText);
-                            inputStatus = true;
+                            inputStatus = ValidatePath(inputText, out inputText);
                         }
                     }
                 }
 
                 this.output.Write("Target Folder (OK for next input stage):");
+                inputStatus = false;
             }
 
             return new ConfigurationPair()
@@ -480,29 +500,30 @@ namespace DataSync.UI.CommandHandling
         /// <summary>
         /// Validates the path.
         /// </summary>
-        /// <param name="input">The input.</param>
+        /// <param name="inputPath">The input path.</param>
+        /// <param name="fullpath">The fullpath.</param>
         /// <returns></returns>
-        private bool ValidatePath(string input)
+        private bool ValidatePath(string inputPath, out string fullpath)
         {
-            string fullpath = string.Empty;
-
             try
             {
-                fullpath = Path.GetFullPath(input);
+                fullpath = Path.GetFullPath(inputPath);
 
                 if (Directory.Exists(fullpath))
                 {
                     return true;
                 }
+
+                WriteError(string.Format("{0} does not exist!", fullpath));
             }
             catch (Exception ex)
             {
                 WriteError(ex.Message);
             }
 
+            fullpath = string.Empty;
             return false;
         }
-
 
         /// <summary>
         /// Executes the pair clear/delete instruction.
@@ -512,7 +533,64 @@ namespace DataSync.UI.CommandHandling
         [InstructionExecute(InstructionType.CLEARPAIRS)]
         public void ExecutePairInstruction(Instruction instruction)
         {
-            if (instruction == null) { }
+            if (instruction == null || SyncManager == null) return;
+
+            if (instruction.Type == InstructionType.DELETEPAIR)
+            {
+                var delpair = SyncManager.SyncPairs.FirstOrDefault(sp => sp.ConfigurationPair.Name.Equals(instruction.Parameters[0].Content));
+
+                if (delpair != null)
+                {
+                    if (ConfirmMessage())
+                    {
+                        SyncManager.RemoveSyncPair(instruction.Parameters[0].Content.ToString());
+                    }
+                }
+                else
+                {
+                    WriteError(string.Format("Pair Name {0} was not found!", instruction.Parameters[0].Content));
+                }
+
+            }
+            else if (instruction.Type == InstructionType.CLEARPAIRS)
+            {
+                if (ConfirmMessage())
+                {
+                    SyncManager.ClearSyncPairs();
+                }
+            }
+        }
+
+        /// <summary>
+        /// Confirms the message.
+        /// </summary>
+        /// <returns></returns>
+        private bool ConfirmMessage()
+        {
+            bool confirm = false;
+            bool valid = false;
+
+            while (!valid)
+            {
+                output.Write("Please confirm this process (OK/CANCEL):");
+                string inputText = input.ReadLine();
+
+                if (!string.IsNullOrWhiteSpace(inputText))
+                {
+                    if (inputText.Trim().ToUpper().Equals("OK"))
+                    {
+                        confirm = true;
+                        valid = true;
+                    }
+                    else if (inputText.Trim().ToUpper().Equals("CANCEL"))
+                    {
+                        confirm = false;
+                        valid = true;
+                    }
+                }
+            }
+
+            return confirm;
         }
 
         /// <summary>
@@ -524,7 +602,8 @@ namespace DataSync.UI.CommandHandling
         {
             if (instruction == null || SyncManager == null) return;
 
-
+            SyncManager.Configuration.LogFileName = instruction.Parameters[0].Content.ToString();
+            OnLogFileChangeOccured(instruction.Parameters[0].Content.ToString());
         }
 
         /// <summary>
@@ -535,10 +614,25 @@ namespace DataSync.UI.CommandHandling
         [InstructionExecute(InstructionType.SHOWPAIRDETAIL)]
         public void ExecutePairDetailInstruction(Instruction instruction)
         {
-            if (instruction == null) return;
+            if (instruction == null || SyncManager == null) return;
 
-            if (instruction.Type == InstructionType.SHOWPAIRDETAIL) { }
-            else { }
+            if (instruction.Type == InstructionType.SHOWPAIRDETAIL) 
+            {
+                var detailpair = SyncManager.SyncPairs.FirstOrDefault(sp => sp.ConfigurationPair.Name.Equals(instruction.Parameters[0].Content));
+
+                if (detailpair != null)
+                {
+                    WriteMessage(detailpair.ToString(), ConsoleColor.DarkYellow);
+                }
+                else
+                {
+                    WriteError(string.Format("Pair Name {0} was not found!", instruction.Parameters[0].Content));
+                }
+            }
+            else if (instruction.Type == InstructionType.LISTPAIRS) 
+            {
+                WriteMessage(SyncManager.ToString(), ConsoleColor.DarkYellow);
+            }
         }
 
         /// <summary>
@@ -552,5 +646,26 @@ namespace DataSync.UI.CommandHandling
                 Logger.AddLogMessage(message);
             }
         }
+
+        /// <summary>
+        /// Called when alog file change occured.
+        /// </summary>
+        /// <param name="logfilename">The logfilename.</param>
+        protected virtual void OnLogFileChangeOccured(string logfilename)
+        {
+            var handler = LogFileChangeOccured;
+            if (handler != null) handler(this, new LogFilePropertiesChangedEventArgs(logfilename, SyncManager.Configuration.LogFileSize));
+        }
+
+        /// <summary>
+        /// Called when a log file change occured.
+        /// </summary>
+        /// <param name="logfilesize">The logfilesize.</param>
+        protected virtual void OnLogFileChangeOccured(int logfilesize)
+        {
+            var handler = LogFileChangeOccured;
+            if (handler != null) handler(this, new LogFilePropertiesChangedEventArgs(SyncManager.Configuration.LogFileName, logfilesize));
+        }
     }
+
 }

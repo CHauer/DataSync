@@ -38,9 +38,9 @@ namespace DataSync
         private static ConsoleMonitor _queueMonitor;
 
         /// <summary>
-        /// The instruction _handler
+        /// The instruction _instructionHandler
         /// </summary>
-        private static InputInstructionHandler _handler;
+        private static InputInstructionHandler _instructionHandler;
 
         /// <summary>
         /// The _sync manager object
@@ -53,9 +53,9 @@ namespace DataSync
         private static PipeLogListener _logListener;
 
         /// <summary>
-        /// The _jobs monitor pipe
+        /// The log listener for the local pipe to console monitor
         /// </summary>
-        private static PipeSender<MonitorScreen> _jobsMonitorPipe;
+        private static FileLogListener _logFileListener;
 
         /// <summary>
         /// The log instance
@@ -96,10 +96,7 @@ namespace DataSync
 
             InitializeAppDomain();
 
-            //Start the Initial Sync and the file watcher
-            _syncManagerObj.StartSync();
-
-            //Start Instruction Decoder
+            //initialize Instruction Decoder
             InitializeInstructionHandler();
 
             //Start LogMonitor, Queue Monitor
@@ -108,8 +105,11 @@ namespace DataSync
             //Prepare Input console
             PrepareConsoleWindow();
 
-            //handle input on console
-            _handler.RunHandler();
+            //Start the Initial Sync and the file watcher
+            _syncManagerObj.StartSync();
+
+            //start handle input from console
+            _instructionHandler.RunHandler();
 
             //programm end
             Console.WriteLine(Resources.Program_Main_EnterForEXIT);
@@ -135,11 +135,25 @@ namespace DataSync
         private static void InitializeInstructionHandler()
         {
             // ReSharper disable once UseObjectOrCollectionInitializer
-            _handler = new InputInstructionHandler(Console.In, Console.Out);
-            _handler.SyncManager = _syncManagerObj;
-            _handler.HelpInstructionOccured += (sender, e) => { Console.WriteLine(Resources.HelpInstruction); };
-            _handler.BeforeOutput += (sender, e) => { Console.ForegroundColor = e.Color; };
-            _handler.AfterOutput += (sender, e) => { Console.ResetColor(); };
+            _instructionHandler = new InputInstructionHandler(Console.In, Console.Out);
+            _instructionHandler.SyncManager = _syncManagerObj;
+            _instructionHandler.HelpInstructionOccured += (sender, e) => { Console.WriteLine(Resources.HelpInstruction); };
+            _instructionHandler.BeforeOutput += (sender, e) => { Console.ForegroundColor = e.Color; };
+            _instructionHandler.AfterOutput += (sender, e) => { Console.ResetColor(); };
+            _instructionHandler.LogFileChangeOccured += InstructionHandler_LogFileChangeOccured;
+        }
+
+        private static void InstructionHandler_LogFileChangeOccured(object sender, LogFilePropertiesChangedEventArgs e)
+        {
+        
+            if (_logFileListener != null)
+            {
+                _logInstance.RemoveListener(_logFileListener);
+            }
+
+            _logFileListener = new FileLogListener(e.LogFileName, e.LogFileSize);
+
+            _logInstance.AddListener(_logFileListener);
         }
 
         /// <summary>
@@ -165,7 +179,7 @@ namespace DataSync
             //React to current process end
             AppDomain.CurrentDomain.ProcessExit += CurrentDomain_ProcessExit;
 
-            //TODO Handle unhandled exceptions - prevent close if possible
+            //Handle unhandled exceptions - prevent close if possible
             //AppDomain.CurrentDomain.UnhandledException += CurrentDomain_UnhandledException;
         }
 
@@ -187,7 +201,7 @@ namespace DataSync
             _logMonitor = new ConsoleMonitor(MonitorType.Log);
             _logMonitor.Start();
 
-            _jobsMonitorPipe = new PipeSender<MonitorScreen>(MonitorType.Screen.ToString("g"));
+            MonitorScreenGenerator generator = new MonitorScreenGenerator(_syncManagerObj);
             _queueMonitor = new ConsoleMonitor(MonitorType.Screen);
             _queueMonitor.Start();
         }

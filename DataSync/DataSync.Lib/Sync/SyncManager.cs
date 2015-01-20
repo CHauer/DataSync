@@ -10,6 +10,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
+using System.Text;
 using DataSync.Lib.Configuration;
 using DataSync.Lib.Configuration.Data;
 using DataSync.Lib.Log;
@@ -125,6 +126,11 @@ namespace DataSync.Lib.Sync
         }
 
         /// <summary>
+        /// Occurs when a synchronize pair updated.
+        /// </summary>
+        public event EventHandler<SyncPair> SyncStateUpdated;
+
+        /// <summary>
         /// Initializes this instance.
         /// </summary>
         private void Initialize()
@@ -217,6 +223,7 @@ namespace DataSync.Lib.Sync
                 Logger = Logger
             };
 
+            pair.SyncStateUpdated += (sender, e) => { OnSyncPairUpdated(sender as SyncPair); };
             SyncPairs.Add(pair);
 
             return pair;
@@ -314,10 +321,43 @@ namespace DataSync.Lib.Sync
         /// <param name="message">The message.</param>
         private void LogMessage(LogMessage message)
         {
+            // ReSharper disable once UseNullPropagation
             if (Logger != null)
             {
                 Logger.AddLogMessage(message);
             }
+        }
+
+        /// <summary>
+        /// Called when a synchronize pair updated.
+        /// </summary>
+        /// <param name="e">The e.</param>
+        protected virtual void OnSyncPairUpdated(SyncPair e)
+        {
+            // ReSharper disable once UseNullPropagation
+            if (SyncStateUpdated != null)
+            {
+                SyncStateUpdated(this, e);
+            }
+        }
+
+        /// <summary>
+        /// Returns a <see cref="System.String" /> that represents this instance.
+        /// </summary>
+        /// <returns>
+        /// A <see cref="System.String" /> that represents this instance.
+        /// </returns>
+        public override string ToString()
+        {
+            StringBuilder builder = new StringBuilder();
+
+            builder.AppendLine("Synchronization Pairs:");
+            foreach (SyncPair pair in SyncPairs)
+            {
+                builder.AppendLine(String.Format("- {0} {1}", pair.ConfigurationPair.Name, pair.IsSynced ? "Synced" : "Not Synced"));
+            }
+
+            return builder.ToString();
         }
     }
 }

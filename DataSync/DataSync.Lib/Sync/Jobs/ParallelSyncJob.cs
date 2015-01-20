@@ -8,7 +8,9 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 using DataSync.Lib.Log;
 using DataSync.Lib.Log.Messages;
@@ -179,6 +181,55 @@ namespace DataSync.Lib.Sync.Jobs
                 }
             });
         }
+
+        /// <summary>
+        /// Returns a <see cref="System.String" /> that represents this instance.
+        /// </summary>
+        /// <param name="columns">The columns.</param>
+        /// <returns>
+        /// A <see cref="System.String" /> that represents this instance.
+        /// </returns>
+        public string ToString(List<int> columns)
+        {
+            StringBuilder builder = new StringBuilder();
+
+            string source = ShortenFolderPath(Path.GetDirectoryName(Items[0].SourcePath), columns[0]);
+            string file = ShortenFolderPath(Path.GetFileName(Items[0].SourcePath), columns[2]);
+
+            foreach (var item in Items)
+            {
+                string target = ShortenFolderPath(Path.GetDirectoryName(item.TargetPath), columns[1]);
+                string operation = ParallelJobs[item].GetType().Name;
+                string jostatus = this.Status == JobStatus.Processing ? "Progress" : this.status.ToString("g");
+
+                builder.AppendLine(String.Format("{0} {1} {2} {3} {4}",
+                     source.PadRight(columns[0]), target.PadRight(columns[1]), file.PadRight(columns[2]),
+                      operation.PadRight(columns[3]), jostatus.PadRight(columns[4])));
+
+                source = "-";
+                file = "-";
+            }
+
+            return builder.ToString();
+        }
+
+        /// <summary>
+        /// Shortens the folder path.
+        /// </summary>
+        /// <param name="path">The path.</param>
+        /// <param name="length">The length.</param>
+        /// <returns></returns>
+        private string ShortenFolderPath(string path, int length)
+        {
+            if (path.Length <= length)
+            {
+                return path;
+            }
+
+            int value = (length / 2) - 1;
+            return String.Format(@"{0}\..\{1}", path.Substring(0, value), path.Substring(path.Length - value, value));
+        }
+
 
         /// <summary>
         /// Logs the message.

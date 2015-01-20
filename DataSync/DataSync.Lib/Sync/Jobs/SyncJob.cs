@@ -7,6 +7,8 @@
 // -----------------------------------------------------------------------
 
 using System;
+using System.Collections.Generic;
+using System.IO;
 using DataSync.Lib.Log;
 using DataSync.Lib.Log.Messages;
 
@@ -104,6 +106,44 @@ namespace DataSync.Lib.Sync.Jobs
         }
 
         /// <summary>
+        /// Returns a <see cref="System.String" /> that represents this instance.
+        /// </summary>
+        /// <param name="columns">The columns.</param>
+        /// <returns>
+        /// A <see cref="System.String" /> that represents this instance.
+        /// </returns>
+        public string ToString(List<int> columns)
+        {
+            string source = ShortenFolderPath(Path.GetDirectoryName(Item.SourcePath), columns[0]);
+            string target = ShortenFolderPath(Path.GetDirectoryName(Item.TargetPath), columns[1]);
+            string file = ShortenFolderPath(Path.GetFileName(Item.SourcePath), columns[2]);
+            string operation = Operation.GetType().Name;
+            string jostatus = this.Status == JobStatus.Processing ? "Progress" : this.status.ToString("g");
+
+            return String.Format("{0} {1} {2} {3} {4}",
+                source.PadRight(columns[0]), target.PadRight(columns[1]), file.PadRight(columns[2]),
+                 operation.PadRight(columns[3]), jostatus.PadRight(columns[4]));
+        }
+
+        /// <summary>
+        /// Shortens the folder path.
+        /// </summary>
+        /// <param name="path">The path.</param>
+        /// <param name="length">The length.</param>
+        /// <returns></returns>
+        private string ShortenFolderPath(string path, int length)
+        {
+            if (path.Length <= length)
+            {
+                return path;
+            }
+
+            int value = (length / 2) - 1;
+
+            return String.Format(@"{0}\..\{1}", path.Substring(0, value), path.Substring(path.Length - value, value));
+        }
+
+        /// <summary>
         /// Adds the log message.
         /// </summary>
         /// <param name="message">The message.</param>
@@ -127,5 +167,6 @@ namespace DataSync.Lib.Sync.Jobs
                 JobStatusChanged(this, e);
             }
         }
+  
     }
 }
