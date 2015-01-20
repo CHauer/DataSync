@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -96,6 +97,11 @@ namespace DataSync.Lib.Sync
         }
 
         /// <summary>
+        /// Occurs when the sync pair state has updated.
+        /// </summary>
+        public event EventHandler SyncStateUpdated;
+
+        /// <summary>
         /// Starts the watcher.
         /// </summary>
         /// <exception cref="System.InvalidOperationException">
@@ -128,6 +134,8 @@ namespace DataSync.Lib.Sync
             {
                 Logger = Logger
             };
+
+            SyncQueue.QueueUpdated += (sender, e) => { OnSyncStateUpdated(); };
         }
 
         /// <summary>
@@ -288,23 +296,98 @@ namespace DataSync.Lib.Sync
 
         private void FileSystemWatcher_Renamed(object sender, RenamedEventArgs e)
         {
-            throw new NotImplementedException();
+            //TODO
+            if (Directory.Exists(e.FullPath))
+            {
+                Debug.WriteLine("Directory Renamed - {0}", e.ChangeType.ToString("g"));
+            }
+            else
+            {
+                Debug.WriteLine("File Renamed - {0}", e.ChangeType.ToString("g"));
+            }
         }
 
         private void FileSystemWatcher_Deleted(object sender, FileSystemEventArgs e)
         {
-            throw new NotImplementedException();
+          
+            //TODO
+            if (String.IsNullOrEmpty(Path.GetExtension(e.FullPath))) //IMPORTANT!
+            {
+                 Debug.WriteLine("Directory Deleted - {0}", e.ChangeType.ToString("g"));
+            }
+            else
+            {
+                Debug.WriteLine("File Deleted - {0}", e.ChangeType.ToString("g"));
+            }
         }
 
         private void FileSystemWatcher_Created(object sender, FileSystemEventArgs e)
         {
-            throw new NotImplementedException();
+            //TODO
+            if (Directory.Exists(e.FullPath))
+            {
+                Debug.WriteLine("Directory Created - {0}", e.ChangeType.ToString("g"));
+            }
+            else
+            {
+                Debug.WriteLine("File Created - {0}", e.ChangeType.ToString("g"));
+            }
         }
 
         private void FileSystemWatcher_Changed(object sender, FileSystemEventArgs e)
         {
-            throw new NotImplementedException();
+            //TODO
+            if (Directory.Exists(e.FullPath))
+            {
+                //Console.WriteLine("Directory Changed - {0}", e.ChangeType.ToString("g"));
+            }
+            else
+            {
+                Debug.WriteLine("File Changed - {0}", e.ChangeType.ToString("g"));
+            }
         }
 
+        /// <summary>
+        /// Called when the sync pair state has updated.
+        /// </summary>
+        protected virtual void OnSyncStateUpdated()
+        {
+            // ReSharper disable once UseNullPropagation
+            if (SyncStateUpdated != null)
+            {
+                SyncStateUpdated(this, EventArgs.Empty);
+            }
+        }
+
+        /// <summary>
+        /// Returns a <see cref="System.String" /> that represents this instance.
+        /// </summary>
+        /// <returns>
+        /// A <see cref="System.String" /> that represents this instance.
+        /// </returns>
+        public override string ToString()
+        {
+            StringBuilder builder = new StringBuilder();
+
+            builder.AppendLine(String.Format("Synchronization Pair {0}", ConfigurationPair.Name));
+            builder.AppendLine(String.Format("Source Folder: {0}", ConfigurationPair.SoureFolder));
+
+            foreach (string target in ConfigurationPair.TargetFolders)
+            {
+                builder.AppendLine(String.Format("Target Folder: {0}", target));
+            }
+
+            foreach (string except in ConfigurationPair.ExceptFolders)
+            {
+                builder.AppendLine(String.Format("Except Folder: {0}", except));
+            }
+
+            foreach (var job in SyncQueue.Jobs)
+            {
+                job.ToString(new List<int> { 20, 20, 20, 10, 10 });
+            }
+
+            return builder.ToString();
+        }
     }
 }

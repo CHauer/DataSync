@@ -12,6 +12,12 @@ namespace DataSync.UI.Arguments
 {
     public class ArgumentConfigurationCreator : IConfigurationLoader
     {
+
+        /// <summary>
+        /// The argument pair counter.
+        /// </summary>
+        private int argumentPairCounter;
+
         /// <summary>
         /// The arguments
         /// </summary>
@@ -28,6 +34,7 @@ namespace DataSync.UI.Arguments
         /// <param name="args">The arguments.</param>
         public ArgumentConfigurationCreator(string[] args)
         {
+            this.argumentPairCounter = 0;
             this.args = args;
             this.IsErrorFound = false;
         }
@@ -131,6 +138,8 @@ namespace DataSync.UI.Arguments
                 try
                 {
                     ConfigurationPair pair = parser.Parse();
+
+                    pair.Name = string.Format("ArgumentPair{0}", ++argumentPairCounter);
 
                     configuration.ConfigPairs.Add(pair);
                 }

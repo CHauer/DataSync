@@ -97,6 +97,11 @@ namespace DataSync.Lib.Sync
         public ILog Logger { get; set; }
 
         /// <summary>
+        /// Occurs when the queue gets updated.
+        /// </summary>
+        public event EventHandler QueueUpdated;
+
+        /// <summary>
         /// Enqueues the specified job.
         /// </summary>
         /// <param name="job">The job.</param>
@@ -104,6 +109,7 @@ namespace DataSync.Lib.Sync
         {
             job.Status = JobStatus.Queued;
             job.Logger = Logger;
+            job.JobStatusChanged += (sender, e) => { OnQueueUpdated(); };
 
             jobQueue.Enqueue(job);
         }
@@ -150,6 +156,18 @@ namespace DataSync.Lib.Sync
                 currentJob = jobQueue.Dequeue();
 
                 currentJob.Run();
+            }
+        }
+
+        /// <summary>
+        /// Called when the queue gets updated.
+        /// </summary>
+        protected virtual void OnQueueUpdated()
+        {
+            // ReSharper disable once UseNullPropagation
+            if (QueueUpdated != null)
+            {
+                QueueUpdated(this, EventArgs.Empty);
             }
         }
     }
