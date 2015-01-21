@@ -9,6 +9,8 @@ namespace DataSync
 {
     class Program
     {
+        private static string _lastChangeElement; 
+
         static void Main(string[] args)
         {
             //List<string> output = new List<string>(); 
@@ -41,11 +43,11 @@ namespace DataSync
 
             //System.Console.ReadLine();
 
+
             FileSystemWatcher fileSystemWatcherInstance = new FileSystemWatcher(@"C:\Temp")
             {
                 IncludeSubdirectories = true,
-                NotifyFilter = NotifyFilters.Attributes | NotifyFilters.DirectoryName |
-                               NotifyFilters.FileName | NotifyFilters.LastWrite | NotifyFilters.Size
+                NotifyFilter =  NotifyFilters.DirectoryName | NotifyFilters.FileName | NotifyFilters.LastWrite | NotifyFilters.Attributes
             };
 
             fileSystemWatcherInstance.Changed += FileSystemWatcher_Changed;
@@ -60,53 +62,69 @@ namespace DataSync
 
         private static void FileSystemWatcher_Renamed(object sender, RenamedEventArgs e)
         {
+            _lastChangeElement = string.Empty;
+
             if (Directory.Exists(e.FullPath))
             {
-                Console.WriteLine("Directory Renamed - {0}", e.ChangeType.ToString("g"));
+                Console.WriteLine("Directory Renamed - {0} {1}", e.FullPath, e.ChangeType.ToString("g"));
             }
             else
             {
-                Console.WriteLine("File Renamed - {0}", e.ChangeType.ToString("g"));
+                Console.WriteLine("File Renamed - {0} {1}", e.FullPath, e.ChangeType.ToString("g"));
             }
         }
 
         private static void FileSystemWatcher_Changed(object sender, FileSystemEventArgs e)
         {
-            if (Directory.Exists(e.FullPath))
+            if (!Directory.Exists(e.FullPath))
             {
-                //Console.WriteLine("Directory Changed - {0}", e.ChangeType.ToString("g"));
+                if (!e.FullPath.Equals(_lastChangeElement))
+                {
+                    _lastChangeElement = e.FullPath;
+                    Console.WriteLine("File Changed - {0} {1}", e.FullPath, e.ChangeType.ToString("g"));
+                }
+                else
+                {
+                    _lastChangeElement = string.Empty;
+                    Console.WriteLine("Double File Changed - {0} {1}", e.FullPath, e.ChangeType.ToString("g"));
+                }
             }
             else
             {
-                Console.WriteLine("File Changed - {0}", e.ChangeType.ToString("g"));
+                Console.WriteLine("Directory Changed - {0} {1}", e.FullPath, e.ChangeType.ToString("g"));
+                
             }
         }
 
         private static void FileSystemWatcher_Deleted(object sender, FileSystemEventArgs e)
         {
+            _lastChangeElement = string.Empty;
+
             if (String.IsNullOrEmpty(Path.GetExtension(e.FullPath))) //IMPORTANT!
             {
-                Console.WriteLine("Directory Deleted - {0}", e.ChangeType.ToString("g"));
+                Console.WriteLine("Directory Deleted - {0} {1}", e.FullPath, e.ChangeType.ToString("g"));
             }
             else
             {
-                Console.WriteLine("File Deleted - {0}", e.ChangeType.ToString("g"));
+                Console.WriteLine("File Deleted - {0} {1}", e.FullPath, e.ChangeType.ToString("g"));
             }
         }
 
         private static void FileSystemWatcher_Created(object sender, FileSystemEventArgs e)
         {
+            _lastChangeElement = string.Empty;
+
             if (Directory.Exists(e.FullPath))
             {
-                Console.WriteLine("Directory Created - {0}", e.ChangeType.ToString("g"));
+                Console.WriteLine("Directory Created - {0} {1}", e.FullPath, e.ChangeType.ToString("g"));
             }
             else
             {
-                Console.WriteLine("File Created - {0}", e.ChangeType.ToString("g"));
+                Console.WriteLine("File Created - {0} {1}", e.FullPath, e.ChangeType.ToString("g"));
             }
         }
 
-      
+
 
         public static List<string> GetDirectories(string path)
         {

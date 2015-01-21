@@ -118,5 +118,15 @@ namespace DataSync.Properties {
                 return ResourceManager.GetString("Program_Main_EnterForEXIT", resourceCulture);
             }
         }
+        
+        /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Sync is currently running! 
+        ///Are you sure you want to leave before the end of the snyc process? Press Enter for END: ähnelt.
+        /// </summary>
+        internal static string Program_Main_SyncRunning {
+            get {
+                return ResourceManager.GetString("Program_Main_SyncRunning", resourceCulture);
+            }
+        }
     }
 }

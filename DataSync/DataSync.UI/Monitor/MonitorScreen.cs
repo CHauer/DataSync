@@ -62,7 +62,7 @@ namespace DataSync.UI.Monitor
         /// <param name="pair">The pair.</param>
         public void AddPairBlock(SyncPair pair)
         {
-            builder.AppendFormat("#{0}#", pair.ConfigurationPair.Name);
+            builder.AppendFormat("# {0} #", pair.ConfigurationPair.Name);
             builder.AppendLine();
 
             var jobs = pair.SyncQueue.Jobs.Where(job => job.Status == JobStatus.Processing ||
@@ -70,7 +70,7 @@ namespace DataSync.UI.Monitor
                                                         .Take(MaxViewJobs);
             foreach (var job in jobs)
             {
-                builder.Append(job.ToString(columnWidths));
+                builder.AppendLine(job.ToString(columnWidths));
             }
         }
 

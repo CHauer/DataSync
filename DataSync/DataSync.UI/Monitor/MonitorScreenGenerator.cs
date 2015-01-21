@@ -27,7 +27,7 @@ namespace DataSync.UI.Monitor
         {
             this.pipeSender = new PipeSender<MonitorScreen>(MonitorType.Screen.ToString("g"));
             this.Manager = manager;
-            this.Manager.SyncStateUpdated += ManagerSyncStateUpdated;
+            this.Manager.StateUpdated += ManagerStateUpdated;
         }
 
         /// <summary>
@@ -43,7 +43,7 @@ namespace DataSync.UI.Monitor
         /// </summary>
         /// <param name="sender">The sender.</param>
         /// <param name="e">The e.</param>
-        private void ManagerSyncStateUpdated(object sender, SyncPair e)
+        private void ManagerStateUpdated(object sender, SyncPair e)
         {
             MonitorScreen screen = GenerateMonitorScreen();
 

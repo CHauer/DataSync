@@ -364,13 +364,20 @@ namespace DataSync.UI.CommandHandling
 
             var pair = HandleAddPairInputs();
 
-            if (pair != null)
+            if (instruction.Parameters.Count > 0)
             {
-                if (SyncManager.AddSyncPair(pair))
-                {
-                    WriteConfirm(String.Format("SyncPair {0} was added.", pair.Name));
-                }
+                pair.Name = instruction.Parameters[0].Content.ToString();
             }
+            else
+            {
+                pair.Name = String.Format("Sync Pair {0}", SyncManager.Configuration.ConfigPairs.Count + 1);
+            }
+
+            if (SyncManager.AddSyncPair(pair))
+            {
+                WriteConfirm(String.Format("SyncPair {0} was added.", pair.Name));
+            }
+
         }
 
         /// <summary>
@@ -440,12 +447,16 @@ namespace DataSync.UI.CommandHandling
                         if (checkInput.Equals(okString) && targetFolders.Count >= 1)
                         {
                             okGiven = true;
+                            inputStatus = true;
                         }
 
-                        if (ValidatePath(inputText, out inputText))
+                        if (!okGiven)
                         {
-                            inputStatus = true;
-                            targetFolders.Add(inputText);
+                            if (ValidatePath(inputText, out inputText))
+                            {
+                                inputStatus = true;
+                                targetFolders.Add(inputText);
+                            }
                         }
                     }
                 }
@@ -477,14 +488,19 @@ namespace DataSync.UI.CommandHandling
                             okGiven = true;
                         }
 
-                        if (okGiven)
+                        if (!okGiven)
                         {
-                            inputStatus = ValidatePath(inputText, out inputText);
+                            if (ValidatePath(inputText, out inputText))
+                            {
+                                inputStatus = true;
+                                exceptFolders.Add(inputText);
+                            }
                         }
+
                     }
+
                 }
 
-                this.output.Write("Target Folder (OK for next input stage):");
                 inputStatus = false;
             }
 
@@ -616,7 +632,7 @@ namespace DataSync.UI.CommandHandling
         {
             if (instruction == null || SyncManager == null) return;
 
-            if (instruction.Type == InstructionType.SHOWPAIRDETAIL) 
+            if (instruction.Type == InstructionType.SHOWPAIRDETAIL)
             {
                 var detailpair = SyncManager.SyncPairs.FirstOrDefault(sp => sp.ConfigurationPair.Name.Equals(instruction.Parameters[0].Content));
 
@@ -629,7 +645,7 @@ namespace DataSync.UI.CommandHandling
                     WriteError(string.Format("Pair Name {0} was not found!", instruction.Parameters[0].Content));
                 }
             }
-            else if (instruction.Type == InstructionType.LISTPAIRS) 
+            else if (instruction.Type == InstructionType.LISTPAIRS)
             {
                 WriteMessage(SyncManager.ToString(), ConsoleColor.DarkYellow);
             }

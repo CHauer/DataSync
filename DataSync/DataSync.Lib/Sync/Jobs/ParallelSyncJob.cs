@@ -214,6 +214,26 @@ namespace DataSync.Lib.Sync.Jobs
         }
 
         /// <summary>
+        /// Returns a <see cref="System.String" /> that represents this instance.
+        /// </summary>
+        /// <returns>
+        /// A <see cref="System.String" /> that represents this instance.
+        /// </returns>
+        public override string ToString()
+        {
+            StringBuilder builder = new StringBuilder();
+
+            foreach (var keyvalpair in ParallelJobs)
+            {
+                builder.AppendLine(String.Format("{0} -> {1} - Operation:{2}",
+                                       keyvalpair.Key.SourcePath, keyvalpair.Key.TargetPath,
+                                       keyvalpair.Value.GetType().Name));
+            }
+
+            return builder.ToString();
+        }
+
+        /// <summary>
         /// Shortens the folder path.
         /// </summary>
         /// <param name="path">The path.</param>
@@ -229,7 +249,6 @@ namespace DataSync.Lib.Sync.Jobs
             int value = (length / 2) - 1;
             return String.Format(@"{0}\..\{1}", path.Substring(0, value), path.Substring(path.Length - value, value));
         }
-
 
         /// <summary>
         /// Logs the message.

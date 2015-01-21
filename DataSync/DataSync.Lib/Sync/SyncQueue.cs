@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using DataSync.Lib.Log;
+using DataSync.Lib.Log.Messages;
 using DataSync.Lib.Sync.Jobs;
 
 namespace DataSync.Lib.Sync
@@ -43,6 +44,7 @@ namespace DataSync.Lib.Sync
         /// </summary>
         public SyncQueue()
         {
+            isRunning = false;
             jobQueue = new Queue<ISyncJob>();
         }
 
@@ -111,6 +113,7 @@ namespace DataSync.Lib.Sync
             job.Logger = Logger;
             job.JobStatusChanged += (sender, e) => { OnQueueUpdated(); };
 
+            LogMessage(new SyncJobLogMessage("SyncJob enqueued.", job));
             jobQueue.Enqueue(job);
         }
 
@@ -119,6 +122,11 @@ namespace DataSync.Lib.Sync
         /// </summary>
         public void StartQueue()
         {
+            if (isRunning)
+            {
+                throw new InvalidOperationException("Queue already running!"); 
+            }
+
             isRunning = true;
 
             jobTaskCanceler = new CancellationTokenSource();
@@ -168,6 +176,18 @@ namespace DataSync.Lib.Sync
             if (QueueUpdated != null)
             {
                 QueueUpdated(this, EventArgs.Empty);
+            }
+        }
+
+        /// <summary>
+        /// Adds the log message.
+        /// </summary>
+        /// <param name="message">The message.</param>
+        private void LogMessage(LogMessage message)
+        {
+            if (Logger != null)
+            {
+                Logger.AddLogMessage(message);
             }
         }
     }

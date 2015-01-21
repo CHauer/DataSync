@@ -74,9 +74,37 @@ namespace DataSync.Lib.Configuration
         /// <returns></returns>
         public List<string> GetRelativeFiles()
         {
-            List<string> sourceFiles = GetDirectories(SoureFolder);
+            List<string> sourceFiles = GetFiles(SoureFolder);
 
             return sourceFiles.Select(d => d.Replace(SoureFolder + @"\", string.Empty)).ToList();
+        }
+
+        /// <summary>
+        /// Gets the relative items for targets.
+        /// </summary>
+        /// <param name="type">The type.</param>
+        /// <returns></returns>
+        public Dictionary<string, List<string>> GetRelativeItemsForTargets(SearchItemType type = SearchItemType.Folder)
+        {
+            Dictionary<string, List<string>> relativeItems = new Dictionary<string, List<string>>();
+
+            TargetFolders.ForEach(targetFolder =>
+            {
+                List<string> items;
+
+                if (type == SearchItemType.Folder)
+                {
+                    items = GetDirectories(targetFolder);
+                }
+                else
+                {
+                    items = GetFiles(targetFolder);
+                }
+
+                relativeItems.Add(targetFolder, items.Select(d => d.Replace(targetFolder + @"\", string.Empty)).ToList());
+            });
+
+            return relativeItems;
         }
 
         /// <summary>
@@ -104,7 +132,7 @@ namespace DataSync.Lib.Configuration
                     }
                     catch (Exception ex)
                     {
-                        LogMessage(new WarningLogMessage(ex.Message)); 
+                        LogMessage(new WarningLogMessage(ex.Message));
                         Debug.WriteLine(ex.Message);
                     }
                 }
@@ -175,5 +203,22 @@ namespace DataSync.Lib.Configuration
             }
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        public enum SearchItemType
+        {
+            /// <summary>
+            /// The folder
+            /// </summary>
+            Folder,
+
+            /// <summary>
+            /// The file
+            /// </summary>
+            File
+        }
     }
+
+
 }
