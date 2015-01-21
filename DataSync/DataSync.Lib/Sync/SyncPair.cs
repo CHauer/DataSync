@@ -4,10 +4,13 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 using DataSync.Lib.Configuration;
 using DataSync.Lib.Log;
+using DataSync.Lib.Log.Messages;
 using DataSync.Lib.Sync.Items;
 using DataSync.Lib.Sync.Jobs;
+using DataSync.Lib.Sync.Operations;
 
 namespace DataSync.Lib.Sync
 {
@@ -27,6 +30,11 @@ namespace DataSync.Lib.Sync
         private FileSystemWatcher fileSystemWatcherInstance;
 
         /// <summary>
+        /// The last changed element path.
+        /// </summary>
+        private string lastChangedElementPath;
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="SyncPair" /> class.
         /// </summary>
         /// <param name="configuration">The configuration.</param>
@@ -35,6 +43,9 @@ namespace DataSync.Lib.Sync
         {
             this.Configuration = configuration;
             this.ConfigurationPair = configurationPair;
+
+            //Standard sync item comparer
+            this.ComparerInstance = new SyncItemComparer();
         }
 
         /// <summary>
@@ -99,7 +110,7 @@ namespace DataSync.Lib.Sync
         /// <summary>
         /// Occurs when the sync pair state has updated.
         /// </summary>
-        public event EventHandler SyncStateUpdated;
+        public event EventHandler StateUpdated;
 
         /// <summary>
         /// Starts the watcher.
@@ -117,12 +128,16 @@ namespace DataSync.Lib.Sync
             isWatching = true;
 
             InitializeQueue();
-            RunInitialSync();
 
-            InitializeFileWatcher();
+            Task.Run(() =>
+            {
+                RunInitialSync();
 
-            //Filewatcher start - fire events
-            fileSystemWatcherInstance.EnableRaisingEvents = true;
+                InitializeFileWatcher();
+
+                //Filewatcher start - fire events
+                fileSystemWatcherInstance.EnableRaisingEvents = true;
+            });
         }
 
         /// <summary>
@@ -135,7 +150,9 @@ namespace DataSync.Lib.Sync
                 Logger = Logger
             };
 
-            SyncQueue.QueueUpdated += (sender, e) => { OnSyncStateUpdated(); };
+            SyncQueue.QueueUpdated += (sender, e) => { OnStateUpdated(); };
+
+            SyncQueue.StartQueue();
         }
 
         /// <summary>
@@ -147,6 +164,8 @@ namespace DataSync.Lib.Sync
 
             //filewatcher stop
             fileSystemWatcherInstance.EnableRaisingEvents = false;
+
+            SyncQueue.StopQueue();
         }
 
         /// <summary>
@@ -154,10 +173,18 @@ namespace DataSync.Lib.Sync
         /// </summary>
         private void RunInitialSync()
         {
+            if (ComparerInstance == null)
+            {
+                throw new InvalidOperationException("Item comparer instance is not set!");
+            }
+
             RunSyncForRealtivePaths(ConfigurationPair.GetRelativeDirectories(), isFolders: true);
 
             RunSyncForRealtivePaths(ConfigurationPair.GetRelativeFiles());
 
+            //TODO Delte from Target where is no file/folder in source
+            //RunSyncDeleteTargetItems(ConfigurationPair.GetRelativeItemsForTargets(), isFolders: true);
+            //RunSyncDeleteTargetItems(ConfigurationPair.GetRelativeItemsForTargets(), isFolders: true);
         }
 
         /// <summary>
@@ -221,10 +248,9 @@ namespace DataSync.Lib.Sync
         /// <param name="source">The source.</param>
         /// <param name="isFolders">if set to <c>true</c> [is folders].</param>
         /// <returns></returns>
-        private List<string> CreateParallelJob(List<string> targetFolders, string relativePath, string source, bool isFolders)
+        private List<string> CreateParallelJob(List<string> targetFolders, string relativePath, string source, bool isFolders, SyncOperation operation = null)
         {
             ISyncItem item;
-            SyncOperation operation;
             ISyncJob job;
             Dictionary<ISyncItem, SyncOperation> parallelJobs = new Dictionary<ISyncItem, SyncOperation>();
 
@@ -249,11 +275,15 @@ namespace DataSync.Lib.Sync
                     item = new SyncFile(source, target);
                 }
 
-                operation = ComparerInstance.Compare(item);
+                if (operation == null)
+                {
+                    operation = ComparerInstance.Compare(item);
+                }
 
                 if (operation != null)
                 {
                     operation.Configuration = Configuration;
+                    operation.Logger = Logger;
 
                     parallelJobs.Add(item, operation);
                 }
@@ -283,9 +313,9 @@ namespace DataSync.Lib.Sync
         {
             fileSystemWatcherInstance = new FileSystemWatcher(ConfigurationPair.SoureFolder)
             {
-                IncludeSubdirectories = true,
+                IncludeSubdirectories = Configuration.IsRecursiv,
                 NotifyFilter = NotifyFilters.Attributes | NotifyFilters.DirectoryName |
-                               NotifyFilters.FileName | NotifyFilters.LastWrite | NotifyFilters.Size
+                               NotifyFilters.FileName | NotifyFilters.LastWrite
             };
 
             fileSystemWatcherInstance.Changed += FileSystemWatcher_Changed;
@@ -294,68 +324,333 @@ namespace DataSync.Lib.Sync
             fileSystemWatcherInstance.Renamed += FileSystemWatcher_Renamed;
         }
 
+        /// <summary>
+        /// Handles the Renamed event of the FileSystemWatcher control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="RenamedEventArgs"/> instance containing the event data.</param>
         private void FileSystemWatcher_Renamed(object sender, RenamedEventArgs e)
         {
-            //TODO
+            ISyncJob job = null;
+            SyncOperation operation;
+            ISyncItem item;
+
+            lastChangedElementPath = string.Empty;
+
+            string source = e.FullPath;
+            string relativePath = e.FullPath.Replace(ConfigurationPair.SoureFolder, string.Empty);
+            List<string> targetFolders = new List<string>(ConfigurationPair.TargetFolders);
+
             if (Directory.Exists(e.FullPath))
             {
-                Debug.WriteLine("Directory Renamed - {0}", e.ChangeType.ToString("g"));
+                Debug.WriteLine("Directory Renamed: From:{0} - To:{1} / {2}", e.OldFullPath, e.FullPath, e.ChangeType.ToString("g"));
+
+                operation = new RenameFolder()
+                {
+                    Configuration = this.Configuration,
+                    Logger = this.Logger
+                };
+
+                if (Configuration.IsParrallelSync)
+                {
+                    targetFolders = CreateParallelJob(targetFolders, relativePath, source,
+                                                        isFolders: true, operation: operation);
+                }
+
+                foreach (string targetFolder in targetFolders)
+                {
+                    item = new SyncFolder(source, Path.Combine(targetFolder, relativePath));
+
+                    job = new SyncJob(item, operation)
+                    {
+                        Logger = Logger
+                    };
+
+                    SyncQueue.Enqueue(job);
+                }
             }
             else
             {
-                Debug.WriteLine("File Renamed - {0}", e.ChangeType.ToString("g"));
+                Debug.WriteLine("File Renamed: From:{0} - To:{1} / {2}", e.OldFullPath, e.FullPath, e.ChangeType.ToString("g"));
+
+                operation = new RenameFile()
+                {
+                    Configuration = this.Configuration,
+                    Logger = this.Logger
+                };
+
+                if (Configuration.IsParrallelSync)
+                {
+                    targetFolders = CreateParallelJob(targetFolders, relativePath, source, false, operation);
+                }
+
+                foreach (string targetFolder in targetFolders)
+                {
+                    item = new SyncFile(source, Path.Combine(targetFolder, relativePath));
+
+                    job = new SyncJob(item, operation)
+                    {
+                        Logger = Logger
+                    };
+
+                    SyncQueue.Enqueue(job);
+                }
             }
         }
 
+        /// <summary>
+        /// Handles the Deleted event of the FileSystemWatcher control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="FileSystemEventArgs"/> instance containing the event data.</param>
         private void FileSystemWatcher_Deleted(object sender, FileSystemEventArgs e)
         {
-          
-            //TODO
-            if (String.IsNullOrEmpty(Path.GetExtension(e.FullPath))) //IMPORTANT!
+            ISyncJob job = null;
+            SyncOperation operation;
+            ISyncItem item;
+
+            lastChangedElementPath = string.Empty;
+
+            string source = e.FullPath;
+            string relativePath = e.FullPath.Replace(ConfigurationPair.SoureFolder, string.Empty);
+            List<string> targetFolders = new List<string>(ConfigurationPair.TargetFolders);
+
+
+            //IMPORTANT - directory.exist false way - directory already deleted
+            if (String.IsNullOrEmpty(Path.GetExtension(e.FullPath)))
             {
-                 Debug.WriteLine("Directory Deleted - {0}", e.ChangeType.ToString("g"));
+                Debug.WriteLine("Directory Deleted: {0} {1}", e.FullPath, e.ChangeType.ToString("g"));
+
+                //handle directory delete
+                operation = new DeleteFolder()
+                {
+                    Configuration = this.Configuration,
+                    Logger = this.Logger
+                };
+
+                if (Configuration.IsParrallelSync)
+                {
+                    targetFolders = CreateParallelJob(targetFolders, relativePath, source,
+                                                        isFolders: true, operation: operation);
+                }
+
+                foreach (string targetFolder in targetFolders)
+                {
+                    item = new SyncFolder(source, Path.Combine(targetFolder, relativePath));
+
+                    job = new SyncJob(item, operation)
+                    {
+                        Logger = Logger
+                    };
+
+                    SyncQueue.Enqueue(job);
+                }
+
             }
             else
             {
-                Debug.WriteLine("File Deleted - {0}", e.ChangeType.ToString("g"));
+                Debug.WriteLine("File Deleted: {0} {1}", e.FullPath, e.ChangeType.ToString("g"));
+
+                operation = new DeleteFolder()
+                {
+                    Configuration = this.Configuration,
+                    Logger = this.Logger
+                };
+
+                if (Configuration.IsParrallelSync)
+                {
+                    targetFolders = CreateParallelJob(targetFolders, relativePath, source,
+                                                        isFolders: false, operation: operation);
+                }
+
+                foreach (string targetFolder in targetFolders)
+                {
+                    item = new SyncFile(source, Path.Combine(targetFolder, relativePath));
+
+                    job = new SyncJob(item, operation)
+                    {
+                        Logger = Logger
+                    };
+
+                    SyncQueue.Enqueue(job);
+                }
+
             }
         }
 
+        /// <summary>
+        /// Handles the Created event of the FileSystemWatcher control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="FileSystemEventArgs"/> instance containing the event data.</param>
         private void FileSystemWatcher_Created(object sender, FileSystemEventArgs e)
         {
-            //TODO
+            ISyncJob job = null;
+            SyncOperation operation;
+            ISyncItem item;
+
+            lastChangedElementPath = string.Empty;
+
+            string source = e.FullPath;
+            string relativePath = e.FullPath.Replace(ConfigurationPair.SoureFolder, string.Empty);
+            List<string> targetFolders = new List<string>(ConfigurationPair.TargetFolders);
+
             if (Directory.Exists(e.FullPath))
             {
-                Debug.WriteLine("Directory Created - {0}", e.ChangeType.ToString("g"));
+                Debug.WriteLine("Directory Created: {0} {1}", e.FullPath, e.ChangeType.ToString("g"));
+
+                operation = new CreateFolder()
+                {
+                    Configuration = this.Configuration,
+                    Logger = this.Logger
+                };
+
+                if (Configuration.IsParrallelSync)
+                {
+                    targetFolders = CreateParallelJob(targetFolders, relativePath, source,
+                                                        isFolders: true, operation: operation);
+                }
+
+                foreach (string targetFolder in targetFolders)
+                {
+                    item = new SyncFolder(source, Path.Combine(targetFolder, relativePath));
+
+                    job = new SyncJob(item, operation)
+                    {
+                        Logger = Logger
+                    };
+
+                    SyncQueue.Enqueue(job);
+                }
             }
             else
             {
-                Debug.WriteLine("File Created - {0}", e.ChangeType.ToString("g"));
+                Debug.WriteLine("File Created: {0} {1}", e.FullPath, e.ChangeType.ToString("g"));
+
+                operation = new CopyFile()
+                {
+                    Configuration = this.Configuration,
+                    Logger = this.Logger
+                };
+
+                if (Configuration.IsParrallelSync)
+                {
+                    targetFolders = CreateParallelJob(targetFolders, relativePath, source,
+                                                        isFolders: true, operation: operation);
+                }
+
+                foreach (string targetFolder in targetFolders)
+                {
+                    item = new SyncFolder(source, Path.Combine(targetFolder, relativePath));
+
+                    job = new SyncJob(item, operation)
+                    {
+                        Logger = Logger
+                    };
+
+                    SyncQueue.Enqueue(job);
+                }
             }
         }
 
+        /// <summary>
+        /// Handles the Changed event of the FileSystemWatcher control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="FileSystemEventArgs"/> instance containing the event data.</param>
         private void FileSystemWatcher_Changed(object sender, FileSystemEventArgs e)
         {
-            //TODO
+            ISyncJob job = null;
+            SyncOperation operation;
+            ISyncItem item;
+
+            string source = e.FullPath;
+            string relativePath = e.FullPath.Replace(ConfigurationPair.SoureFolder, string.Empty);
+            List<string> targetFolders = new List<string>(ConfigurationPair.TargetFolders);
+
             if (Directory.Exists(e.FullPath))
             {
-                //Console.WriteLine("Directory Changed - {0}", e.ChangeType.ToString("g"));
+                Debug.WriteLine("Directory Changed: {0} {1}", e.FullPath, e.ChangeType.ToString("g"));
+
+                if (Configuration.IsParrallelSync)
+                {
+                    targetFolders = CreateParallelJob(targetFolders, relativePath, source,
+                                                        isFolders: true);
+                }
+
+                foreach (string targetFolder in targetFolders)
+                {
+                    item = new SyncFolder(source, Path.Combine(targetFolder, relativePath));
+
+                    //compare item
+                    operation = ComparerInstance.Compare(item);
+
+                    if (operation == null)
+                    {
+                        //no sync operation needed
+                        return;
+                    }
+
+                    job = new SyncJob(item, operation)
+                    {
+                        Logger = Logger
+                    };
+
+                    SyncQueue.Enqueue(job);
+                }
             }
             else
             {
-                Debug.WriteLine("File Changed - {0}", e.ChangeType.ToString("g"));
+                Debug.WriteLine("File Changed: {0} {1}", e.FullPath, e.ChangeType.ToString("g"));
+
+                if (!e.FullPath.Equals(lastChangedElementPath))
+                {
+                    lastChangedElementPath = e.FullPath;
+
+                    if (Configuration.IsParrallelSync)
+                    {
+                        targetFolders = CreateParallelJob(targetFolders, relativePath, source,
+                                                            isFolders: false);
+                    }
+
+                    foreach (string targetFolder in targetFolders)
+                    {
+                        item = new SyncFile(source, Path.Combine(targetFolder, relativePath));
+
+                        //compare item
+                        operation = ComparerInstance.Compare(item);
+
+                        if (operation == null)
+                        {
+                            //no sync operation needed
+                            return;
+                        }
+
+                        job = new SyncJob(item, operation)
+                        {
+                            Logger = Logger
+                        };
+
+                        SyncQueue.Enqueue(job);
+                    }
+                }
+                else
+                {
+                    lastChangedElementPath = string.Empty;
+                    return;
+                }
             }
         }
 
         /// <summary>
         /// Called when the sync pair state has updated.
         /// </summary>
-        protected virtual void OnSyncStateUpdated()
+        protected virtual void OnStateUpdated()
         {
             // ReSharper disable once UseNullPropagation
-            if (SyncStateUpdated != null)
+            if (StateUpdated != null)
             {
-                SyncStateUpdated(this, EventArgs.Empty);
+                StateUpdated(this, EventArgs.Empty);
             }
         }
 
@@ -388,6 +683,18 @@ namespace DataSync.Lib.Sync
             }
 
             return builder.ToString();
+        }
+
+        /// <summary>
+        /// Adds the log message.
+        /// </summary>
+        /// <param name="message">The message.</param>
+        private void LogMessage(LogMessage message)
+        {
+            if (Logger != null)
+            {
+                Logger.AddLogMessage(message);
+            }
         }
     }
 }

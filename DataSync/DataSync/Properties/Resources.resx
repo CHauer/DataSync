@@ -152,4 +152,8 @@ DataSync.exe { (SyncPair1) (SyncPair2) … (SyncPairN) }
   <data name="Program_Main_EnterForEXIT" xml:space="preserve">
     <value>Enter for EXIT</value>
   </data>
+  <data name="Program_Main_SyncRunning" xml:space="preserve">
+    <value>Sync is currently running! 
+Are you sure you want to leave before the end of the snyc process? Press Enter for END:</value>
+  </data>
 </root>

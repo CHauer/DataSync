@@ -171,8 +171,11 @@ namespace DataSync.Lib.Sync
                 return new CreateFolder();
             }
 
+            var targetInfo = syncFolder.GetTargetInfo();
+            var soureInfo = syncFolder.GetSourceInfo();
+
             //attributes differ - change attributes
-            if (syncFolder.GetTargetInfo().Attributes.Equals(syncFolder.GetSourceInfo().Attributes))
+            if (!soureInfo.Attributes.Equals(targetInfo.Attributes))
             {
                 return new ChangeAttributes();
             }

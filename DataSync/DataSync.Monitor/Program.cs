@@ -74,6 +74,7 @@ namespace DataSync.Monitor
 
         private static void ScreenReceiver_MessageReceived(object sender, ReceivedEventArgs<MonitorScreen> e)
         {
+            Console.Clear();
             Console.Write(e.Message.ToString());
         }
 

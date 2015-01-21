@@ -94,14 +94,19 @@ namespace DataSync.Lib.Sync.Jobs
             }
 
             this.Status = JobStatus.Processing;
+            LogMessage(new SyncJobLogMessage("SyncJob processing.", this));
+
+            LogMessage(new SyncOperationLogMessage(this.Operation, this.Item));
 
             if (this.Operation.Execute(this.Item))
             {
                 this.Status = JobStatus.Done;
+                LogMessage(new SyncJobLogMessage("SyncJob ended.", this));
             }
             else
             {
                 this.Status = JobStatus.Error;
+                LogMessage(new SyncJobLogMessage("SyncJob is in error state.", this));
             }
         }
 
@@ -123,6 +128,19 @@ namespace DataSync.Lib.Sync.Jobs
             return String.Format("{0} {1} {2} {3} {4}",
                 source.PadRight(columns[0]), target.PadRight(columns[1]), file.PadRight(columns[2]),
                  operation.PadRight(columns[3]), jostatus.PadRight(columns[4]));
+        }
+
+        /// <summary>
+        /// Returns a <see cref="System.String" /> that represents this instance.
+        /// </summary>
+        /// <returns>
+        /// A <see cref="System.String" /> that represents this instance.
+        /// </returns>
+        public override string ToString()
+        {
+            return String.Format("{0} -> {1} - Operation: {2} ",
+                                    Item.SourcePath, Item.TargetPath, 
+                                    Operation.GetType().Name);
         }
 
         /// <summary>

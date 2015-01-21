@@ -11,7 +11,7 @@
       </MemberNameLabel>
     </AssociationLine>
     <TypeIdentifier>
-      <HashCode>AAAAAQAAAAYAAQQUAgAAAAQQAMAAEAAAhCAQmgAAAIA=</HashCode>
+      <HashCode>AAAAAQAAAAYAAQQUAgCAAAwAAEAAEAAAhCAQmgAAAoA=</HashCode>
       <FileName>Sync\SyncManager.cs</FileName>
     </TypeIdentifier>
     <ShowAsCollectionAssociation>
@@ -19,9 +19,19 @@
     </ShowAsCollectionAssociation>
   </Class>
   <Class Name="DataSync.Lib.Configuration.ConfigurationPair">
-    <Position X="4.25" Y="6.25" Width="2" />
+    <Position X="4.25" Y="6.5" Width="2" />
+    <Compartments>
+      <Compartment Name="Nested Types" Collapsed="false" />
+    </Compartments>
+    <NestedTypes>
+      <Enum Name="DataSync.Lib.Configuration.ConfigurationPair.ItemType" Collapsed="true">
+        <TypeIdentifier>
+          <NewMemberFileName>Configuration\ConfigurationPair.cs</NewMemberFileName>
+        </TypeIdentifier>
+      </Enum>
+    </NestedTypes>
     <TypeIdentifier>
-      <HashCode>CAAAAQEAAAIACAAAAAIAAAQAAAAAAABAAAAAAAggAAA=</HashCode>
+      <HashCode>CAAAAQEAAAIACAAAAAIAAAQAAAAAAABAAAAAAgggAAA=</HashCode>
       <FileName>Configuration\ConfigurationPair.cs</FileName>
     </TypeIdentifier>
   </Class>
@@ -53,7 +63,7 @@
       <Compartment Name="Fields" Collapsed="true" />
     </Compartments>
     <TypeIdentifier>
-      <HashCode>IABQAAAAAAIAAAhACECAAAwQAgMAAAAAAAAAAAAAAAA=</HashCode>
+      <HashCode>IABQAQAAAAIAAAhACECAAAwQAgMAAAAAAAAAAAAAAAA=</HashCode>
       <FileName>Sync\SyncQueue.cs</FileName>
     </TypeIdentifier>
     <ShowAsCollectionAssociation>
@@ -72,7 +82,7 @@
     <Lollipop Position="0.2" />
   </Class>
   <Class Name="DataSync.Lib.Configuration.Data.XmlConfigurationSerializer">
-    <Position X="4.25" Y="11.25" Width="2.25" />
+    <Position X="4.25" Y="11.5" Width="2.25" />
     <TypeIdentifier>
       <HashCode>AAAAAAAAYAQAAAAAAABAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
       <FileName>Configuration\Data\XmlDataManager.cs</FileName>
@@ -126,13 +136,13 @@
     </AssociationLine>
     <AssociationLine Name="ComparerInstance" Type="DataSync.Lib.Sync.ISyncItemComparer" FixedFromPoint="true" FixedToPoint="true">
       <Path>
-        <Point X="6.5" Y="4.832" />
-        <Point X="8.25" Y="4.832" />
+        <Point X="6.5" Y="4.75" />
+        <Point X="8.25" Y="4.75" />
         <Point X="8.25" Y="5" />
       </Path>
     </AssociationLine>
     <TypeIdentifier>
-      <HashCode>AAACAAAEAAIAAQCUAKQAAAAgAIAACAADgAIEAcAAABA=</HashCode>
+      <HashCode>AAgCAQAEAAIAAQCUEKQAAAAgAAAACAADgAIEAUAAAhA=</HashCode>
       <FileName>Sync\SyncPair.cs</FileName>
     </TypeIdentifier>
     <ShowAsAssociation>
@@ -247,7 +257,7 @@
   <Class Name="DataSync.Lib.Log.Messages.SyncJobLogMessage">
     <Position X="20" Y="10.75" Width="1.75" />
     <TypeIdentifier>
-      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAACAAAAAAAAAAAA=</HashCode>
       <FileName>Log\Messages\SyncJobLogMessage.cs</FileName>
     </TypeIdentifier>
   </Class>
@@ -266,8 +276,15 @@
       <FileName>Sync\SyncOperation.cs</FileName>
     </TypeIdentifier>
   </Class>
+  <Class Name="DataSync.Lib.Log.Messages.SyncOperationLogMessage">
+    <Position X="22.25" Y="10.75" Width="2.25" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAACAAAAAAAAAAAA=</HashCode>
+      <FileName>Log\Messages\SyncOperationLogMessage.cs</FileName>
+    </TypeIdentifier>
+  </Class>
   <Interface Name="DataSync.Lib.Configuration.Data.IConfigurationLoader">
-    <Position X="3.5" Y="9.5" Width="1.75" />
+    <Position X="1" Y="11" Width="1.75" />
     <TypeIdentifier>
       <HashCode>AAAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
       <FileName>Configuration\Data\IConfigurationLoader.cs</FileName>
@@ -316,7 +333,7 @@
     </TypeIdentifier>
   </Interface>
   <Interface Name="DataSync.Lib.Configuration.Data.IConfigurationSaver">
-    <Position X="5.5" Y="9.5" Width="1.75" />
+    <Position X="1" Y="12.25" Width="1.75" />
     <TypeIdentifier>
       <HashCode>AAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
       <FileName>Configuration\Data\IConfigurationSaver.cs</FileName>

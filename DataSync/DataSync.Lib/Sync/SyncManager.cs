@@ -24,6 +24,11 @@ namespace DataSync.Lib.Sync
     public class SyncManager
     {
         /// <summary>
+        /// The compare instance
+        /// </summary>
+        private ISyncItemComparer compareInstance; 
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="SyncManager"/> class.
         /// </summary>
         public SyncManager() : this(null, null, null) { }
@@ -128,13 +133,18 @@ namespace DataSync.Lib.Sync
         /// <summary>
         /// Occurs when a synchronize pair updated.
         /// </summary>
-        public event EventHandler<SyncPair> SyncStateUpdated;
+        public event EventHandler<SyncPair> StateUpdated;
 
         /// <summary>
         /// Initializes this instance.
         /// </summary>
         private void Initialize()
         {
+            compareInstance = new SyncItemComparer()
+            {
+                Logger = Logger
+            };
+
             InitializeConfiguration();
             InitializeSyncPairs();
         }
@@ -159,7 +169,7 @@ namespace DataSync.Lib.Sync
                 }
             }
 
-            Configuration = Configuration ?? new SyncConfiguration();
+            Configuration = this.Configuration ?? new SyncConfiguration();
 
             Configuration.PropertyChanged += Configuration_PropertyChanged;
         }
@@ -220,10 +230,11 @@ namespace DataSync.Lib.Sync
         {
             var pair = new SyncPair(Configuration, addSyncPair)
             {
-                Logger = Logger
+                Logger = Logger,
+                ComparerInstance = compareInstance
             };
 
-            pair.SyncStateUpdated += (sender, e) => { OnSyncPairUpdated(sender as SyncPair); };
+            pair.StateUpdated += (sender, e) => { OnSyncPairStateUpdated(sender as SyncPair); };
             SyncPairs.Add(pair);
 
             return pair;
@@ -332,12 +343,12 @@ namespace DataSync.Lib.Sync
         /// Called when a synchronize pair updated.
         /// </summary>
         /// <param name="e">The e.</param>
-        protected virtual void OnSyncPairUpdated(SyncPair e)
+        protected virtual void OnSyncPairStateUpdated(SyncPair e)
         {
             // ReSharper disable once UseNullPropagation
-            if (SyncStateUpdated != null)
+            if (StateUpdated != null)
             {
-                SyncStateUpdated(this, e);
+                StateUpdated(this, e);
             }
         }
 

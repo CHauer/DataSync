@@ -114,6 +114,13 @@ namespace DataSync
             //programm end
             Console.WriteLine(Resources.Program_Main_EnterForEXIT);
             Console.ReadLine();
+
+            if (!_syncManagerObj.IsSynced)
+            {
+                Console.WriteLine(Resources.Program_Main_SyncRunning);
+                Console.ReadLine();
+            }
+
             CloseMonitors();
         }
 
