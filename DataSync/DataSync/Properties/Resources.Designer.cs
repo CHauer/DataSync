@@ -101,6 +101,7 @@ namespace DataSync.Properties {
         ///     {OPTIONNAME}:  LOGSIZE | BLOCKCOMPAREFILESIZE | BLOCKSIZE	
         ///- LOGTO {LOGFILENAME}
         ///- LISTPAIRS
+        ///- LISTSETTINGS
         ///- SHOWPAIRDETAIL {PAIRNAME}
         ///- HELP ähnelt.
         /// </summary>

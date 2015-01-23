@@ -652,6 +652,18 @@ namespace DataSync.UI.CommandHandling
         }
 
         /// <summary>
+        /// Executes the pair detail instruction.
+        /// </summary>
+        /// <param name="instruction">The instruction.</param>
+        [InstructionExecute(InstructionType.LISTSETTINGS)]
+        public void ExecuteListSettingsInstruction(Instruction instruction)
+        {
+            if (instruction == null || SyncManager == null || SyncManager.Configuration == null) return;
+
+            WriteMessage(SyncManager.Configuration.ToString(), ConsoleColor.DarkCyan);
+        }
+
+        /// <summary>
         /// Adds the log message.
         /// </summary>
         /// <param name="message">The message.</param>

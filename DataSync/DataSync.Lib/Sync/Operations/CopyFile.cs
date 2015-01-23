@@ -137,6 +137,7 @@ namespace DataSync.Lib.Sync.Operations
                 sourceStream.Close();
                 writer.Flush();
                 writer.Close();
+                targetStream.Close();
             }
             catch (Exception ex)
             {

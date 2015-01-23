@@ -178,13 +178,32 @@ namespace DataSync.Lib.Sync
                 throw new InvalidOperationException("Item comparer instance is not set!");
             }
 
-            RunSyncForRealtivePaths(ConfigurationPair.GetRelativeDirectories(), isFolders: true);
+            List<string> sourceFolders = ConfigurationPair.GetRelativeDirectories();
+            List<string> sourceFiles = ConfigurationPair.GetRelativeFiles();
 
-            RunSyncForRealtivePaths(ConfigurationPair.GetRelativeFiles());
+            RunSyncForRealtivePaths(sourceFolders, isFolders: true);
+            RunSyncForRealtivePaths(sourceFiles);
 
-            //TODO Delte from Target where is no file/folder in source
-            //RunSyncDeleteTargetItems(ConfigurationPair.GetRelativeItemsForTargets(), isFolders: true);
-            //RunSyncDeleteTargetItems(ConfigurationPair.GetRelativeItemsForTargets(), isFolders: true);
+            //Delte from Target where is no file/folder in source
+            ConfigurationPair.GetRelativeItemsForTargets(ConfigurationPair.SearchItemType.File).ToList().ForEach((kvp) =>
+            {
+                var deleteFiles = kvp.Value.Except(sourceFiles).ToList();
+
+                if (deleteFiles.Count > 0)
+                {
+                    DeleteNoSourceTargetItems(kvp.Key, deleteFiles, isFolders: false);
+                }
+            });
+
+            ConfigurationPair.GetRelativeItemsForTargets(ConfigurationPair.SearchItemType.Folder).ToList().ForEach((kvp) =>
+            {
+                var deleteFolders = kvp.Value.Except(sourceFiles).ToList();
+
+                if (deleteFolders.Count > 0)
+                {
+                    DeleteNoSourceTargetItems(kvp.Key, deleteFolders, isFolders: true);
+                }
+            });
         }
 
         /// <summary>
@@ -237,6 +256,45 @@ namespace DataSync.Lib.Sync
                         SyncQueue.Enqueue(job);
                     }
                 }
+            }
+        }
+
+        /// <summary>
+        /// Deletes the no source target items.
+        /// </summary>
+        /// <param name="targetFolder">The target folder.</param>
+        /// <param name="deleteTargetRelativePaths">The delete target paths.</param>
+        /// <param name="isFolders">if set to <c>true</c> [is folders].</param>
+        private void DeleteNoSourceTargetItems(string targetFolder, List<string> deleteTargetRelativePaths, bool isFolders = false)
+        {
+            ISyncItem item = null;
+            SyncOperation operation = null;
+            ISyncJob job = null;
+
+            foreach (string relativePath in deleteTargetRelativePaths)
+            {
+                string source = Path.Combine(ConfigurationPair.SoureFolder, relativePath);
+                string target = Path.Combine(targetFolder, relativePath);
+
+                if (isFolders)
+                {
+                    item = new SyncFolder(source, target);
+                    operation = new DeleteFolder();
+                }
+                else
+                {
+                    item = new SyncFile(source, target);
+                    operation = new DeleteFile();
+                }
+
+                operation.Configuration = Configuration;
+
+                job = new SyncJob(item, operation)
+                {
+                    Logger = Logger
+                };
+                SyncQueue.Enqueue(job);
+                
             }
         }
 
