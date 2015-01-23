@@ -65,10 +65,10 @@ namespace DataSync.UI.Monitor
             builder.AppendFormat("# {0} #", pair.ConfigurationPair.Name);
             builder.AppendLine();
 
-            var jobs = pair.SyncQueue.Jobs.Where(job => job.Status == JobStatus.Processing ||
-                                                        job.Status == JobStatus.Queued)
-                                                        .Take(MaxViewJobs);
-            foreach (var job in jobs)
+            var jobs = pair.SyncQueue.Jobs.Where(job => job.Status == JobStatus.Processing).ToList();
+            jobs.AddRange(pair.SyncQueue.Jobs.Where(job => job.Status == JobStatus.Queued));
+
+            foreach (var job in jobs.Take(MaxViewJobs))
             {
                 builder.AppendLine(job.ToString(columnWidths));
             }

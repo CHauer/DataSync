@@ -26,7 +26,7 @@ namespace DataSync.Lib.Configuration.Data
         /// </summary>
         public XmlConfigurationSerializer()
         {
-            this.serializer = new XmlSerializer(typeof (SyncConfiguration));
+            this.serializer = new XmlSerializer(typeof(SyncConfiguration));
         }
 
         /// <summary>
@@ -35,7 +35,10 @@ namespace DataSync.Lib.Configuration.Data
         /// <returns></returns>
         public SyncConfiguration LoadConfiguration()
         {
-            return (SyncConfiguration) this.serializer.Deserialize(File.OpenRead(this.ConfigurationFile));
+            using (var file = File.OpenRead(this.ConfigurationFile))
+            {
+                return (SyncConfiguration)this.serializer.Deserialize(file);
+            }
         }
 
         /// <summary>
@@ -44,8 +47,10 @@ namespace DataSync.Lib.Configuration.Data
         /// <param name="configuration">The configuration.</param>
         public void SaveConfiguration(SyncConfiguration configuration)
         {
-            this.serializer.Serialize(File.Open(this.ConfigurationFile, FileMode.Create, FileAccess.Write),
-                configuration);
+            using (var file = File.Open(this.ConfigurationFile, FileMode.Create, FileAccess.Write))
+            {
+                this.serializer.Serialize(file, configuration);
+            }
         }
 
         /// <summary>

@@ -47,6 +47,10 @@ namespace DataSync.UI.CommandHandling.Instructions
         /// </summary>
         LISTPAIRS,
         /// <summary>
+        /// The listpairs
+        /// </summary>
+        LISTSETTINGS,
+        /// <summary>
         /// The showpairdetail
         /// </summary>
         SHOWPAIRDETAIL,

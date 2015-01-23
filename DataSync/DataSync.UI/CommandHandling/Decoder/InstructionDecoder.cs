@@ -44,7 +44,8 @@ namespace DataSync.UI.CommandHandling.Decoder
                 InstructionType.EXIT,
                 InstructionType.HELP,
                 InstructionType.CLEARPAIRS,
-                InstructionType.LISTPAIRS
+                InstructionType.LISTPAIRS,
+                InstructionType.LISTSETTINGS
             };
         }
 

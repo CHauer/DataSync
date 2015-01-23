@@ -4,6 +4,7 @@ using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Reflection;
 using System.Text;
 using System.Xml.Serialization;
 
@@ -248,5 +249,25 @@ namespace DataSync.Lib.Configuration
             }
         }
 
+        /// <summary>
+        /// Returns a <see cref="System.String" /> that represents this instance.
+        /// </summary>
+        /// <returns>
+        /// A <see cref="System.String" /> that represents this instance.
+        /// </returns>
+        public override string ToString()
+        {
+            StringBuilder builder = new StringBuilder();
+
+            foreach (var property in GetType().GetProperties())
+            {
+                if (!property.Name.Equals("ConfigPairs"))
+                {
+                    builder.AppendLine(String.Format("{0} : {1}", property.Name, property.GetValue(this)));
+                }
+            }
+
+            return builder.ToString();
+        }
     }
 }
