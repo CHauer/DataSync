@@ -13,7 +13,6 @@ namespace DataSync.Lib.Log.Messages
     [Serializable]
     public class SyncJobLogMessage : LogMessage
     {
-
         /// <summary>
         /// Initializes a new instance of the <see cref="SyncJobLogMessage" /> class.
         /// </summary>
@@ -33,7 +32,7 @@ namespace DataSync.Lib.Log.Messages
         /// <returns></returns>
         public static string CreateMessage(string message, ISyncJob syncJob)
         {
-            return String.Format("{0}{1}", message, syncJob.ToString());
+            return String.Format("{0}\n{1}", message, syncJob.ToString());
         }
 
     }

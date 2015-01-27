@@ -109,9 +109,10 @@ namespace DataSync.Lib.Sync
         /// <param name="job">The job.</param>
         public void Enqueue(ISyncJob job)
         {
-            job.Status = JobStatus.Queued;
-            job.Logger = Logger;
             job.JobStatusChanged += (sender, e) => { OnQueueUpdated(); };
+            job.Logger = Logger;
+            
+            job.Status = JobStatus.Queued;
 
             LogMessage(new SyncJobLogMessage("SyncJob enqueued.", job));
             jobQueue.Enqueue(job);

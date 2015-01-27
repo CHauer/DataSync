@@ -72,29 +72,41 @@ namespace DataSync.UI.Monitor.Pipe
         /// </summary>
         private void Run()
         {
+            var pipeServer = new NamedPipeServerStream(PipeName, PipeDirection.In);
             T receivedMessage = null;
 
             while (isRunning)
             {
                 try
                 {
-                    var pipeServer = new NamedPipeServerStream(PipeName, PipeDirection.In);
-
                     pipeServer.WaitForConnection();
-                    receivedMessage = (T)serializer.Deserialize(pipeServer);
 
-                    pipeServer.Close();
                 }
                 catch (Exception ex)
                 {
                     Debug.WriteLine(ex.Message);
                 }
 
-                if (MessageReceived != null && receivedMessage != null)
+                while (pipeServer.IsConnected)
                 {
-                    MessageReceived(this, new ReceivedEventArgs<T>(receivedMessage));
+                    try
+                    {
+                        receivedMessage = (T)serializer.Deserialize(pipeServer);
+                    }
+                    catch (Exception ex)
+                    {
+                        Debug.WriteLine(ex.Message);
+                    }
+
+
+                    if (MessageReceived != null && receivedMessage != null)
+                    {
+                        MessageReceived(this, new ReceivedEventArgs<T>(receivedMessage));
+                    }
                 }
             }
+
+            pipeServer.Close();
         }
 
         /// <summary>

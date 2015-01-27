@@ -184,7 +184,7 @@ namespace DataSync.Lib.Sync
             RunSyncForRealtivePaths(sourceFolders, isFolders: true);
             RunSyncForRealtivePaths(sourceFiles);
 
-            //Delte from Target where is no file/folder in source
+            //Delete from Target where is no file/folder in source
             ConfigurationPair.GetRelativeItemsForTargets(ConfigurationPair.SearchItemType.File).ToList().ForEach((kvp) =>
             {
                 var deleteFiles = kvp.Value.Except(sourceFiles).ToList();
@@ -197,7 +197,7 @@ namespace DataSync.Lib.Sync
 
             ConfigurationPair.GetRelativeItemsForTargets(ConfigurationPair.SearchItemType.Folder).ToList().ForEach((kvp) =>
             {
-                var deleteFolders = kvp.Value.Except(sourceFiles).ToList();
+                var deleteFolders = kvp.Value.Except(sourceFolders).ToList();
 
                 if (deleteFolders.Count > 0)
                 {
@@ -365,6 +365,73 @@ namespace DataSync.Lib.Sync
         }
 
         /// <summary>
+        /// Creates the parallel rename job.
+        /// </summary>
+        /// <param name="targetFolders">The target folders.</param>
+        /// <param name="oldRelativePath">The old relative path.</param>
+        /// <param name="newRelativePath">The new relative path.</param>
+        /// <param name="isFolders">if set to <c>true</c> [is folders].</param>
+        /// <param name="operation">The operation.</param>
+        /// <returns></returns>
+        private List<string> CreateParallelRenameJob(List<string> targetFolders, string oldRelativePath, string newRelativePath, bool isFolders, SyncOperation operation = null)
+        {
+            ISyncItem item;
+            ISyncJob job;
+            Dictionary<ISyncItem, SyncOperation> parallelJobs = new Dictionary<ISyncItem, SyncOperation>();
+
+            //group by first letter without network shares 
+            var groupedTargets = targetFolders.Where(tf => !tf.StartsWith(@"\\"))
+                .GroupBy(tf => tf[0])
+                .Where(gt => gt.Count() == 1)
+                .Select(i => i.First())
+                .ToList();
+
+            //run through each with more than one target
+            foreach (var targetFolder in groupedTargets)
+            {
+                string target = Path.Combine(targetFolder, newRelativePath);
+
+                if (isFolders)
+                {
+                    item = new SyncFolder(Path.Combine(targetFolder, oldRelativePath), target);
+                }
+                else
+                {
+                    item = new SyncFile(Path.Combine(targetFolder, oldRelativePath), target);
+                }
+
+                if (operation == null)
+                {
+                    operation = ComparerInstance.Compare(item);
+                }
+
+                if (operation != null)
+                {
+                    operation.Configuration = Configuration;
+                    operation.Logger = Logger;
+
+                    parallelJobs.Add(item, operation);
+                }
+
+                //remove used target folder
+                targetFolders.Remove(targetFolder);
+            }
+
+            if (parallelJobs.Count > 0)
+            {
+                job = new ParallelSyncJob(parallelJobs)
+                {
+                    Logger = Logger
+                };
+
+                SyncQueue.Enqueue(job);
+            }
+
+            //return updates target folders
+            return targetFolders;
+        }
+
+        /// <summary>
         /// Initializes the file watcher.
         /// </summary>
         private void InitializeFileWatcher()
@@ -376,10 +443,10 @@ namespace DataSync.Lib.Sync
                                NotifyFilters.FileName | NotifyFilters.LastWrite
             };
 
-            fileSystemWatcherInstance.Changed += FileSystemWatcher_Changed;
-            fileSystemWatcherInstance.Created += FileSystemWatcher_Created;
-            fileSystemWatcherInstance.Deleted += FileSystemWatcher_Deleted;
-            fileSystemWatcherInstance.Renamed += FileSystemWatcher_Renamed;
+            fileSystemWatcherInstance.Changed += this.FileSystemWatcherChanged;
+            fileSystemWatcherInstance.Created += this.FileSystemWatcherCreated;
+            fileSystemWatcherInstance.Deleted += this.FileSystemWatcherDeleted;
+            fileSystemWatcherInstance.Renamed += this.FileSystemWatcherRenamed;
         }
 
         /// <summary>
@@ -387,7 +454,7 @@ namespace DataSync.Lib.Sync
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="RenamedEventArgs"/> instance containing the event data.</param>
-        private void FileSystemWatcher_Renamed(object sender, RenamedEventArgs e)
+        private void FileSystemWatcherRenamed(object sender, RenamedEventArgs e)
         {
             ISyncJob job = null;
             SyncOperation operation;
@@ -396,7 +463,8 @@ namespace DataSync.Lib.Sync
             lastChangedElementPath = string.Empty;
 
             string source = e.FullPath;
-            string relativePath = e.FullPath.Replace(ConfigurationPair.SoureFolder, string.Empty);
+            string relativePath = e.FullPath.Replace(ConfigurationPair.SoureFolder + "\\", string.Empty);
+            string oldRelativePath = e.OldFullPath.Replace(ConfigurationPair.SoureFolder + "\\", string.Empty);
             List<string> targetFolders = new List<string>(ConfigurationPair.TargetFolders);
 
             if (Directory.Exists(e.FullPath))
@@ -411,13 +479,13 @@ namespace DataSync.Lib.Sync
 
                 if (Configuration.IsParrallelSync)
                 {
-                    targetFolders = CreateParallelJob(targetFolders, relativePath, source,
+                    targetFolders = CreateParallelRenameJob(targetFolders, oldRelativePath, relativePath,
                                                         isFolders: true, operation: operation);
                 }
 
                 foreach (string targetFolder in targetFolders)
                 {
-                    item = new SyncFolder(source, Path.Combine(targetFolder, relativePath));
+                    item = new SyncFolder(Path.Combine(targetFolder, oldRelativePath), Path.Combine(targetFolder, relativePath));
 
                     job = new SyncJob(item, operation)
                     {
@@ -439,12 +507,12 @@ namespace DataSync.Lib.Sync
 
                 if (Configuration.IsParrallelSync)
                 {
-                    targetFolders = CreateParallelJob(targetFolders, relativePath, source, false, operation);
+                    targetFolders = CreateParallelRenameJob(targetFolders, oldRelativePath, relativePath, false, operation);
                 }
 
                 foreach (string targetFolder in targetFolders)
                 {
-                    item = new SyncFile(source, Path.Combine(targetFolder, relativePath));
+                    item = new SyncFile(Path.Combine(targetFolder, oldRelativePath), Path.Combine(targetFolder, relativePath));
 
                     job = new SyncJob(item, operation)
                     {
@@ -461,7 +529,7 @@ namespace DataSync.Lib.Sync
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="FileSystemEventArgs"/> instance containing the event data.</param>
-        private void FileSystemWatcher_Deleted(object sender, FileSystemEventArgs e)
+        private void FileSystemWatcherDeleted(object sender, FileSystemEventArgs e)
         {
             ISyncJob job = null;
             SyncOperation operation;
@@ -470,14 +538,19 @@ namespace DataSync.Lib.Sync
             lastChangedElementPath = string.Empty;
 
             string source = e.FullPath;
-            string relativePath = e.FullPath.Replace(ConfigurationPair.SoureFolder, string.Empty);
+            string relativePath = e.FullPath.Replace(ConfigurationPair.SoureFolder + "\\", string.Empty);
             List<string> targetFolders = new List<string>(ConfigurationPair.TargetFolders);
 
 
-            //IMPORTANT - directory.exist false way - directory already deleted
+            // IMPORTANT - directory.exist is every time false  - directory already deleted by OS
             if (String.IsNullOrEmpty(Path.GetExtension(e.FullPath)))
             {
                 Debug.WriteLine("Directory Deleted: {0} {1}", e.FullPath, e.ChangeType.ToString("g"));
+
+                //if (!ConfigurationPair.GetRelativeDirectories().Contains(relativePath))
+                //{
+                //    return;
+                //}
 
                 //handle directory delete
                 operation = new DeleteFolder()
@@ -509,7 +582,12 @@ namespace DataSync.Lib.Sync
             {
                 Debug.WriteLine("File Deleted: {0} {1}", e.FullPath, e.ChangeType.ToString("g"));
 
-                operation = new DeleteFolder()
+                //if (!ConfigurationPair.GetRelativeFiles().Contains(relativePath))
+                //{
+                //    return;
+                //}
+
+                operation = new DeleteFile()
                 {
                     Configuration = this.Configuration,
                     Logger = this.Logger
@@ -541,7 +619,7 @@ namespace DataSync.Lib.Sync
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="FileSystemEventArgs"/> instance containing the event data.</param>
-        private void FileSystemWatcher_Created(object sender, FileSystemEventArgs e)
+        private void FileSystemWatcherCreated(object sender, FileSystemEventArgs e)
         {
             ISyncJob job = null;
             SyncOperation operation;
@@ -550,12 +628,17 @@ namespace DataSync.Lib.Sync
             lastChangedElementPath = string.Empty;
 
             string source = e.FullPath;
-            string relativePath = e.FullPath.Replace(ConfigurationPair.SoureFolder, string.Empty);
+            string relativePath = e.FullPath.Replace(ConfigurationPair.SoureFolder + "\\", string.Empty);
             List<string> targetFolders = new List<string>(ConfigurationPair.TargetFolders);
 
             if (Directory.Exists(e.FullPath))
             {
                 Debug.WriteLine("Directory Created: {0} {1}", e.FullPath, e.ChangeType.ToString("g"));
+
+                if (!ConfigurationPair.GetRelativeDirectories().Contains(relativePath))
+                {
+                    return;
+                }
 
                 operation = new CreateFolder()
                 {
@@ -585,6 +668,11 @@ namespace DataSync.Lib.Sync
             {
                 Debug.WriteLine("File Created: {0} {1}", e.FullPath, e.ChangeType.ToString("g"));
 
+                if (!ConfigurationPair.GetRelativeFiles().Contains(relativePath))
+                {
+                    return;
+                }
+
                 operation = new CopyFile()
                 {
                     Configuration = this.Configuration,
@@ -599,7 +687,7 @@ namespace DataSync.Lib.Sync
 
                 foreach (string targetFolder in targetFolders)
                 {
-                    item = new SyncFolder(source, Path.Combine(targetFolder, relativePath));
+                    item = new SyncFile(source, Path.Combine(targetFolder, relativePath));
 
                     job = new SyncJob(item, operation)
                     {
@@ -616,19 +704,24 @@ namespace DataSync.Lib.Sync
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="FileSystemEventArgs"/> instance containing the event data.</param>
-        private void FileSystemWatcher_Changed(object sender, FileSystemEventArgs e)
+        private void FileSystemWatcherChanged(object sender, FileSystemEventArgs e)
         {
             ISyncJob job = null;
             SyncOperation operation;
             ISyncItem item;
 
             string source = e.FullPath;
-            string relativePath = e.FullPath.Replace(ConfigurationPair.SoureFolder, string.Empty);
+            string relativePath = e.FullPath.Replace(ConfigurationPair.SoureFolder + "\\", string.Empty);
             List<string> targetFolders = new List<string>(ConfigurationPair.TargetFolders);
 
             if (Directory.Exists(e.FullPath))
             {
                 Debug.WriteLine("Directory Changed: {0} {1}", e.FullPath, e.ChangeType.ToString("g"));
+
+                if (!ConfigurationPair.GetRelativeDirectories().Contains(relativePath))
+                {
+                    return;
+                }
 
                 if (Configuration.IsParrallelSync)
                 {
@@ -649,6 +742,8 @@ namespace DataSync.Lib.Sync
                         return;
                     }
 
+                    operation.Configuration = Configuration; 
+
                     job = new SyncJob(item, operation)
                     {
                         Logger = Logger
@@ -660,6 +755,11 @@ namespace DataSync.Lib.Sync
             else
             {
                 Debug.WriteLine("File Changed: {0} {1}", e.FullPath, e.ChangeType.ToString("g"));
+
+                if (!ConfigurationPair.GetRelativeFiles().Contains(relativePath))
+                {
+                    return;
+                }
 
                 if (!e.FullPath.Equals(lastChangedElementPath))
                 {
@@ -683,6 +783,8 @@ namespace DataSync.Lib.Sync
                             //no sync operation needed
                             return;
                         }
+
+                        operation.Configuration = Configuration; 
 
                         job = new SyncJob(item, operation)
                         {

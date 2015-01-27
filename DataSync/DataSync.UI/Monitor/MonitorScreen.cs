@@ -65,7 +65,12 @@ namespace DataSync.UI.Monitor
             builder.AppendFormat("# {0} #", pair.ConfigurationPair.Name);
             builder.AppendLine();
 
-            var jobs = pair.SyncQueue.Jobs.Where(job => job.Status == JobStatus.Processing).ToList();
+            var jobs = new List<ISyncJob>();
+            if (pair.SyncQueue.CurrentJob != null)
+            {
+                jobs.Add(pair.SyncQueue.CurrentJob);
+            }
+
             jobs.AddRange(pair.SyncQueue.Jobs.Where(job => job.Status == JobStatus.Queued));
 
             foreach (var job in jobs.Take(MaxViewJobs))

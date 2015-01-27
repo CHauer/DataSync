@@ -37,16 +37,14 @@ namespace DataSync.Lib.Log
                 throw new ArgumentException("logFilePath");
             }
 
-            this.LogFilePath = LogFilePath;
+            this.LogFilePath = logFilePath;
             this.LogFileSize = logFileSize;
-
-            InitializeLogFile();
         }
 
         /// <summary>
         /// Initializes the log file.
         /// </summary>
-        private void InitializeLogFile()
+        private void OpenLogFile()
         {
             try
             {
@@ -82,17 +80,27 @@ namespace DataSync.Lib.Log
         {
             try
             {
+                OpenLogFile();
+
                 logWriter.WriteLine(message.ToString());
+
+                CloseLogFile();
             }
             catch (Exception ex)
             {
                 Debug.WriteLine(ex.Message);
             }
 
-            if (CheckBackupFile())
-            {
-                InitializeLogFile();
-            }
+            CheckBackupFile();
+        }
+
+        /// <summary>
+        /// Closes the log file.
+        /// </summary>
+        private void CloseLogFile()
+        {
+            logWriter.Flush();
+            logWriter.Close();
         }
 
         /// <summary>
@@ -129,9 +137,6 @@ namespace DataSync.Lib.Log
                         Debug.WriteLine(ex.Message);
                     }
                 }
-
-                logWriter.Flush();
-                logWriter.Close();
 
                 try
                 {

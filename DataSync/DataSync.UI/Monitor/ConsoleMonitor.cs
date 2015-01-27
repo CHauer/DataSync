@@ -51,7 +51,22 @@ namespace DataSync.UI.Monitor
         /// </summary>
         public void Stop()
         {
-            processMonitor.CloseMainWindow();
+            try
+            {
+                processMonitor.CloseMainWindow();
+            }
+            catch (Exception ex)
+            {
+                try
+                {
+                    processMonitor.Kill();
+                }
+                catch (Exception exi)
+                {
+                    Debug.WriteLine(ex.Message);
+                    Debug.WriteLine(exi.Message);
+                }
+            }
         }
 
     }

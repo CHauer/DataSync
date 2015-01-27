@@ -28,6 +28,17 @@ namespace DataSync.UI.Monitor
             this.pipeSender = new PipeSender<MonitorScreen>(MonitorType.Screen.ToString("g"));
             this.Manager = manager;
             this.Manager.StateUpdated += ManagerStateUpdated;
+
+            //send initial screen
+            this.SendInitialScreen();
+        }
+
+        /// <summary>
+        /// Sends the initial screen.
+        /// </summary>
+        public void SendInitialScreen()
+        {
+            this.pipeSender.SendMessage(new MonitorScreen(100, 50));
         }
 
         /// <summary>

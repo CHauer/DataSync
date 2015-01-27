@@ -10,6 +10,8 @@ using System.Threading.Tasks;
 
 namespace DataSync.UI.Monitor.Pipe
 {
+    using System.Threading;
+
     /// <summary>
     /// 
     /// </summary>
@@ -20,6 +22,15 @@ namespace DataSync.UI.Monitor.Pipe
         /// The serializer
         /// </summary>
         private BinaryFormatter serializer;
+        /// <summary>
+        /// The send message queue
+        /// </summary>
+        private Queue<T> sendMessageQueue;
+
+        /// <summary>
+        /// The is running
+        /// </summary>
+        private bool isRunning;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="PipeReceiver{T}" /> class.
@@ -29,6 +40,53 @@ namespace DataSync.UI.Monitor.Pipe
         {
             this.serializer = new BinaryFormatter();
             this.PipeName = pipename;
+            sendMessageQueue = new Queue<T>();
+            isRunning = true;
+
+            Task.Run(() => RunMessageSender());
+        }
+
+        /// <summary>
+        /// Runs the message sender.
+        /// </summary>
+        private void RunMessageSender()
+        {
+            pipeClient = new NamedPipeClientStream(".", PipeName, PipeDirection.Out);
+
+            while (isRunning)
+            {
+                while (sendMessageQueue.Count == 0)
+                {
+                    Thread.Sleep(100);
+                }
+
+                var message = sendMessageQueue.Dequeue();
+
+                if (!pipeClient.IsConnected)
+                {
+                    try
+                    {
+                        pipeClient = new NamedPipeClientStream(".", PipeName, PipeDirection.Out);
+                        pipeClient.Connect(10000);
+                    }
+                    catch (Exception ex)
+                    {
+                        Debug.WriteLine(ex.Message);
+                    }
+                }
+
+                try
+                {
+                    serializer.Serialize(pipeClient, message);
+                    pipeClient.Flush();
+                }
+                catch (Exception ex)
+                {
+                    Debug.WriteLine(ex.Message);
+                }
+            }
+
+            pipeClient.Close();
         }
 
         /// <summary>
@@ -40,28 +98,16 @@ namespace DataSync.UI.Monitor.Pipe
         public String PipeName { get; private set; }
 
         /// <summary>
+        /// The pipe client
+        /// </summary>
+        private NamedPipeClientStream pipeClient;
+
+        /// <summary>
         /// Runs this instance.
         /// </summary>
         public void SendMessage(T message)
         {
-            Task.Run(() =>
-            {
-                try
-                {
-                    var pipeClient = new NamedPipeClientStream(".", PipeName, PipeDirection.Out);
-
-                    pipeClient.Connect(10000);
-
-                    serializer.Serialize(pipeClient, message);
-
-                    pipeClient.Flush();
-                    pipeClient.Close();
-                }
-                catch (Exception ex)
-                {
-                    Debug.WriteLine(ex.Message);
-                }
-            });
+            sendMessageQueue.Enqueue(message);
         }
     }
 }

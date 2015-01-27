@@ -121,6 +121,16 @@ namespace DataSync.Properties {
         }
         
         /// <summary>
+        ///   Sucht eine lokalisierte Zeichenfolge, die Welcome to DataSync - (c) Christoph Hauer
+        ///----------------------------------------------- ähnelt.
+        /// </summary>
+        internal static string Program_Main_IntroText {
+            get {
+                return ResourceManager.GetString("Program_Main_IntroText", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Sucht eine lokalisierte Zeichenfolge, die Sync is currently running! 
         ///Are you sure you want to leave before the end of the snyc process? Press Enter for END: ähnelt.
         /// </summary>

@@ -16,6 +16,8 @@ using DataSync.Lib.Sync.Items;
 
 namespace DataSync.Lib.Sync.Operations
 {
+    using System.Threading;
+
     /// <summary>
     /// 
     /// </summary>
@@ -47,7 +49,12 @@ namespace DataSync.Lib.Sync.Operations
 
             SyncFile file = item as SyncFile;
 
-            if (Configuration.IsBlockCompare && item.TargetExists)
+            while (IsFileLocked(file.SourcePath))
+            {
+                Thread.Sleep(100);
+            }
+
+            if (item.TargetExists)
             {
                 try
                 {
@@ -92,6 +99,56 @@ namespace DataSync.Lib.Sync.Operations
         }
 
         /// <summary>
+        /// Determines whether the file is locked.
+        /// </summary>
+        /// <param name="filePath">The file path.</param>
+        /// <param name="access">The access.</param>
+        /// <returns></returns>
+        private bool IsFileLocked(string filePath, FileAccess access = FileAccess.Read)
+        {
+            FileStream stream = null;
+            FileInfo file;
+
+            try
+            {
+                file = new FileInfo(filePath);
+            }
+            catch (Exception ex)
+            {
+                return true;
+            }
+
+            if (!file.Exists)
+            {
+                return false;
+            }
+
+            try
+            {
+                
+                stream = file.Open(FileMode.Open, access, FileShare.None);
+            }
+            catch (IOException)
+            {
+                //the file is unavailable because it is:
+                //still being written to
+                //or being processed by another thread
+                //or does not exist (has already been processed)
+                return true;
+            }
+            finally
+            {
+                if (stream != null)
+                {
+                    stream.Close();
+                }
+            }
+
+            //file is not locked
+            return false;
+        }
+
+        /// <summary>
         /// Executes the block copy.
         /// </summary>
         /// <param name="file">The file.</param>
@@ -115,7 +172,7 @@ namespace DataSync.Lib.Sync.Operations
 
                 int maxFullBlock = (int)(sourceStream.Length / bufferSize);
 
-                for (int runner = 1; runner <= maxFullBlock; maxFullBlock++)
+                for (int runner = 1; runner <= maxFullBlock; runner++)
                 {
                     //end of file reached - change buffer size to "rest size"
                     if (runner == maxFullBlock)
