@@ -32,9 +32,33 @@ namespace DataSync.Lib.Log
             {
                 Console.ForegroundColor = ConsoleColor.DarkYellow;
             }
+            else if (message is SyncOperationLogMessage)
+            {
+                Console.ForegroundColor = ConsoleColor.DarkCyan;
+            }
 
             Console.WriteLine(message.ToString());
+            Console.WriteLine(CreateLine(99, '-'));
             Console.ResetColor();
+        }
+
+        /// <summary>
+        /// Creates the line.
+        /// </summary>
+        /// <param name="length">The length.</param>
+        /// <param name="caracter">The caracter.</param>
+        /// <returns></returns>
+        private string CreateLine(int length, char caracter)
+        {
+            StringBuilder builder = new StringBuilder();
+
+            while (length > 0)
+            {
+                builder.Append(caracter);
+                length--;
+            }
+
+            return builder.ToString();
         }
     }
 }

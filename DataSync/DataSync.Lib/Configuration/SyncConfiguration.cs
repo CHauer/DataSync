@@ -112,21 +112,21 @@ namespace DataSync.Lib.Configuration
             }
         }
 
-        /// <summary>
-        /// Gets or sets a value indicating whether [is block compare].
-        /// </summary>
-        /// <value>
-        ///   <c>true</c> if [is block compare]; otherwise, <c>false</c>.
-        /// </value>
-        public bool IsBlockCompare
-        {
-            get { return isBlockCompare; }
-            set
-            {
-                isBlockCompare = value;
-                RaisePropertyChanged(() => IsBlockCompare);
-            }
-        }
+        ///// <summary>
+        ///// Gets or sets a value indicating whether [is block compare].
+        ///// </summary>
+        ///// <value>
+        /////   <c>true</c> if [is block compare]; otherwise, <c>false</c>.
+        ///// </value>
+        //public bool IsBlockCompare
+        //{
+        //    get { return isBlockCompare; }
+        //    set
+        //    {
+        //        isBlockCompare = value;
+        //        RaisePropertyChanged(() => IsBlockCompare);
+        //    }
+        //}
 
         /// <summary>
         /// Gets or sets a value indicating whether this instance is log to file.
@@ -136,11 +136,9 @@ namespace DataSync.Lib.Configuration
         /// </value>
         public bool IsLogToFile
         {
-            get { return this.isLogToFile; }
-            set
+            get
             {
-                this.isLogToFile = value;
-                RaisePropertyChanged(() => IsLogToFile);
+                return !string.IsNullOrEmpty(logFileName);
             }
         }
 
@@ -212,11 +210,10 @@ namespace DataSync.Lib.Configuration
         {
             ConfigPairs = new List<ConfigurationPair>();
 
-            this.IsBlockCompare = false;
-            this.IsLogToFile = false;
+            //this.IsBlockCompare = false;
             this.IsParrallelSync = false;
             this.IsRecursiv = true;
-            this.LogFileName = Path.Combine(Environment.CurrentDirectory, "datasynclog.txt");
+            this.LogFileName = null;
             this.LogFileSize = 1024 * 1024 * 2; //2MB
             this.BlockSize = 1024;
             this.BlockCompareFileSize = 1024 * 500; //ca 500KB

@@ -38,7 +38,7 @@ namespace DataSync.Lib.Sync
         /// <summary>
         /// Occurs when a job status changed.
         /// </summary>
-        event EventHandler<JobStatusChangedEventArgs> JobStatusChanged;
+        event EventHandler JobStatusChanged;
 
         /// <summary>
         /// Runs this instance.

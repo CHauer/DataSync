@@ -12,22 +12,25 @@ using DataSync.UI.Monitor.Pipe;
 
 namespace DataSync.Monitor
 {
+    using System.Collections;
+    using System.Threading;
+
     public class Program
     {
         /// <summary>
         /// The _screen receiver
         /// </summary>
-        private static PipeReceiver<MonitorScreen> _screenReceiver;
+        private static PipeReceiver<MonitorScreen> screenReceiver;
 
         /// <summary>
         /// The _log receiver
         /// </summary>
-        private static PipeReceiver<LogMessage> _logReceiver;
+        private static PipeReceiver<LogMessage> logReceiver;
 
         /// <summary>
         /// The _log listener
         /// </summary>
-        private static ConsoleLogListener _logListener;
+        private static ConsoleLogListener logListener;
 
         /// <summary>
         /// Defines the entry point of the application.
@@ -49,16 +52,16 @@ namespace DataSync.Monitor
 
             if (monitorType == MonitorType.Log)
             {
-                _logListener = new ConsoleLogListener();
-                _logReceiver = new PipeReceiver<LogMessage>(monitorType.ToString("g"));
-                _logReceiver.MessageReceived += LogReceiver_MessageReceived;
-                _logReceiver.StartReceiving();
+                logListener = new ConsoleLogListener();
+                logReceiver = new PipeReceiver<LogMessage>(monitorType.ToString("g"));
+                logReceiver.MessageReceived += LogReceiverMessageReceived;
+                logReceiver.StartReceiving();
             }
             else
             {
-                _screenReceiver = new PipeReceiver<MonitorScreen>(monitorType.ToString("g"));
-                _screenReceiver.MessageReceived += ScreenReceiver_MessageReceived;
-                _screenReceiver.StartReceiving();
+                screenReceiver = new PipeReceiver<MonitorScreen>(monitorType.ToString("g"));
+                screenReceiver.MessageReceived += ScreenReceiverMessageReceived;
+                screenReceiver.StartReceiving();
             }
 
             // ReSharper disable once ConditionIsAlwaysTrueOrFalse
@@ -72,15 +75,15 @@ namespace DataSync.Monitor
             }
         }
 
-        private static void ScreenReceiver_MessageReceived(object sender, ReceivedEventArgs<MonitorScreen> e)
+        private static void ScreenReceiverMessageReceived(object sender, ReceivedEventArgs<MonitorScreen> e)
         {
             Console.Clear();
             Console.Write(e.Message.ToString());
         }
 
-        private static void LogReceiver_MessageReceived(object sender, ReceivedEventArgs<LogMessage> e)
+        private static void LogReceiverMessageReceived(object sender, ReceivedEventArgs<LogMessage> e)
         {
-            _logListener.WriteLogMessage(e.Message);
+            logListener.WriteLogMessage(e.Message);
         }
 
         /// <summary>
@@ -164,7 +167,7 @@ namespace DataSync.Monitor
         private static void InitializeAppDomain()
         {
             //React to current process end
-            AppDomain.CurrentDomain.ProcessExit += CurrentDomain_ProcessExit;
+            AppDomain.CurrentDomain.ProcessExit += CurrentDomainProcessExit;
         }
 
         /// <summary>
@@ -172,15 +175,15 @@ namespace DataSync.Monitor
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        private static void CurrentDomain_ProcessExit(object sender, EventArgs e)
+        private static void CurrentDomainProcessExit(object sender, EventArgs e)
         {
-            if (_logReceiver != null)
+            if (logReceiver != null)
             {
-                _logReceiver.StopReceiving();
+                logReceiver.StopReceiving();
             }
-            if (_screenReceiver != null)
+            if (screenReceiver != null)
             {
-                _screenReceiver.StopReceiving();
+                screenReceiver.StopReceiving();
             }
         }
 

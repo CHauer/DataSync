@@ -22,10 +22,6 @@ namespace DataSync.Lib.Sync.Jobs
     /// </summary>
     public class ParallelSyncJob : ISyncJob
     {
-        /// <summary>
-        /// The status
-        /// </summary>
-        private JobStatus status;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ParallelSyncJob" /> class.
@@ -91,19 +87,8 @@ namespace DataSync.Lib.Sync.Jobs
         /// </value>
         public JobStatus Status
         {
-            get { return this.status; }
-            set
-            {
-                if (this.status != value)
-                {
-                    this.status = value;
-
-                    if (JobStatusChanged != null)
-                    {
-                        JobStatusChanged(this, new JobStatusChangedEventArgs(value));
-                    }
-                }
-            }
+            get;
+            set;
         }
 
         /// <summary>
@@ -136,7 +121,7 @@ namespace DataSync.Lib.Sync.Jobs
         /// <summary>
         /// Occurs when a job status changed.
         /// </summary>
-        public event EventHandler<JobStatusChangedEventArgs> JobStatusChanged;
+        public event EventHandler JobStatusChanged;
 
         /// <summary>
         /// Runs this instance.
@@ -156,28 +141,33 @@ namespace DataSync.Lib.Sync.Jobs
                 if (operation == null || item == null)
                 {
                     this.Status = JobStatus.Error;
+                    OnJobStatusChanged();
                     return;
                 }
 
                 if (operation.Execute(item))
                 {
                     this.JobsStates[item] = JobStatus.Done;
+                    OnJobStatusChanged();
                 }
                 else
                 {
                     this.JobsStates[item] = JobStatus.Error;
+                    OnJobStatusChanged();
                 }
 
                 //check if end of parallel operation is error - parallel job is error state
                 if (this.JobsStates.Any(i => i.Value == JobStatus.Error))
                 {
                     this.Status = JobStatus.Error;
+                    OnJobStatusChanged();
                 }
 
                 //if all part operations are done - parallel job done
                 if (this.JobsStates.All(i => i.Value == JobStatus.Done))
                 {
                     this.Status = JobStatus.Done;
+                    OnJobStatusChanged();
                 }
             });
         }
@@ -200,7 +190,7 @@ namespace DataSync.Lib.Sync.Jobs
             {
                 string target = ShortenFolderPath(Path.GetDirectoryName(item.TargetPath), columns[1]);
                 string operation = ParallelJobs[item].GetType().Name;
-                string jostatus = this.Status == JobStatus.Processing ? "Progress" : this.status.ToString("g");
+                string jostatus = this.Status == JobStatus.Processing ? "Progress" : this.Status.ToString("g");
 
                 builder.AppendLine(String.Format("{0} {1} {2} {3} {4}",
                      source.PadRight(columns[0]), target.PadRight(columns[1]), file.PadRight(columns[2]),
@@ -259,6 +249,17 @@ namespace DataSync.Lib.Sync.Jobs
             if (this.Logger != null)
             {
                 this.Logger.AddLogMessage(message);
+            }
+        }
+
+        /// <summary>
+        /// Called when [job status changed].
+        /// </summary>
+        protected virtual void OnJobStatusChanged()
+        {
+            if (this.JobStatusChanged != null)
+            {
+                JobStatusChanged(this, EventArgs.Empty);
             }
         }
     }

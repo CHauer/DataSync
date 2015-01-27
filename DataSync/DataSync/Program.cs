@@ -22,6 +22,8 @@ using DataSync.UI.Monitor.Pipe;
 
 namespace DataSync
 {
+    using System.Threading;
+
     /// <summary>
     /// 
     /// </summary>
@@ -30,37 +32,42 @@ namespace DataSync
         /// <summary>
         /// The _log monitor
         /// </summary>
-        private static ConsoleMonitor _logMonitor;
+        private static ConsoleMonitor logMonitor;
 
         /// <summary>
         /// The _queue monitor
         /// </summary>
-        private static ConsoleMonitor _queueMonitor;
+        private static ConsoleMonitor queueMonitor;
 
         /// <summary>
         /// The instruction _instructionHandler
         /// </summary>
-        private static InputInstructionHandler _instructionHandler;
+        private static InputInstructionHandler instructionHandler;
 
         /// <summary>
         /// The _sync manager object
         /// </summary>
-        private static SyncManager _syncManagerObj;
+        private static SyncManager syncManagerObj;
 
         /// <summary>
         /// The log listener for the local pipe to console monitor
         /// </summary>
-        private static PipeLogListener _logListener;
+        private static PipeLogListener logListener;
 
         /// <summary>
         /// The log listener for the local pipe to console monitor
         /// </summary>
-        private static FileLogListener _logFileListener;
+        private static FileLogListener logFileListener;
 
         /// <summary>
         /// The log instance
         /// </summary>
-        private static Logger _logInstance;
+        private static Logger logInstance;
+
+        /// <summary>
+        /// The monitor screen generator
+        /// </summary>
+        private static MonitorScreenGenerator monitorScreenGenerator;
 
         /// <summary>
         /// Defines the entry point of the application.
@@ -80,9 +87,9 @@ namespace DataSync
                 }
 
                 ArgumentConfigurationCreator creator = new ArgumentConfigurationCreator(args);
-                creator.ErrorOccured += ArgumentCreator_ErrorOccuredHandler;
+                creator.ErrorOccured += ArgumentCreatorErrorOccuredHandler;
 
-                _syncManagerObj = new SyncManager(creator, _logInstance);
+                syncManagerObj = new SyncManager(creator, logInstance);
             }
             else
             {
@@ -91,7 +98,13 @@ namespace DataSync
                     ConfigurationFile = Resources.ConfigurationFile
                 };
 
-                _syncManagerObj = new SyncManager(manager, manager, _logInstance);
+                syncManagerObj = new SyncManager(manager, manager, logInstance);
+            }
+
+            if (syncManagerObj.Configuration.IsLogToFile)
+            {
+                logFileListener = new FileLogListener(syncManagerObj.Configuration.LogFileName, syncManagerObj.Configuration.LogFileSize);
+                logInstance.AddListener(logFileListener);
             }
 
             InitializeAppDomain();
@@ -106,16 +119,16 @@ namespace DataSync
             PrepareConsoleWindow();
 
             //Start the Initial Sync and the file watcher
-            _syncManagerObj.StartSync();
+            syncManagerObj.StartSync();
 
             //start handle input from console
-            _instructionHandler.RunHandler();
+            instructionHandler.RunHandler();
 
             //programm end
             Console.WriteLine(Resources.Program_Main_EnterForEXIT);
             Console.ReadLine();
 
-            if (!_syncManagerObj.IsSynced)
+            if (!syncManagerObj.IsSynced)
             {
                 Console.WriteLine(Resources.Program_Main_SyncRunning);
                 Console.ReadLine();
@@ -129,11 +142,11 @@ namespace DataSync
         /// </summary>
         private static void InitializeLogger()
         {
-            _logInstance = new Logger();
+            logInstance = new Logger();
 
-            _logListener = new PipeLogListener();
+            logListener = new PipeLogListener();
 
-            _logInstance.AddListener(_logListener);
+            logInstance.AddListener(logListener);
         }
 
         /// <summary>
@@ -142,25 +155,63 @@ namespace DataSync
         private static void InitializeInstructionHandler()
         {
             // ReSharper disable once UseObjectOrCollectionInitializer
-            _instructionHandler = new InputInstructionHandler(Console.In, Console.Out);
-            _instructionHandler.SyncManager = _syncManagerObj;
-            _instructionHandler.HelpInstructionOccured += (sender, e) => { Console.WriteLine(Resources.HelpInstruction); };
-            _instructionHandler.BeforeOutput += (sender, e) => { Console.ForegroundColor = e.Color; };
-            _instructionHandler.AfterOutput += (sender, e) => { Console.ResetColor(); };
-            _instructionHandler.LogFileChangeOccured += InstructionHandler_LogFileChangeOccured;
+            instructionHandler = new InputInstructionHandler(Console.In, Console.Out);
+            instructionHandler.SyncManager = syncManagerObj;
+            instructionHandler.HelpInstructionOccured += (sender, e) => { Console.WriteLine(Resources.HelpInstruction); };
+            instructionHandler.BeforeOutput += (sender, e) => { Console.ForegroundColor = e.Color; };
+            instructionHandler.AfterOutput += (sender, e) => { Console.ResetColor(); };
+            instructionHandler.LogFileChangeOccured += InstructionHandlerLogFileChangeOccured;
+            instructionHandler.MonitorChangeOccured += InstructionHandlerMonitorChangeOccured;
         }
 
-        private static void InstructionHandler_LogFileChangeOccured(object sender, LogFilePropertiesChangedEventArgs e)
+        /// <summary>
+        /// Instructions the handler monitor change occured.
+        /// </summary>
+        /// <param name="sender">The sender.</param>
+        /// <param name="e">The <see cref="MonitorChangeEventArgs"/> instance containing the event data.</param>
+        private static void InstructionHandlerMonitorChangeOccured(object sender, MonitorChangeEventArgs e)
         {
-        
-            if (_logFileListener != null)
+            if (e.Type == MonitorType.Log)
             {
-                _logInstance.RemoveListener(_logFileListener);
+                if (e.Hide)
+                {
+                    logMonitor.Stop();
+                }
+                else
+                {
+                    logMonitor.Start();
+                }
+            }
+            else
+            {
+                if (e.Hide)
+                {
+                    queueMonitor.Stop();
+                }
+                else
+                {
+                    queueMonitor.Start();
+                    Thread.Sleep(new TimeSpan(0, 0, 0, 3));
+                    monitorScreenGenerator.SendInitialScreen();
+                }
+            }
+        }
+
+        /// <summary>
+        /// Instructions the handler log file change occured.
+        /// </summary>
+        /// <param name="sender">The sender.</param>
+        /// <param name="e">The <see cref="LogFilePropertiesChangedEventArgs"/> instance containing the event data.</param>
+        private static void InstructionHandlerLogFileChangeOccured(object sender, LogFilePropertiesChangedEventArgs e)
+        {
+            if (logFileListener != null)
+            {
+                logInstance.RemoveListener(logFileListener);
             }
 
-            _logFileListener = new FileLogListener(e.LogFileName, e.LogFileSize);
+            logFileListener = new FileLogListener(e.LogFileName, e.LogFileSize);
 
-            _logInstance.AddListener(_logFileListener);
+            logInstance.AddListener(logFileListener);
         }
 
         /// <summary>
@@ -172,7 +223,7 @@ namespace DataSync
 
             ConsoleWindowPositioner positioner = new ConsoleWindowPositioner();
 
-            positioner.BringConsoleWindowToFront();
+            Console.WriteLine(Resources.Program_Main_IntroText);
 
             positioner.SetConsoleWindowPosition(50, 50);
 
@@ -184,7 +235,7 @@ namespace DataSync
         private static void InitializeAppDomain()
         {
             //React to current process end
-            AppDomain.CurrentDomain.ProcessExit += CurrentDomain_ProcessExit;
+            AppDomain.CurrentDomain.ProcessExit += CurrentDomainProcessExit;
 
             //Handle unhandled exceptions - prevent close if possible
             //AppDomain.CurrentDomain.UnhandledException += CurrentDomain_UnhandledException;
@@ -195,7 +246,7 @@ namespace DataSync
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        private static void CurrentDomain_ProcessExit(object sender, EventArgs e)
+        private static void CurrentDomainProcessExit(object sender, EventArgs e)
         {
             CloseMonitors();
         }
@@ -205,12 +256,12 @@ namespace DataSync
         /// </summary>
         private static void StartMonitors()
         {
-            _logMonitor = new ConsoleMonitor(MonitorType.Log);
-            _logMonitor.Start();
+            logMonitor = new ConsoleMonitor(MonitorType.Log);
+            logMonitor.Start();
 
-            MonitorScreenGenerator generator = new MonitorScreenGenerator(_syncManagerObj);
-            _queueMonitor = new ConsoleMonitor(MonitorType.Screen);
-            _queueMonitor.Start();
+            monitorScreenGenerator = new MonitorScreenGenerator(syncManagerObj);
+            queueMonitor = new ConsoleMonitor(MonitorType.Screen);
+            queueMonitor.Start();
         }
 
         /// <summary>
@@ -218,8 +269,8 @@ namespace DataSync
         /// </summary>
         private static void CloseMonitors()
         {
-            _logMonitor.Stop();
-            _queueMonitor.Stop();
+            logMonitor.Stop();
+            queueMonitor.Stop();
         }
 
         /// <summary>
@@ -227,7 +278,7 @@ namespace DataSync
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="ArgumentErrorEventArgs" /> instance containing the event data.</param>
-        private static void ArgumentCreator_ErrorOccuredHandler(object sender, ArgumentErrorEventArgs e)
+        private static void ArgumentCreatorErrorOccuredHandler(object sender, ArgumentErrorEventArgs e)
         {
             Console.ForegroundColor = ConsoleColor.Red;
             Console.WriteLine(e.ToString());

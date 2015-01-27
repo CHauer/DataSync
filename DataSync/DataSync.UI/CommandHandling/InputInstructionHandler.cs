@@ -282,8 +282,8 @@ namespace DataSync.UI.CommandHandling
         {
             if (instruction == null) return;
 
-            string parameter = instruction.Parameters[0].Content.ToString();
-            bool switcher = instruction.Parameters[1].Content.Equals("ON");
+            string parameter = instruction.Parameters[0].Content.ToString().ToUpper();
+            bool switcher = instruction.Parameters[1].Content.ToString().ToUpper().Equals("ON");
 
             if (parameter.Equals("LOGVIEW") || parameter.Equals("JOBSVIEW"))
             {
@@ -291,16 +291,16 @@ namespace DataSync.UI.CommandHandling
                 {
                     MonitorChangeOccured(this,
                         new MonitorChangeEventArgs(parameter.Equals("LOGVIEW") ? MonitorType.Log : MonitorType.Screen,
-                            switcher));
+                            !switcher));
                 }
-                WriteConfirm(String.Format("{0} flag was set to {1}.", parameter, instruction.Parameters[1]));
+                WriteConfirm(String.Format("{0} flag was set to {1}.", parameter, instruction.Parameters[1].Content));
             }
             else if (parameter.Equals("RECURSIV"))
             {
                 if (this.SyncManager != null)
                 {
                     this.SyncManager.Configuration.IsRecursiv = switcher;
-                    WriteConfirm(String.Format("{0} flag was set to {1}.", parameter, instruction.Parameters[1]));
+                    WriteConfirm(String.Format("{0} flag was set to {1}.", parameter, instruction.Parameters[1].Content));
                 }
             }
             else if (parameter.Equals("PARALLELSYNC"))
@@ -308,7 +308,7 @@ namespace DataSync.UI.CommandHandling
                 if (this.SyncManager != null)
                 {
                     this.SyncManager.Configuration.IsParrallelSync = switcher;
-                    WriteConfirm(String.Format("{0} flag was set to {1}.", parameter, instruction.Parameters[1]));
+                    WriteConfirm(String.Format("{0} flag was set to {1}.", parameter, instruction.Parameters[1].Content));
                 }
             }
         }
@@ -322,7 +322,7 @@ namespace DataSync.UI.CommandHandling
         {
             if (instruction == null || this.SyncManager == null) return;
 
-            string parameter = instruction.Parameters[0].Content.ToString();
+            string parameter = instruction.Parameters[0].Content.ToString().ToUpper();
             int value;
 
             try

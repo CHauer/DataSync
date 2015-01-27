@@ -58,7 +58,7 @@ namespace DataSync.Lib.Configuration
         public ILog Logger { get; set; }
 
         /// <summary>
-        /// Gets the relative directories.
+        /// Gets the relative source directories.
         /// </summary>
         /// <returns></returns>
         public List<string> GetRelativeDirectories()
@@ -69,7 +69,7 @@ namespace DataSync.Lib.Configuration
         }
 
         /// <summary>
-        /// Gets the relative files.
+        /// Gets the relative source files.
         /// </summary>
         /// <returns></returns>
         public List<string> GetRelativeFiles()
@@ -108,7 +108,7 @@ namespace DataSync.Lib.Configuration
         }
 
         /// <summary>
-        /// Gets the directories.
+        /// Gets the directories of the given base path folder.
         /// </summary>
         /// <param name="path">The path.</param>
         /// <returns></returns>
@@ -125,7 +125,11 @@ namespace DataSync.Lib.Configuration
             {
                 foreach (var info in new DirectoryInfo(path).EnumerateDirectories())
                 {
-                    directories.Add(info.FullName);
+                    if (!ExceptFolders.Contains(info.FullName))
+                    {
+                        directories.Add(info.FullName);
+                    }
+
                     try
                     {
                         directories.AddRange(GetDirectories(info.FullName));
@@ -147,7 +151,7 @@ namespace DataSync.Lib.Configuration
         }
 
         /// <summary>
-        /// Gets the files.
+        /// Gets the files of the given base path.
         /// </summary>
         /// <param name="path">The path.</param>
         /// <returns></returns>

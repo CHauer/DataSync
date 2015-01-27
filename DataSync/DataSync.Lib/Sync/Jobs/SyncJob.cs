@@ -46,19 +46,7 @@ namespace DataSync.Lib.Sync.Jobs
         /// <value>
         /// The status.
         /// </value>
-        public JobStatus Status
-        {
-            get { return this.status; }
-            set
-            {
-                if (this.status != value)
-                {
-                    this.status = value;
-
-                    OnJobStatusChanged(new JobStatusChangedEventArgs(value));
-                }
-            }
-        }
+        public JobStatus Status { get; set; }
 
         /// <summary>
         /// Gets or sets the operation.
@@ -79,7 +67,7 @@ namespace DataSync.Lib.Sync.Jobs
         /// <summary>
         /// Occurs when a job status changed.
         /// </summary>
-        public event EventHandler<JobStatusChangedEventArgs> JobStatusChanged;
+        public event EventHandler JobStatusChanged;
 
         /// <summary>
         /// Runs this instance.
@@ -90,22 +78,31 @@ namespace DataSync.Lib.Sync.Jobs
             {
                 LogMessage(new ErrorLogMessage("Invalid Sync Job Parameters!"));
                 this.Status = JobStatus.Error;
+                OnJobStatusChanged();
                 return;
             }
 
             this.Status = JobStatus.Processing;
+            OnJobStatusChanged();
             LogMessage(new SyncJobLogMessage("SyncJob processing.", this));
 
             LogMessage(new SyncOperationLogMessage(this.Operation, this.Item));
 
+            if (this.Logger != null)
+            {
+                this.Operation.Logger = this.Logger;
+            }
+
             if (this.Operation.Execute(this.Item))
             {
-                this.Status = JobStatus.Done;
+                this.Status = JobStatus.Processing;
+                OnJobStatusChanged();
                 LogMessage(new SyncJobLogMessage("SyncJob ended.", this));
             }
             else
             {
                 this.Status = JobStatus.Error;
+                OnJobStatusChanged();
                 LogMessage(new SyncJobLogMessage("SyncJob is in error state.", this));
             }
         }
@@ -138,8 +135,8 @@ namespace DataSync.Lib.Sync.Jobs
         /// </returns>
         public override string ToString()
         {
-            return String.Format("{0} -> {1} - Operation: {2} ",
-                                    Item.SourcePath, Item.TargetPath, 
+            return String.Format("Source:{0}\nTarget:{1}\nOperation:{2} ",
+                                    Item.SourcePath, Item.TargetPath,
                                     Operation.GetType().Name);
         }
 
@@ -176,15 +173,14 @@ namespace DataSync.Lib.Sync.Jobs
         /// <summary>
         /// Raises the <see cref="E:JobStatusChanged" /> event.
         /// </summary>
-        /// <param name="e">The <see cref="JobStatusChangedEventArgs"/> instance containing the event data.</param>
-        protected virtual void OnJobStatusChanged(JobStatusChangedEventArgs e)
+        protected virtual void OnJobStatusChanged()
         {
             // ReSharper disable once UseNullPropagation
             if (JobStatusChanged != null)
             {
-                JobStatusChanged(this, e);
+                JobStatusChanged(this, EventArgs.Empty);
             }
         }
-  
+
     }
 }

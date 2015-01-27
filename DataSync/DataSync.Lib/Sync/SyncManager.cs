@@ -248,8 +248,17 @@ namespace DataSync.Lib.Sync
         public bool RemoveSyncPair(string pairname)
         {
             var delItem = Configuration.ConfigPairs.FirstOrDefault(cp => cp.Name.Equals(pairname));
-
             if (delItem == null)
+            {
+                LogMessage(new ErrorLogMessage(String.Format("The Configuration Pair with Name {0} " +
+                                                                       "could'nt be found in Configuration Pair List!",
+                    pairname)));
+                return false;
+            }
+
+            var delPair = SyncPairs.FirstOrDefault(sp => sp.ConfigurationPair.Name.Equals(delItem.Name));
+
+            if (delPair == null)
             {
                 LogMessage(new ErrorLogMessage(String.Format("The Sync Pair with Name {0} " +
                                                                        "could'nt be found in Sync Pair List!",
@@ -257,6 +266,8 @@ namespace DataSync.Lib.Sync
                 return false;
             }
 
+            delPair.StopWatcher();
+            SyncPairs.Remove(delPair);
             Configuration.ConfigPairs.Remove(delItem);
             SaveConfiguration();
 
@@ -269,6 +280,8 @@ namespace DataSync.Lib.Sync
         public void ClearSyncPairs()
         {
             Configuration.ConfigPairs.Clear();
+            this.SyncPairs.ForEach(sp => sp.StopWatcher());
+            this.SyncPairs.Clear();
             SaveConfiguration();
         }
 
