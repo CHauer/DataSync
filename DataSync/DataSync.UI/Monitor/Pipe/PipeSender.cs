@@ -1,49 +1,83 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.IO;
-using System.IO.Pipes;
-using System.Linq;
-using System.Runtime.Serialization.Formatters.Binary;
-using System.Text;
-using System.Threading.Tasks;
-
+﻿// -----------------------------------------------------------------------
+// <copyright file="PipeSender.cs" company="FH Wr.Neustadt">
+//      Copyright Christoph Hauer. All rights reserved.
+// </copyright>
+// <author>Christoph Hauer</author>
+// <summary>DataSync.UI - PipeSender.cs</summary>
+// -----------------------------------------------------------------------
 namespace DataSync.UI.Monitor.Pipe
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Diagnostics;
+    using System.IO.Pipes;
+    using System.Runtime.Serialization.Formatters.Binary;
     using System.Threading;
+    using System.Threading.Tasks;
 
     /// <summary>
-    /// 
+    /// The pipe sender class.
     /// </summary>
-    /// <typeparam name="T"></typeparam>
-    public class PipeSender<T> where T : class
+    /// <typeparam name="T">
+    /// Generic type class.
+    /// </typeparam>
+    public class PipeSender<T>
+        where T : class
     {
         /// <summary>
-        /// The serializer
-        /// </summary>
-        private BinaryFormatter serializer;
-        /// <summary>
-        /// The send message queue
-        /// </summary>
-        private Queue<T> sendMessageQueue;
-
-        /// <summary>
-        /// The is running
+        /// The is running.
         /// </summary>
         private bool isRunning;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="PipeReceiver{T}" /> class.
+        /// The pipe client.
         /// </summary>
-        /// <param name="pipename">The pipename.</param>
+        private NamedPipeClientStream pipeClient;
+
+        /// <summary>
+        /// The send message queue.
+        /// </summary>
+        private Queue<T> sendMessageQueue;
+
+        /// <summary>
+        /// The serializer.
+        /// </summary>
+        private BinaryFormatter serializer;
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="PipeSender{T}"/> class. 
+        /// Initializes a new instance of the <see cref="PipeReceiver{T}"/> class.
+        /// </summary>
+        /// <param name="pipename">
+        /// The pipe name.
+        /// </param>
         public PipeSender(string pipename)
         {
             this.serializer = new BinaryFormatter();
             this.PipeName = pipename;
-            sendMessageQueue = new Queue<T>();
-            isRunning = true;
+            this.sendMessageQueue = new Queue<T>();
+            this.isRunning = true;
 
-            Task.Run(() => RunMessageSender());
+            Task.Run(() => this.RunMessageSender());
+        }
+
+        /// <summary>
+        /// Gets the client handle.
+        /// </summary>
+        /// <value>
+        /// The client handle.
+        /// </value>
+        public string PipeName { get; private set; }
+
+        /// <summary>
+        /// Runs this instance.
+        /// </summary>
+        /// <param name="message">
+        /// The message.
+        /// </param>
+        public void SendMessage(T message)
+        {
+            this.sendMessageQueue.Enqueue(message);
         }
 
         /// <summary>
@@ -51,23 +85,23 @@ namespace DataSync.UI.Monitor.Pipe
         /// </summary>
         private void RunMessageSender()
         {
-            pipeClient = new NamedPipeClientStream(".", PipeName, PipeDirection.Out);
+            this.pipeClient = new NamedPipeClientStream(".", this.PipeName, PipeDirection.Out);
 
-            while (isRunning)
+            while (this.isRunning)
             {
-                while (sendMessageQueue.Count == 0)
+                while (this.sendMessageQueue.Count == 0)
                 {
                     Thread.Sleep(100);
                 }
 
-                var message = sendMessageQueue.Dequeue();
+                var message = this.sendMessageQueue.Dequeue();
 
-                if (!pipeClient.IsConnected)
+                if (!this.pipeClient.IsConnected)
                 {
                     try
                     {
-                        pipeClient = new NamedPipeClientStream(".", PipeName, PipeDirection.Out);
-                        pipeClient.Connect(10000);
+                        this.pipeClient = new NamedPipeClientStream(".", this.PipeName, PipeDirection.Out);
+                        this.pipeClient.Connect(10000);
                     }
                     catch (Exception ex)
                     {
@@ -77,8 +111,8 @@ namespace DataSync.UI.Monitor.Pipe
 
                 try
                 {
-                    serializer.Serialize(pipeClient, message);
-                    pipeClient.Flush();
+                    this.serializer.Serialize(this.pipeClient, message);
+                    this.pipeClient.Flush();
                 }
                 catch (Exception ex)
                 {
@@ -86,28 +120,7 @@ namespace DataSync.UI.Monitor.Pipe
                 }
             }
 
-            pipeClient.Close();
-        }
-
-        /// <summary>
-        /// Gets the client handle.
-        /// </summary>
-        /// <value>
-        /// The client handle.
-        /// </value>
-        public String PipeName { get; private set; }
-
-        /// <summary>
-        /// The pipe client
-        /// </summary>
-        private NamedPipeClientStream pipeClient;
-
-        /// <summary>
-        /// Runs this instance.
-        /// </summary>
-        public void SendMessage(T message)
-        {
-            sendMessageQueue.Enqueue(message);
+            this.pipeClient.Close();
         }
     }
 }

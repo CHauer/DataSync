@@ -5,7 +5,6 @@
 // <author>Christoph Hauer</author>
 // <summary>DataSync.UI - Parameter.cs</summary>
 // -----------------------------------------------------------------------
-
 namespace DataSync.UI.CommandHandling.Instructions
 {
     /// <summary>
@@ -14,19 +13,19 @@ namespace DataSync.UI.CommandHandling.Instructions
     public class Parameter
     {
         /// <summary>
-        /// Gets or sets the type of the parameter.
-        /// </summary>
-        /// <value>
-        /// The ParameterType enumeration type value.
-        /// </value>
-        public ParameterType Type { get; set; }
-
-        /// <summary>
         /// Gets or sets the content.
         /// </summary>
         /// <value>
         /// The content.
         /// </value>
         public object Content { get; set; }
+
+        /// <summary>
+        /// Gets or sets the type of the parameter.
+        /// </summary>
+        /// <value>
+        /// The ParameterType enumeration type value.
+        /// </value>
+        public ParameterType Type { get; set; }
     }
 }

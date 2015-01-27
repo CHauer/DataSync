@@ -5,22 +5,24 @@
 // <author>Christoph Hauer</author>
 // <summary>DataSync.UI - InstructionExecuteAttribute.cs</summary>
 // -----------------------------------------------------------------------
-
-using System;
-using DataSync.UI.CommandHandling.Instructions;
-
 namespace DataSync.UI.CommandHandling
 {
+    using System;
+
+    using DataSync.UI.CommandHandling.Instructions;
+
     /// <summary>
-    /// 
+    /// The instruction execution attribute class.
     /// </summary>
     [AttributeUsage(AttributeTargets.Method, AllowMultiple = true)]
     public class InstructionExecuteAttribute : Attribute
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="InstructionExecuteAttribute" /> class.
+        /// Initializes a new instance of the <see cref="InstructionExecuteAttribute"/> class.
         /// </summary>
-        /// <param name="type">The type.</param>
+        /// <param name="type">
+        /// The type value.
+        /// </param>
         public InstructionExecuteAttribute(InstructionType type)
         {
             this.Type = type;
@@ -30,7 +32,7 @@ namespace DataSync.UI.CommandHandling
         /// Gets the type.
         /// </summary>
         /// <value>
-        /// The type.
+        /// The type value.
         /// </value>
         public InstructionType Type { get; private set; }
     }

@@ -1,68 +1,66 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.IO;
-using System.Linq;
-using System.Linq.Expressions;
-using System.Reflection;
-using System.Text;
-using System.Xml.Serialization;
-
+﻿// -----------------------------------------------------------------------
+// <copyright file="SyncConfiguration.cs" company="FH Wr.Neustadt">
+//      Copyright Christoph Hauer. All rights reserved.
+// </copyright>
+// <author>Christoph Hauer</author>
+// <summary>DataSync.Lib - SyncConfiguration.cs</summary>
+// -----------------------------------------------------------------------
 namespace DataSync.Lib.Configuration
 {
+    using System;
+    using System.Collections.Generic;
+    using System.ComponentModel;
+    using System.Linq.Expressions;
+    using System.Text;
+
     /// <summary>
-    /// 
+    /// The sync configuration class.
     /// </summary>
     [Serializable]
     public class SyncConfiguration : INotifyPropertyChanged
     {
         /// <summary>
-        /// The block compare file size
+        /// The block compare file size.
         /// </summary>
         private int blockCompareFileSize;
 
         /// <summary>
-        /// The block size
+        /// The block size.
         /// </summary>
         private int blockSize;
 
         /// <summary>
-        /// The isblock compare
+        /// The parallel synchronize.
         /// </summary>
-        private bool isBlockCompare;
+        private bool isParallelSync;
 
         /// <summary>
-        /// The recursiv
+        /// The recursive.
         /// </summary>
-        private bool isRecursiv;
+        private bool isRecursive;
 
         /// <summary>
-        /// The isLogToFile
-        /// </summary>
-        private bool isLogToFile;
-
-        /// <summary>
-        /// The log file size
-        /// </summary>
-        private int logFileSize;
-
-        /// <summary>
-        /// The log file name
+        /// The log file name.
         /// </summary>
         private string logFileName;
 
         /// <summary>
-        /// The parallell synchronize
+        /// The log file size.
         /// </summary>
-        private bool isParallellSync;
+        private int logFileSize;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="SyncConfiguration"/> class.
         /// </summary>
         public SyncConfiguration()
         {
-            InitializeStandardValue();
+            this.InitializeStandardValue();
         }
+
+        /// <summary>
+        /// Occurs when a property changes.
+        /// </summary>
+        public event PropertyChangedEventHandler PropertyChanged;
 
         /// <summary>
         /// Gets or sets the size of the block compare file.
@@ -72,11 +70,15 @@ namespace DataSync.Lib.Configuration
         /// </value>
         public int BlockCompareFileSize
         {
-            get { return blockCompareFileSize; }
+            get
+            {
+                return this.blockCompareFileSize;
+            }
+
             set
             {
-                blockCompareFileSize = value;
-                RaisePropertyChanged(() => BlockCompareFileSize);
+                this.blockCompareFileSize = value;
+                this.RaisePropertyChanged(() => this.BlockCompareFileSize);
             }
         }
 
@@ -88,73 +90,15 @@ namespace DataSync.Lib.Configuration
         /// </value>
         public int BlockSize
         {
-            get { return blockSize; }
-            set
-            {
-                blockSize = value;
-                RaisePropertyChanged(() => BlockSize);
-            }
-        }
-
-        /// <summary>
-        /// Gets or sets a value indicating whether [recursiv].
-        /// </summary>
-        /// <value>
-        ///   <c>true</c> if [recursiv]; otherwise, <c>false</c>.
-        /// </value>
-        public bool IsRecursiv
-        {
-            get { return isRecursiv; }
-            set
-            {
-                isRecursiv = value;
-                RaisePropertyChanged(() => IsRecursiv);
-            }
-        }
-
-        ///// <summary>
-        ///// Gets or sets a value indicating whether [is block compare].
-        ///// </summary>
-        ///// <value>
-        /////   <c>true</c> if [is block compare]; otherwise, <c>false</c>.
-        ///// </value>
-        //public bool IsBlockCompare
-        //{
-        //    get { return isBlockCompare; }
-        //    set
-        //    {
-        //        isBlockCompare = value;
-        //        RaisePropertyChanged(() => IsBlockCompare);
-        //    }
-        //}
-
-        /// <summary>
-        /// Gets or sets a value indicating whether this instance is log to file.
-        /// </summary>
-        /// <value>
-        /// <c>true</c> if this instance is log to file; otherwise, <c>false</c>.
-        /// </value>
-        public bool IsLogToFile
-        {
             get
             {
-                return !string.IsNullOrEmpty(logFileName);
+                return this.blockSize;
             }
-        }
 
-        /// <summary>
-        /// Gets or sets the size of the log file.
-        /// </summary>
-        /// <value>
-        /// The size of the log file.
-        /// </value>
-        public int LogFileSize
-        {
-            get { return logFileSize; }
             set
             {
-                logFileSize = value;
-                RaisePropertyChanged(() => LogFileSize);
+                this.blockSize = value;
+                this.RaisePropertyChanged(() => this.BlockSize);
             }
         }
 
@@ -167,6 +111,60 @@ namespace DataSync.Lib.Configuration
         public List<ConfigurationPair> ConfigPairs { get; private set; }
 
         /// <summary>
+        /// Gets a value indicating whether this instance is log to file.
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if this instance is log to file; otherwise, <c>false</c>.
+        /// </value>
+        public bool IsLogToFile
+        {
+            get
+            {
+                return !string.IsNullOrEmpty(this.logFileName);
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether parallel synchronize is active..
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if parallel synchronize; otherwise, <c>false</c>.
+        /// </value>
+        public bool IsParallelSync
+        {
+            get
+            {
+                return this.isParallelSync;
+            }
+
+            set
+            {
+                this.isParallelSync = value;
+                this.RaisePropertyChanged(() => this.IsParallelSync);
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether recursive.
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if set; otherwise, <c>false</c>.
+        /// </value>
+        public bool IsRecursive
+        {
+            get
+            {
+                return this.isRecursive;
+            }
+
+            set
+            {
+                this.isRecursive = value;
+                this.RaisePropertyChanged(() => this.IsRecursive);
+            }
+        }
+
+        /// <summary>
         /// Gets or sets the name of the log file.
         /// </summary>
         /// <value>
@@ -174,97 +172,104 @@ namespace DataSync.Lib.Configuration
         /// </value>
         public string LogFileName
         {
-            get { return logFileName; }
+            get
+            {
+                return this.logFileName;
+            }
+
             set
             {
-                logFileName = value;
-                RaisePropertyChanged(() => LogFileName);
+                this.logFileName = value;
+                this.RaisePropertyChanged(() => this.LogFileName);
             }
         }
 
         /// <summary>
-        /// Gets or sets a value indicating whether [parrallel synchronize].
+        /// Gets or sets the size of the log file.
         /// </summary>
         /// <value>
-        ///   <c>true</c> if [parrallel synchronize]; otherwise, <c>false</c>.
+        /// The size of the log file.
         /// </value>
-        public bool IsParrallelSync
+        public int LogFileSize
         {
-            get { return isParallellSync; }
+            get
+            {
+                return this.logFileSize;
+            }
+
             set
             {
-                isParallellSync = value;
-                RaisePropertyChanged(() => IsParrallelSync);
+                this.logFileSize = value;
+                this.RaisePropertyChanged(() => this.LogFileSize);
             }
         }
 
         /// <summary>
-        /// Tritt ein, wenn sich ein Eigenschaftswert ändert.
+        /// Returns a <see cref="System.String"/> that represents this instance.
         /// </summary>
-        public event PropertyChangedEventHandler PropertyChanged;
-
-        /// <summary>
-        /// Initializes the standard value.
-        /// </summary>
-        private void InitializeStandardValue()
+        /// <returns>
+        /// A <see cref="System.String"/> that represents this instance.
+        /// </returns>
+        public override string ToString()
         {
-            ConfigPairs = new List<ConfigurationPair>();
+            StringBuilder builder = new StringBuilder();
 
-            //this.IsBlockCompare = false;
-            this.IsParrallelSync = false;
-            this.IsRecursiv = true;
-            this.LogFileName = null;
-            this.LogFileSize = 1024 * 1024 * 2; //2MB
-            this.BlockSize = 1024;
-            this.BlockCompareFileSize = 1024 * 500; //ca 500KB
+            foreach (var property in this.GetType().GetProperties())
+            {
+                if (!property.Name.Equals("ConfigPairs"))
+                {
+                    builder.AppendLine(string.Format("{0} : {1}", property.Name, property.GetValue(this)));
+                }
+            }
+
+            return builder.ToString();
         }
 
         /// <summary>
         /// Raises the property changed.
         /// </summary>
-        /// <param name="expression">The expression.</param>
+        /// <param name="expression">
+        /// The expression.
+        /// </param>
         protected void RaisePropertyChanged(Expression<Func<object>> expression)
         {
             MemberExpression memberExpression = expression.Body as MemberExpression;
 
             if (memberExpression != null)
             {
-                RaisePropertyChanged(memberExpression.Member.Name);
+                this.RaisePropertyChanged(memberExpression.Member.Name);
             }
         }
 
         /// <summary>
         /// Raises the property changed.
         /// </summary>
-        /// <param name="property">The property.</param>
+        /// <param name="property">
+        /// The property.
+        /// </param>
         protected void RaisePropertyChanged(string property)
         {
             // ReSharper disable once UseNullPropagation
-            if (PropertyChanged != null)
+            if (this.PropertyChanged != null)
             {
-                PropertyChanged(this, new PropertyChangedEventArgs(property));
+                this.PropertyChanged(this, new PropertyChangedEventArgs(property));
             }
         }
 
         /// <summary>
-        /// Returns a <see cref="System.String" /> that represents this instance.
+        /// Initializes the standard value.
         /// </summary>
-        /// <returns>
-        /// A <see cref="System.String" /> that represents this instance.
-        /// </returns>
-        public override string ToString()
+        private void InitializeStandardValue()
         {
-            StringBuilder builder = new StringBuilder();
+            this.ConfigPairs = new List<ConfigurationPair>();
 
-            foreach (var property in GetType().GetProperties())
-            {
-                if (!property.Name.Equals("ConfigPairs"))
-                {
-                    builder.AppendLine(String.Format("{0} : {1}", property.Name, property.GetValue(this)));
-                }
-            }
-
-            return builder.ToString();
+            // this.IsBlockCompare = false;
+            this.IsParallelSync = false;
+            this.IsRecursive = true;
+            this.LogFileName = null;
+            this.LogFileSize = 1024 * 1024 * 2; // 2MB
+            this.BlockSize = 1024;
+            this.BlockCompareFileSize = 1024 * 500; // ca 500KB
         }
     }
 }

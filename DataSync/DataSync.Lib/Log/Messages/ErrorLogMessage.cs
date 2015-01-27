@@ -5,13 +5,12 @@
 // <author>Christoph Hauer</author>
 // <summary>DataSync.Lib - ErrorLogMessage.cs</summary>
 // -----------------------------------------------------------------------
-
-using System;
-
 namespace DataSync.Lib.Log.Messages
 {
+    using System;
+
     /// <summary>
-    /// 
+    /// The error log message.
     /// </summary>
     [Serializable]
     public class ErrorLogMessage : LogMessage
@@ -19,42 +18,79 @@ namespace DataSync.Lib.Log.Messages
         /// <summary>
         /// Initializes a new instance of the <see cref="ErrorLogMessage"/> class.
         /// </summary>
-        /// <param name="message">The message.</param>
-        public ErrorLogMessage(string message) : this(message, false, null) {}
+        /// <param name="message">
+        /// The message.
+        /// </param>
+        public ErrorLogMessage(string message)
+            : this(message, false, null)
+        {
+        }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ErrorLogMessage"/> class.
         /// </summary>
-        /// <param name="ex">The ex.</param>
-        public ErrorLogMessage(Exception ex) : this(null, false, ex) {}
+        /// <param name="ex">
+        /// The exception parameter.
+        /// </param>
+        public ErrorLogMessage(Exception ex)
+            : this(null, false, ex)
+        {
+        }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ErrorLogMessage"/> class.
         /// </summary>
-        /// <param name="message">The message.</param>
-        /// <param name="ex">The ex.</param>
-        public ErrorLogMessage(string message, Exception ex) : this(message, false, ex) {}
+        /// <param name="message">
+        /// The message.
+        /// </param>
+        /// <param name="ex">
+        /// The exception parameter.
+        /// </param>
+        public ErrorLogMessage(string message, Exception ex)
+            : this(message, false, ex)
+        {
+        }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ErrorLogMessage"/> class.
         /// </summary>
-        /// <param name="message">The message.</param>
-        /// <param name="isDebug">if set to <c>true</c> [is debug].</param>
-        public ErrorLogMessage(string message, bool isDebug) : this(message, isDebug, null) {}
+        /// <param name="message">
+        /// The message.
+        /// </param>
+        /// <param name="isDebug">
+        /// If set to <c>true</c> [is debug].
+        /// </param>
+        public ErrorLogMessage(string message, bool isDebug)
+            : this(message, isDebug, null)
+        {
+        }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ErrorLogMessage"/> class.
         /// </summary>
-        /// <param name="ex">The ex.</param>
-        /// <param name="isDebug">if set to <c>true</c> [is debug].</param>
-        public ErrorLogMessage(Exception ex, bool isDebug) : this(null, isDebug, ex) {}
+        /// <param name="ex">
+        /// The exception.
+        /// </param>
+        /// <param name="isDebug">
+        /// If set to <c>true</c> message is marked as debug.
+        /// </param>
+        public ErrorLogMessage(Exception ex, bool isDebug)
+            : this(null, isDebug, ex)
+        {
+        }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ErrorLogMessage"/> class.
         /// </summary>
-        /// <param name="message">The message.</param>
-        /// <param name="isDebug">if set to <c>true</c> [is debug].</param>
-        /// <param name="ex">The ex.</param>
+        /// <param name="message">
+        /// The message.
+        /// </param>
+        /// <param name="isDebug">
+        /// If set to <c>true</c> is marked as debug.
+        /// </param>
+        /// <param name="ex">
+        /// The exception.
+        /// </param>
         public ErrorLogMessage(string message, bool isDebug, Exception ex)
             : base(message, isDebug)
         {
@@ -70,16 +106,16 @@ namespace DataSync.Lib.Log.Messages
         public Exception Exception { get; set; }
 
         /// <summary>
-        /// Returns a <see cref="System.String" /> that represents this instance.
+        /// Returns a <see cref="System.String"/> that represents this instance.
         /// </summary>
         /// <returns>
-        /// A <see cref="System.String" /> that represents this instance.
+        /// A <see cref="System.String"/> that represents this instance.
         /// </returns>
         public override string ToString()
         {
             string printMessage;
 
-            if (String.IsNullOrEmpty(this.Message))
+            if (string.IsNullOrEmpty(this.Message))
             {
                 if (this.Exception != null)
                 {
@@ -104,14 +140,18 @@ namespace DataSync.Lib.Log.Messages
 
             if (this.IsDebug)
             {
-                string exName = string.Empty;
+                string exceptionName = string.Empty;
 
                 if (this.Exception != null)
                 {
-                    exName = this.Exception.GetType().Name;
+                    exceptionName = this.Exception.GetType().Name;
                 }
 
-                return string.Format("{0:G} - Error: {1}\nDEBUG: {2} {3}", this.Date, printMessage, exName,
+                return string.Format(
+                    "{0:G} - Error: {1}\nDEBUG: {2} {3}", 
+                    this.Date, 
+                    printMessage, 
+                    exceptionName, 
                     this.StackTrace);
             }
 

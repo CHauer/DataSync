@@ -5,29 +5,33 @@
 // <author>Christoph Hauer</author>
 // <summary>DataSync.Lib - DeleteFolder.cs</summary>
 // -----------------------------------------------------------------------
-
-using System;
-using System.IO;
-using DataSync.Lib.Configuration;
-using DataSync.Lib.Log;
-using DataSync.Lib.Log.Messages;
-using DataSync.Lib.Sync.Items;
-
 namespace DataSync.Lib.Sync.Operations
 {
+    using System;
+    using System.IO;
+
+    using DataSync.Lib.Log.Messages;
+    using DataSync.Lib.Sync.Items;
+
+    /// <summary>
+    /// The delete folder.
+    /// </summary>
     public class DeleteFolder : SyncOperation
     {
-
         /// <summary>
         /// Runs the operation for the specified item.
         /// </summary>
-        /// <param name="item">The item.</param>
-        /// <returns></returns>
+        /// <param name="item">
+        /// The item value.
+        /// </param>
+        /// <returns>
+        /// The status of the execution.
+        /// </returns>
         public override bool Execute(ISyncItem item)
         {
             if (!(item is SyncFolder))
             {
-                LogMessage(new ErrorLogMessage("Execution not possible - Invalid  Operation Properties", true));
+                this.LogMessage(new ErrorLogMessage("Execution not possible - Invalid  Operation Properties", true));
                 return false;
             }
 
@@ -37,12 +41,11 @@ namespace DataSync.Lib.Sync.Operations
             }
             catch (Exception ex)
             {
-                LogMessage(new ErrorLogMessage("Delete Folder Error", ex));
+                this.LogMessage(new ErrorLogMessage("Delete Folder Error", ex));
                 return false;
             }
 
             return true;
         }
-
     }
 }

@@ -6,59 +6,67 @@
 // <summary>DataSync.UI - InputInstructionHandler.cs</summary>
 // -----------------------------------------------------------------------
 
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Reflection;
-using DataSync.Lib.Configuration;
-using DataSync.Lib.Log;
-using DataSync.Lib.Log.Messages;
-using DataSync.Lib.Sync;
-using DataSync.UI.CommandHandling.Decoder;
-using DataSync.UI.CommandHandling.Instructions;
-using DataSync.UI.Monitor;
-
-// ReSharper disable UnusedMember.Local
+ // ReSharper disable UnusedMember.Local
 
 namespace DataSync.UI.CommandHandling
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Diagnostics;
+    using System.IO;
+    using System.Linq;
+    using System.Reflection;
+
+    using DataSync.Lib.Configuration;
+    using DataSync.Lib.Log;
+    using DataSync.Lib.Log.Messages;
+    using DataSync.Lib.Sync;
+    using DataSync.UI.CommandHandling.Decoder;
+    using DataSync.UI.CommandHandling.Instructions;
+    using DataSync.UI.Monitor;
+
     /// <summary>
-    /// 
+    /// The input instruction handler class.
     /// </summary>
     public class InputInstructionHandler
     {
         /// <summary>
-        /// The output
-        /// </summary>
-        private TextWriter output;
-
-        /// <summary>
-        /// The input
-        /// </summary>
-        private TextReader input;
-
-        /// <summary>
-        /// The decoder
-        /// </summary>
-        private InstructionDecoder decoder;
-
-        /// <summary>
-        /// The is running
-        /// </summary>
-        private bool isRunning;
-
-        /// <summary>
-        /// The prompt
+        /// The prompt.
         /// </summary>
         private const string Prompt = ">";
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="InputInstructionHandler" /> class.
+        /// The decoder.
         /// </summary>
-        /// <param name="input">The input.</param>
-        /// <param name="output">The output.</param>
-        /// <exception cref="System.ArgumentNullException">input or output</exception>
+        private InstructionDecoder decoder;
+
+        /// <summary>
+        /// The input.
+        /// </summary>
+        private TextReader input;
+
+        /// <summary>
+        /// The is running.
+        /// </summary>
+        private bool isRunning;
+
+        /// <summary>
+        /// The output.
+        /// </summary>
+        private TextWriter output;
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="InputInstructionHandler"/> class.
+        /// </summary>
+        /// <param name="input">
+        /// The input.
+        /// </param>
+        /// <param name="output">
+        /// The output.
+        /// </param>
+        /// <exception cref="System.ArgumentNullException">
+        /// Input or output.
+        /// </exception>
         public InputInstructionHandler(TextReader input, TextWriter output)
         {
             if (input == null)
@@ -74,26 +82,43 @@ namespace DataSync.UI.CommandHandling
             this.output = output;
             this.input = input;
 
-            Initialize();
+            this.Initialize();
         }
 
         /// <summary>
-        /// Initializes this instance.
+        /// Occurs after output was written.
         /// </summary>
-        private void Initialize()
-        {
-            this.decoder = new InstructionDecoder();
-
-            this.isRunning = true;
-        }
+        public event EventHandler<OutputEventArgs> AfterOutput;
 
         /// <summary>
-        /// Gets or sets the synchronize manager.
+        /// Occurs before a output is written.
         /// </summary>
-        /// <value>
-        /// The synchronize manager.
-        /// </value>
-        public SyncManager SyncManager { get; set; }
+        public event EventHandler<OutputEventArgs> BeforeOutput;
+
+        /// <summary>
+        /// Occurs when exit instruction.
+        /// </summary>
+        public event EventHandler ExitOccured;
+
+        /// <summary>
+        /// Occurs when help instruction.
+        /// </summary>
+        public event EventHandler HelpInstructionOccured;
+
+        /// <summary>
+        /// Occurs when an instruction is received.
+        /// </summary>
+        public event EventHandler<Instruction> InstructionOccured;
+
+        /// <summary>
+        /// Occurs when help instruction.
+        /// </summary>
+        public event EventHandler<LogFilePropertiesChangedEventArgs> LogFileChangeOccured;
+
+        /// <summary>
+        /// Occurs when a monitor change instruction.
+        /// </summary>
+        public event EventHandler<MonitorChangeEventArgs> MonitorChangeOccured;
 
         /// <summary>
         /// Gets or sets the logger.
@@ -104,39 +129,284 @@ namespace DataSync.UI.CommandHandling
         public ILog Logger { get; set; }
 
         /// <summary>
-        /// Occurs before a output is written.
+        /// Gets or sets the synchronize manager.
         /// </summary>
-        public event EventHandler<OutputEventArgs> BeforeOutput;
+        /// <value>
+        /// The synchronize manager.
+        /// </value>
+        public SyncManager SyncManager { get; set; }
 
         /// <summary>
-        /// Occurs after output was written.
+        /// Executes the add synchronize pair instruction.
         /// </summary>
-        public event EventHandler<OutputEventArgs> AfterOutput;
+        /// <param name="instruction">
+        /// The instruction.
+        /// </param>
+        [InstructionExecute(InstructionType.ADDPAIR)]
+        public void ExecuteAddSyncPairInstruction(Instruction instruction)
+        {
+            if (instruction == null || this.SyncManager == null)
+            {
+                return;
+            }
+
+            var pair = this.HandleAddPairInputs();
+
+            if (instruction.Parameters.Count > 0)
+            {
+                pair.Name = instruction.Parameters[0].Content.ToString();
+            }
+            else
+            {
+                pair.Name = string.Format("Sync Pair {0}", this.SyncManager.Configuration.ConfigPairs.Count + 1);
+            }
+
+            if (this.SyncManager.AddSyncPair(pair))
+            {
+                this.WriteConfirm(string.Format("SyncPair {0} was added.", pair.Name));
+            }
+        }
 
         /// <summary>
-        /// Occurs when a monitor change instruction occured.
+        /// Executes the change log file instruction.
         /// </summary>
-        public event EventHandler<MonitorChangeEventArgs> MonitorChangeOccured;
+        /// <param name="instruction">
+        /// The instruction.
+        /// </param>
+        [InstructionExecute(InstructionType.LOGTO)]
+        public void ExecuteChangeLogFileInstruction(Instruction instruction)
+        {
+            if (instruction == null || this.SyncManager == null)
+            {
+                return;
+            }
+
+            this.SyncManager.Configuration.LogFileName = instruction.Parameters[0].Content.ToString();
+            this.OnLogFileChangeOccured(instruction.Parameters[0].Content.ToString());
+        }
 
         /// <summary>
-        /// Occurs when exit instruction occured.
+        /// Executes the exit instruction.
         /// </summary>
-        public event EventHandler ExitOccured;
+        /// <param name="instruction">
+        /// The instruction.
+        /// </param>
+        [InstructionExecute(InstructionType.EXIT)]
+        public void ExecuteExitInstruction(Instruction instruction)
+        {
+            this.isRunning = false;
+
+            if (this.ExitOccured != null)
+            {
+                this.ExitOccured(this, new EventArgs());
+            }
+        }
 
         /// <summary>
-        /// Occurs when help instruction occured.
+        /// Executes the help instruction.
         /// </summary>
-        public event EventHandler HelpInstructionOccured;
+        /// <param name="instruction">
+        /// The instruction.
+        /// </param>
+        [InstructionExecute(InstructionType.HELP)]
+        public void ExecuteHelpInstruction(Instruction instruction)
+        {
+            if (this.HelpInstructionOccured != null)
+            {
+                this.HelpInstructionOccured(this, new EventArgs());
+            }
+        }
 
         /// <summary>
-        /// Occurs when help instruction occured.
+        /// Executes the pair detail instruction.
         /// </summary>
-        public event EventHandler<LogFilePropertiesChangedEventArgs> LogFileChangeOccured;
+        /// <param name="instruction">
+        /// The instruction.
+        /// </param>
+        [InstructionExecute(InstructionType.LISTSETTINGS)]
+        public void ExecuteListSettingsInstruction(Instruction instruction)
+        {
+            if (instruction == null || this.SyncManager == null || this.SyncManager.Configuration == null)
+            {
+                return;
+            }
+
+            this.WriteMessage(this.SyncManager.Configuration.ToString(), ConsoleColor.DarkCyan);
+        }
 
         /// <summary>
-        /// Occurs when ainstruction occured.
+        /// Executes the pair detail instruction.
         /// </summary>
-        public event EventHandler<Instruction> InstructionOccured;
+        /// <param name="instruction">
+        /// The instruction.
+        /// </param>
+        [InstructionExecute(InstructionType.LISTPAIRS)]
+        [InstructionExecute(InstructionType.SHOWPAIRDETAIL)]
+        public void ExecutePairDetailInstruction(Instruction instruction)
+        {
+            if (instruction == null || this.SyncManager == null)
+            {
+                return;
+            }
+
+            if (instruction.Type == InstructionType.SHOWPAIRDETAIL)
+            {
+                var detailpair =
+                    this.SyncManager.SyncPairs.FirstOrDefault(
+                        sp => sp.ConfigurationPair.Name.Equals(instruction.Parameters[0].Content));
+
+                if (detailpair != null)
+                {
+                    this.WriteMessage(detailpair.ToString(), ConsoleColor.DarkYellow);
+                }
+                else
+                {
+                    this.WriteError(string.Format("Pair Name {0} was not found!", instruction.Parameters[0].Content));
+                }
+            }
+            else if (instruction.Type == InstructionType.LISTPAIRS)
+            {
+                this.WriteMessage(this.SyncManager.ToString(), ConsoleColor.DarkYellow);
+            }
+        }
+
+        /// <summary>
+        /// Executes the pair clear/delete instruction.
+        /// </summary>
+        /// <param name="instruction">
+        /// The instruction.
+        /// </param>
+        [InstructionExecute(InstructionType.DELETEPAIR)]
+        [InstructionExecute(InstructionType.CLEARPAIRS)]
+        public void ExecutePairInstruction(Instruction instruction)
+        {
+            if (instruction == null || this.SyncManager == null)
+            {
+                return;
+            }
+
+            if (instruction.Type == InstructionType.DELETEPAIR)
+            {
+                var delpair =
+                    this.SyncManager.SyncPairs.FirstOrDefault(
+                        sp => sp.ConfigurationPair.Name.Equals(instruction.Parameters[0].Content));
+
+                if (delpair != null)
+                {
+                    if (this.ConfirmMessage())
+                    {
+                        this.SyncManager.RemoveSyncPair(instruction.Parameters[0].Content.ToString());
+                    }
+                }
+                else
+                {
+                    this.WriteError(string.Format("Pair Name {0} was not found!", instruction.Parameters[0].Content));
+                }
+            }
+            else if (instruction.Type == InstructionType.CLEARPAIRS)
+            {
+                if (this.ConfirmMessage())
+                {
+                    this.SyncManager.ClearSyncPairs();
+                }
+            }
+        }
+
+        /// <summary>
+        /// Executes the exit instruction.
+        /// </summary>
+        /// <param name="instruction">
+        /// The instruction.
+        /// </param>
+        [InstructionExecute(InstructionType.SET)]
+        public void ExecuteSetInstruction(Instruction instruction)
+        {
+            if (instruction == null || this.SyncManager == null)
+            {
+                return;
+            }
+
+            string parameter = instruction.Parameters[0].Content.ToString().ToUpper();
+            int value;
+
+            try
+            {
+                value = Convert.ToInt32(instruction.Parameters[1].Content);
+            }
+            catch (Exception ex)
+            {
+                this.LogMessage(new ErrorLogMessage(ex));
+                return;
+            }
+
+            if (parameter.Equals("LOGSIZE"))
+            {
+                this.SyncManager.Configuration.LogFileSize = value;
+                this.WriteConfirm(string.Format("{0} parameter was set to {1}.", parameter, value));
+                this.OnLogFileChangeOccured(value);
+            }
+            else if (parameter.Equals("BLOCKCOMPAREFILESIZE"))
+            {
+                this.SyncManager.Configuration.BlockCompareFileSize = value;
+                this.WriteConfirm(string.Format("{0} parameter was set to {1}.", parameter, value));
+            }
+            else if (parameter.Equals("BLOCKSIZE"))
+            {
+                this.SyncManager.Configuration.BlockSize = value;
+                this.WriteConfirm(string.Format("{0} parameter was set to {1}.", parameter, value));
+            }
+        }
+
+        /// <summary>
+        /// Executes the exit instruction.
+        /// </summary>
+        /// <param name="instruction">
+        /// The instruction.
+        /// </param>
+        [InstructionExecute(InstructionType.SWITCH)]
+        public void ExecuteSwitchtInstruction(Instruction instruction)
+        {
+            if (instruction == null)
+            {
+                return;
+            }
+
+            string parameter = instruction.Parameters[0].Content.ToString().ToUpper();
+            bool switcher = instruction.Parameters[1].Content.ToString().ToUpper().Equals("ON");
+
+            if (parameter.Equals("LOGVIEW") || parameter.Equals("JOBSVIEW"))
+            {
+                if (this.MonitorChangeOccured != null)
+                {
+                    this.MonitorChangeOccured(
+                        this, 
+                        new MonitorChangeEventArgs(
+                            parameter.Equals("LOGVIEW") ? MonitorType.Log : MonitorType.Screen, 
+                            !switcher));
+                }
+
+                this.WriteConfirm(
+                    string.Format("{0} flag was set to {1}.", parameter, instruction.Parameters[1].Content));
+            }
+            else if (parameter.Equals("RECURSIV"))
+            {
+                if (this.SyncManager != null)
+                {
+                    this.SyncManager.Configuration.IsRecursive = switcher;
+                    this.WriteConfirm(
+                        string.Format("{0} flag was set to {1}.", parameter, instruction.Parameters[1].Content));
+                }
+            }
+            else if (parameter.Equals("PARALLELSYNC"))
+            {
+                if (this.SyncManager != null)
+                {
+                    this.SyncManager.Configuration.IsParallelSync = switcher;
+                    this.WriteConfirm(
+                        string.Format("{0} flag was set to {1}.", parameter, instruction.Parameters[1].Content));
+                }
+            }
+        }
 
         /// <summary>
         /// Runs the handler.
@@ -155,19 +425,20 @@ namespace DataSync.UI.CommandHandling
                 }
                 catch (ObjectDisposedException ex)
                 {
-                    //input disposed - end handler
+                    // input disposed - end handler
+                    Debug.WriteLine(ex.Message);
                     return;
                 }
                 catch (Exception ex)
                 {
-                    LogMessage(new ErrorLogMessage(ex));
+                    this.LogMessage(new ErrorLogMessage(ex));
                     undecodedInstruction = string.Empty;
                 }
 
                 Instruction currentInstruction = null;
 
-                //instruction not empty - decode instruction
-                if (!String.IsNullOrWhiteSpace(undecodedInstruction))
+                // instruction not empty - decode instruction
+                if (!string.IsNullOrWhiteSpace(undecodedInstruction))
                 {
                     try
                     {
@@ -175,412 +446,72 @@ namespace DataSync.UI.CommandHandling
                     }
                     catch (Exception ex)
                     {
-                        WriteError(ex.Message);
+                        this.WriteError(ex.Message);
                         currentInstruction = null;
                     }
                 }
 
-                //handle instruction
+                // handle instruction
                 if (currentInstruction != null)
                 {
-                    ExecuteInstruction(currentInstruction);
+                    this.ExecuteInstruction(currentInstruction);
                 }
             }
         }
 
         /// <summary>
-        /// Writes the error.
+        /// Called when a log file change happened.
         /// </summary>
-        /// <param name="errorMessage">The error message.</param>
-        private void WriteError(String errorMessage)
+        /// <param name="logfilename">
+        /// The log file name.
+        /// </param>
+        protected virtual void OnLogFileChangeOccured(string logfilename)
         {
-            WriteMessage(errorMessage, ConsoleColor.Red);
-        }
-
-        /// <summary>
-        /// Writes the confirm.
-        /// </summary>
-        /// <param name="confirmMessage">The confirm message.</param>
-        private void WriteConfirm(String confirmMessage)
-        {
-            WriteMessage(confirmMessage, ConsoleColor.Green);
-        }
-
-        /// <summary>
-        /// Writes the error message to output.
-        /// Fires before and after event.
-        /// </summary>
-        /// <param name="message">The message.</param>
-        /// <param name="color">The color.</param>
-        private void WriteMessage(String message, ConsoleColor color)
-        {
-            if (BeforeOutput != null)
+            var handler = this.LogFileChangeOccured;
+            if (handler != null)
             {
-                BeforeOutput(this, new OutputEventArgs(color));
-            }
-
-            this.output.WriteLine(message);
-
-            if (AfterOutput != null)
-            {
-                AfterOutput(this, new OutputEventArgs());
+                handler(
+                    this, 
+                    new LogFilePropertiesChangedEventArgs(logfilename, this.SyncManager.Configuration.LogFileSize));
             }
         }
 
         /// <summary>
-        /// Instructions the handler_ instruction occured.
+        /// Called when a log file changes.
         /// </summary>
-        /// <param name="instruction">The instruction.</param>
-        private void ExecuteInstruction(Instruction instruction)
+        /// <param name="logfilesize">
+        /// The log file size.
+        /// </param>
+        protected virtual void OnLogFileChangeOccured(int logfilesize)
         {
-
-            MethodInfo executerMethod = GetType().GetMethods()
-                                        .FirstOrDefault(method => method.GetCustomAttributes(typeof(InstructionExecuteAttribute), false)
-                                                                        .Any(attr => ((InstructionExecuteAttribute)attr).Type == instruction.Type));
-
-            // ReSharper disable once UseNullPropagation
-            if (executerMethod != null)
+            var handler = this.LogFileChangeOccured;
+            if (handler != null)
             {
-                executerMethod.Invoke(this, new object[] { instruction });
+                handler(
+                    this, 
+                    new LogFilePropertiesChangedEventArgs(this.SyncManager.Configuration.LogFileName, logfilesize));
             }
         }
 
         /// <summary>
-        /// Executes the exit instruction.
+        /// Called when instruction received.
         /// </summary>
-        /// <param name="instruction">The instruction.</param>
-        [InstructionExecute(InstructionType.EXIT)]
-        public void ExecuteExitInstruction(Instruction instruction)
+        /// <param name="e">The instruction.</param>
+        protected virtual void OnInstructionOccured(Instruction e)
         {
-            this.isRunning = false;
-
-            if (ExitOccured != null)
+            var handler = this.InstructionOccured;
+            if (handler != null)
             {
-                ExitOccured(this, new EventArgs());
-            }
-        }
-
-        /// <summary>
-        /// Executes the help instruction.
-        /// </summary>
-        /// <param name="instruction">The instruction.</param>
-        [InstructionExecute(InstructionType.HELP)]
-        public void ExecuteHelpInstruction(Instruction instruction)
-        {
-            if (HelpInstructionOccured != null)
-            {
-                HelpInstructionOccured(this, new EventArgs());
-            }
-        }
-
-        /// <summary>
-        /// Executes the exit instruction.
-        /// </summary>
-        /// <param name="instruction">The instruction.</param>
-        [InstructionExecute(InstructionType.SWITCH)]
-        public void ExecuteSwitchtInstruction(Instruction instruction)
-        {
-            if (instruction == null) return;
-
-            string parameter = instruction.Parameters[0].Content.ToString().ToUpper();
-            bool switcher = instruction.Parameters[1].Content.ToString().ToUpper().Equals("ON");
-
-            if (parameter.Equals("LOGVIEW") || parameter.Equals("JOBSVIEW"))
-            {
-                if (MonitorChangeOccured != null)
-                {
-                    MonitorChangeOccured(this,
-                        new MonitorChangeEventArgs(parameter.Equals("LOGVIEW") ? MonitorType.Log : MonitorType.Screen,
-                            !switcher));
-                }
-                WriteConfirm(String.Format("{0} flag was set to {1}.", parameter, instruction.Parameters[1].Content));
-            }
-            else if (parameter.Equals("RECURSIV"))
-            {
-                if (this.SyncManager != null)
-                {
-                    this.SyncManager.Configuration.IsRecursiv = switcher;
-                    WriteConfirm(String.Format("{0} flag was set to {1}.", parameter, instruction.Parameters[1].Content));
-                }
-            }
-            else if (parameter.Equals("PARALLELSYNC"))
-            {
-                if (this.SyncManager != null)
-                {
-                    this.SyncManager.Configuration.IsParrallelSync = switcher;
-                    WriteConfirm(String.Format("{0} flag was set to {1}.", parameter, instruction.Parameters[1].Content));
-                }
-            }
-        }
-
-        /// <summary>
-        /// Executes the exit instruction.
-        /// </summary>
-        /// <param name="instruction">The instruction.</param>
-        [InstructionExecute(InstructionType.SET)]
-        public void ExecuteSetInstruction(Instruction instruction)
-        {
-            if (instruction == null || this.SyncManager == null) return;
-
-            string parameter = instruction.Parameters[0].Content.ToString().ToUpper();
-            int value;
-
-            try
-            {
-                value = Convert.ToInt32(instruction.Parameters[1].Content);
-            }
-            catch (Exception ex)
-            {
-                LogMessage(new ErrorLogMessage(ex));
-                return;
-            }
-
-            if (parameter.Equals("LOGSIZE"))
-            {
-                this.SyncManager.Configuration.LogFileSize = value;
-                WriteConfirm(String.Format("{0} parameter was set to {1}.", parameter, value));
-                OnLogFileChangeOccured(value);
-            }
-            else if (parameter.Equals("BLOCKCOMPAREFILESIZE"))
-            {
-                this.SyncManager.Configuration.BlockCompareFileSize = value;
-                WriteConfirm(String.Format("{0} parameter was set to {1}.", parameter, value));
-            }
-            else if (parameter.Equals("BLOCKSIZE"))
-            {
-                this.SyncManager.Configuration.BlockSize = value;
-                WriteConfirm(String.Format("{0} parameter was set to {1}.", parameter, value));
-            }
-        }
-
-        /// <summary>
-        /// Executes the add synchronize pair instruction.
-        /// </summary>
-        /// <param name="instruction">The instruction.</param>
-        [InstructionExecute(InstructionType.ADDPAIR)]
-        public void ExecuteAddSyncPairInstruction(Instruction instruction)
-        {
-            if (instruction == null || SyncManager == null) return;
-
-            var pair = HandleAddPairInputs();
-
-            if (instruction.Parameters.Count > 0)
-            {
-                pair.Name = instruction.Parameters[0].Content.ToString();
-            }
-            else
-            {
-                pair.Name = String.Format("Sync Pair {0}", SyncManager.Configuration.ConfigPairs.Count + 1);
-            }
-
-            if (SyncManager.AddSyncPair(pair))
-            {
-                WriteConfirm(String.Format("SyncPair {0} was added.", pair.Name));
-            }
-
-        }
-
-        /// <summary>
-        /// Handles the add pair inputs.
-        /// </summary>
-        private ConfigurationPair HandleAddPairInputs()
-        {
-            const string okString = "OK";
-            const string cancelString = "CANCEL";
-            string inputText = string.Empty;
-            bool inputStatus = false;
-            bool okGiven = false;
-
-            string sourceFolder = string.Empty;
-            List<string> targetFolders = new List<string>();
-            List<string> exceptFolders = new List<string>();
-
-            this.output.WriteLine("{0} to abort sync pair input:", cancelString);
-
-            while (!inputStatus)
-            {
-                this.output.Write("Source Folder:");
-                inputText = this.input.ReadLine();
-
-                if (!string.IsNullOrWhiteSpace(inputText))
-                {
-                    if (inputText.ToUpper().Trim().Equals(cancelString))
-                    {
-                        return null;
-                    }
-
-                    if (ValidatePath(inputText, out inputText))
-                    {
-                        inputStatus = true;
-                        sourceFolder = inputText;
-                    }
-                }
-            }
-
-            inputStatus = false;
-            okGiven = false;
-
-            while (!okGiven)
-            {
-                while (!inputStatus)
-                {
-                    if (targetFolders.Count >= 1)
-                    {
-                        this.output.Write("Target Folder (OK for next input stage):");
-                    }
-                    else
-                    {
-                        this.output.Write("Target Folder:");
-                    }
-
-                    inputText = this.input.ReadLine();
-
-                    if (!string.IsNullOrWhiteSpace(inputText))
-                    {
-                        string checkInput = inputText.ToUpper().Trim();
-
-                        if (checkInput.Equals(cancelString))
-                        {
-                            return null;
-                        }
-
-                        if (checkInput.Equals(okString) && targetFolders.Count >= 1)
-                        {
-                            okGiven = true;
-                            inputStatus = true;
-                        }
-
-                        if (!okGiven)
-                        {
-                            if (ValidatePath(inputText, out inputText))
-                            {
-                                inputStatus = true;
-                                targetFolders.Add(inputText);
-                            }
-                        }
-                    }
-                }
-                inputStatus = false;
-            }
-
-            inputStatus = false;
-            okGiven = false;
-
-            while (!okGiven)
-            {
-                while (!inputStatus)
-                {
-                    this.output.Write("Except Folder(OK for end input):");
-                    inputText = this.input.ReadLine();
-
-                    if (!string.IsNullOrWhiteSpace(inputText))
-                    {
-                        string checkInput = inputText.ToUpper().Trim();
-
-                        if (checkInput.Equals(cancelString))
-                        {
-                            return null;
-                        }
-
-                        if (checkInput.Equals(okString))
-                        {
-                            inputStatus = true;
-                            okGiven = true;
-                        }
-
-                        if (!okGiven)
-                        {
-                            if (ValidatePath(inputText, out inputText))
-                            {
-                                inputStatus = true;
-                                exceptFolders.Add(inputText);
-                            }
-                        }
-
-                    }
-
-                }
-
-                inputStatus = false;
-            }
-
-            return new ConfigurationPair()
-            {
-                SoureFolder = sourceFolder,
-                TargetFolders = targetFolders,
-                ExceptFolders = exceptFolders,
-                Logger = Logger
-            };
-        }
-
-        /// <summary>
-        /// Validates the path.
-        /// </summary>
-        /// <param name="inputPath">The input path.</param>
-        /// <param name="fullpath">The fullpath.</param>
-        /// <returns></returns>
-        private bool ValidatePath(string inputPath, out string fullpath)
-        {
-            try
-            {
-                fullpath = Path.GetFullPath(inputPath);
-
-                if (Directory.Exists(fullpath))
-                {
-                    return true;
-                }
-
-                WriteError(string.Format("{0} does not exist!", fullpath));
-            }
-            catch (Exception ex)
-            {
-                WriteError(ex.Message);
-            }
-
-            fullpath = string.Empty;
-            return false;
-        }
-
-        /// <summary>
-        /// Executes the pair clear/delete instruction.
-        /// </summary>
-        /// <param name="instruction">The instruction.</param>
-        [InstructionExecute(InstructionType.DELETEPAIR)]
-        [InstructionExecute(InstructionType.CLEARPAIRS)]
-        public void ExecutePairInstruction(Instruction instruction)
-        {
-            if (instruction == null || SyncManager == null) return;
-
-            if (instruction.Type == InstructionType.DELETEPAIR)
-            {
-                var delpair = SyncManager.SyncPairs.FirstOrDefault(sp => sp.ConfigurationPair.Name.Equals(instruction.Parameters[0].Content));
-
-                if (delpair != null)
-                {
-                    if (ConfirmMessage())
-                    {
-                        SyncManager.RemoveSyncPair(instruction.Parameters[0].Content.ToString());
-                    }
-                }
-                else
-                {
-                    WriteError(string.Format("Pair Name {0} was not found!", instruction.Parameters[0].Content));
-                }
-
-            }
-            else if (instruction.Type == InstructionType.CLEARPAIRS)
-            {
-                if (ConfirmMessage())
-                {
-                    SyncManager.ClearSyncPairs();
-                }
+                handler(this, e);
             }
         }
 
         /// <summary>
         /// Confirms the message.
         /// </summary>
-        /// <returns></returns>
+        /// <returns>
+        /// The confirmation status.
+        /// </returns>
         private bool ConfirmMessage()
         {
             bool confirm = false;
@@ -588,8 +519,8 @@ namespace DataSync.UI.CommandHandling
 
             while (!valid)
             {
-                output.Write("Please confirm this process (OK/CANCEL):");
-                string inputText = input.ReadLine();
+                this.output.Write("Please confirm this process (OK/CANCEL):");
+                string inputText = this.input.ReadLine();
 
                 if (!string.IsNullOrWhiteSpace(inputText))
                 {
@@ -610,90 +541,266 @@ namespace DataSync.UI.CommandHandling
         }
 
         /// <summary>
-        /// Executes the change log file instruction.
+        /// Handles the given instruction.
         /// </summary>
-        /// <param name="instruction">The instruction.</param>
-        [InstructionExecute(InstructionType.LOGTO)]
-        public void ExecuteChangeLogFileInstruction(Instruction instruction)
+        /// <param name="instruction">
+        /// The instruction.
+        /// </param>
+        private void ExecuteInstruction(Instruction instruction)
         {
-            if (instruction == null || SyncManager == null) return;
+            MethodInfo executerMethod =
+                this.GetType()
+                    .GetMethods()
+                    .FirstOrDefault(
+                        method =>
+                        method.GetCustomAttributes(typeof(InstructionExecuteAttribute), false)
+                            .Any(attr => ((InstructionExecuteAttribute)attr).Type == instruction.Type));
 
-            SyncManager.Configuration.LogFileName = instruction.Parameters[0].Content.ToString();
-            OnLogFileChangeOccured(instruction.Parameters[0].Content.ToString());
-        }
-
-        /// <summary>
-        /// Executes the pair detail instruction.
-        /// </summary>
-        /// <param name="instruction">The instruction.</param>
-        [InstructionExecute(InstructionType.LISTPAIRS)]
-        [InstructionExecute(InstructionType.SHOWPAIRDETAIL)]
-        public void ExecutePairDetailInstruction(Instruction instruction)
-        {
-            if (instruction == null || SyncManager == null) return;
-
-            if (instruction.Type == InstructionType.SHOWPAIRDETAIL)
+            // ReSharper disable once UseNullPropagation
+            if (executerMethod != null)
             {
-                var detailpair = SyncManager.SyncPairs.FirstOrDefault(sp => sp.ConfigurationPair.Name.Equals(instruction.Parameters[0].Content));
-
-                if (detailpair != null)
-                {
-                    WriteMessage(detailpair.ToString(), ConsoleColor.DarkYellow);
-                }
-                else
-                {
-                    WriteError(string.Format("Pair Name {0} was not found!", instruction.Parameters[0].Content));
-                }
-            }
-            else if (instruction.Type == InstructionType.LISTPAIRS)
-            {
-                WriteMessage(SyncManager.ToString(), ConsoleColor.DarkYellow);
+                executerMethod.Invoke(this, new object[] { instruction });
             }
         }
 
         /// <summary>
-        /// Executes the pair detail instruction.
+        /// Handles the add pair inputs.
         /// </summary>
-        /// <param name="instruction">The instruction.</param>
-        [InstructionExecute(InstructionType.LISTSETTINGS)]
-        public void ExecuteListSettingsInstruction(Instruction instruction)
+        /// <returns>
+        /// The <see cref="ConfigurationPair"/>.
+        /// </returns>
+        private ConfigurationPair HandleAddPairInputs()
         {
-            if (instruction == null || SyncManager == null || SyncManager.Configuration == null) return;
+            const string OkString = "OK";
+            const string CancelString = "CANCEL";
+            string inputText;
+            bool inputStatus = false;
+            bool endInputGiven = false;
 
-            WriteMessage(SyncManager.Configuration.ToString(), ConsoleColor.DarkCyan);
+            string sourceFolder = string.Empty;
+            List<string> targetFolders = new List<string>();
+            List<string> exceptFolders = new List<string>();
+
+            this.output.WriteLine("{0} to abort sync pair input:", CancelString);
+
+            while (!inputStatus)
+            {
+                this.output.Write("Source Folder:");
+                inputText = this.input.ReadLine();
+
+                if (!string.IsNullOrWhiteSpace(inputText))
+                {
+                    if (inputText.ToUpper().Trim().Equals(CancelString))
+                    {
+                        return null;
+                    }
+
+                    if (this.ValidatePath(inputText, out inputText))
+                    {
+                        inputStatus = true;
+                        sourceFolder = inputText;
+                    }
+                }
+            }
+
+            inputStatus = false;
+            endInputGiven = false;
+
+            while (!endInputGiven)
+            {
+                while (!inputStatus)
+                {
+                    if (targetFolders.Count >= 1)
+                    {
+                        this.output.Write("Target Folder (OK for next input stage):");
+                    }
+                    else
+                    {
+                        this.output.Write("Target Folder:");
+                    }
+
+                    inputText = this.input.ReadLine();
+
+                    if (!string.IsNullOrWhiteSpace(inputText))
+                    {
+                        string checkInput = inputText.ToUpper().Trim();
+
+                        if (checkInput.Equals(CancelString))
+                        {
+                            return null;
+                        }
+
+                        if (checkInput.Equals(OkString) && targetFolders.Count >= 1)
+                        {
+                            endInputGiven = true;
+                            inputStatus = true;
+                        }
+
+                        if (!endInputGiven)
+                        {
+                            if (this.ValidatePath(inputText, out inputText))
+                            {
+                                inputStatus = true;
+                                targetFolders.Add(inputText);
+                            }
+                        }
+                    }
+                }
+
+                inputStatus = false;
+            }
+
+            inputStatus = false;
+            endInputGiven = false;
+
+            while (!endInputGiven)
+            {
+                while (!inputStatus)
+                {
+                    this.output.Write("Except Folder(OK for end input):");
+                    inputText = this.input.ReadLine();
+
+                    if (!string.IsNullOrWhiteSpace(inputText))
+                    {
+                        string checkInput = inputText.ToUpper().Trim();
+
+                        if (checkInput.Equals(CancelString))
+                        {
+                            return null;
+                        }
+
+                        if (checkInput.Equals(OkString))
+                        {
+                            inputStatus = true;
+                            endInputGiven = true;
+                        }
+
+                        if (!endInputGiven)
+                        {
+                            if (this.ValidatePath(inputText, out inputText))
+                            {
+                                inputStatus = true;
+                                exceptFolders.Add(inputText);
+                            }
+                        }
+                    }
+                }
+
+                inputStatus = false;
+            }
+
+            return new ConfigurationPair()
+            {
+                SoureFolder = sourceFolder, 
+                TargetFolders = targetFolders, 
+                ExceptFolders = exceptFolders, 
+                Logger = this.Logger
+            };
+        }
+
+        /// <summary>
+        /// Initializes this instance.
+        /// </summary>
+        private void Initialize()
+        {
+            this.decoder = new InstructionDecoder();
+
+            this.isRunning = true;
         }
 
         /// <summary>
         /// Adds the log message.
         /// </summary>
-        /// <param name="message">The message.</param>
+        /// <param name="message">
+        /// The message.
+        /// </param>
         private void LogMessage(LogMessage message)
         {
-            if (Logger != null)
+            if (this.Logger != null)
             {
-                Logger.AddLogMessage(message);
+                this.Logger.AddLogMessage(message);
             }
         }
 
         /// <summary>
-        /// Called when alog file change occured.
+        /// Validates the path.
         /// </summary>
-        /// <param name="logfilename">The logfilename.</param>
-        protected virtual void OnLogFileChangeOccured(string logfilename)
+        /// <param name="inputPath">
+        /// The input path.
+        /// </param>
+        /// <param name="fullpath">
+        /// The full path.
+        /// </param>
+        /// <returns>
+        /// The validation status.
+        /// </returns>
+        private bool ValidatePath(string inputPath, out string fullpath)
         {
-            var handler = LogFileChangeOccured;
-            if (handler != null) handler(this, new LogFilePropertiesChangedEventArgs(logfilename, SyncManager.Configuration.LogFileSize));
+            try
+            {
+                fullpath = Path.GetFullPath(inputPath);
+
+                if (Directory.Exists(fullpath))
+                {
+                    return true;
+                }
+
+                this.WriteError(string.Format("{0} does not exist!", fullpath));
+            }
+            catch (Exception ex)
+            {
+                this.WriteError(ex.Message);
+            }
+
+            fullpath = string.Empty;
+            return false;
         }
 
         /// <summary>
-        /// Called when a log file change occured.
+        /// Writes the confirm.
         /// </summary>
-        /// <param name="logfilesize">The logfilesize.</param>
-        protected virtual void OnLogFileChangeOccured(int logfilesize)
+        /// <param name="confirmMessage">
+        /// The confirm message.
+        /// </param>
+        private void WriteConfirm(string confirmMessage)
         {
-            var handler = LogFileChangeOccured;
-            if (handler != null) handler(this, new LogFilePropertiesChangedEventArgs(SyncManager.Configuration.LogFileName, logfilesize));
+            this.WriteMessage(confirmMessage, ConsoleColor.Green);
+        }
+
+        /// <summary>
+        /// Writes the error.
+        /// </summary>
+        /// <param name="errorMessage">
+        /// The error message.
+        /// </param>
+        private void WriteError(string errorMessage)
+        {
+            this.WriteMessage(errorMessage, ConsoleColor.Red);
+        }
+
+        /// <summary>
+        /// Writes the error message to output.
+        /// Fires before and after event.
+        /// </summary>
+        /// <param name="message">
+        /// The message.
+        /// </param>
+        /// <param name="color">
+        /// The color.
+        /// </param>
+        private void WriteMessage(string message, ConsoleColor color)
+        {
+            if (this.BeforeOutput != null)
+            {
+                this.BeforeOutput(this, new OutputEventArgs(color));
+            }
+
+            this.output.WriteLine(message);
+
+            if (this.AfterOutput != null)
+            {
+                this.AfterOutput(this, new OutputEventArgs());
+            }
         }
     }
-
 }

@@ -5,7 +5,6 @@
 // <author>Christoph Hauer</author>
 // <summary>DataSync.Lib - JobStatus.cs</summary>
 // -----------------------------------------------------------------------
-
 namespace DataSync.Lib.Sync.Jobs
 {
     /// <summary>
@@ -16,17 +15,17 @@ namespace DataSync.Lib.Sync.Jobs
         /// <summary>
         /// The queued state.
         /// </summary>
-        Queued,
+        Queued, 
 
         /// <summary>
         /// The processing state.
         /// </summary>
-        Processing,
+        Processing, 
 
         /// <summary>
         /// The done state.
         /// </summary>
-        Done,
+        Done, 
 
         /// <summary>
         /// The error state.

@@ -5,26 +5,21 @@
 // <author>Christoph Hauer</author>
 // <summary>DataSync.UI - SwitchToken.cs</summary>
 // -----------------------------------------------------------------------
-
-using System.Collections.Generic;
-
 namespace DataSync.UI.CommandHandling.Validation
 {
+    using System.Collections.Generic;
+
     /// <summary>
-    /// ValidationToken - OptionList - Fixed Values ON/OFF
+    /// ValidationToken - OptionList - Fixed Values ON/OFF.
     /// </summary>
     public class SwitchToken : OptionToken
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="SwitchToken" /> class.
+        /// Initializes a new instance of the <see cref="SwitchToken"/> class.
         /// </summary>
         public SwitchToken()
         {
-            base.OptionList = new List<string>()
-            {
-                "ON",
-                "OFF"
-            };
+            this.OptionList = new List<string>() { "ON", "OFF" };
         }
     }
 }

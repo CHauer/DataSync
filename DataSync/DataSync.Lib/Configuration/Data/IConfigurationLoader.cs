@@ -5,7 +5,6 @@
 // <author>Christoph Hauer</author>
 // <summary>DataSync.Lib - IConfigurationLoader.cs</summary>
 // -----------------------------------------------------------------------
-
 namespace DataSync.Lib.Configuration.Data
 {
     /// <summary>
@@ -16,7 +15,9 @@ namespace DataSync.Lib.Configuration.Data
         /// <summary>
         /// Loads the configuration.
         /// </summary>
-        /// <returns></returns>
+        /// <returns>
+        /// The <see cref="SyncConfiguration"/>.
+        /// </returns>
         SyncConfiguration LoadConfiguration();
     }
 }

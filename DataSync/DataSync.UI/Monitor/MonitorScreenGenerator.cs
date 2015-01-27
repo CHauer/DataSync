@@ -1,44 +1,46 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using DataSync.Lib.Sync;
-using DataSync.UI.Monitor.Pipe;
-
+﻿// -----------------------------------------------------------------------
+// <copyright file="MonitorScreenGenerator.cs" company="FH Wr.Neustadt">
+//      Copyright Christoph Hauer. All rights reserved.
+// </copyright>
+// <author>Christoph Hauer</author>
+// <summary>DataSync.UI - MonitorScreenGenerator.cs</summary>
+// -----------------------------------------------------------------------
 namespace DataSync.UI.Monitor
 {
+    using System.Linq;
+
+    using DataSync.Lib.Sync;
+    using DataSync.UI.Monitor.Pipe;
+
+    /// <summary>
+    /// The monitor screen generator.
+    /// </summary>
     public class MonitorScreenGenerator
     {
         /// <summary>
-        /// The pipe sender
-        /// </summary>
-        private PipeSender<MonitorScreen> pipeSender;
-
-        /// <summary>
-        /// The maximum view queues
+        /// The maximum view queues.
         /// </summary>
         private const int MaxViewQueues = 4;
 
         /// <summary>
+        /// The pipe sender.
+        /// </summary>
+        private PipeSender<MonitorScreen> pipeSender;
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="MonitorScreenGenerator"/> class.
         /// </summary>
+        /// <param name="manager">
+        /// The manager.
+        /// </param>
         public MonitorScreenGenerator(SyncManager manager)
         {
             this.pipeSender = new PipeSender<MonitorScreen>(MonitorType.Screen.ToString("g"));
             this.Manager = manager;
-            this.Manager.StateUpdated += ManagerStateUpdated;
+            this.Manager.StateUpdated += this.ManagerStateUpdated;
 
-            //send initial screen
+            // send initial screen
             this.SendInitialScreen();
-        }
-
-        /// <summary>
-        /// Sends the initial screen.
-        /// </summary>
-        public void SendInitialScreen()
-        {
-            this.pipeSender.SendMessage(new MonitorScreen(100, 50));
         }
 
         /// <summary>
@@ -50,33 +52,49 @@ namespace DataSync.UI.Monitor
         public SyncManager Manager { get; private set; }
 
         /// <summary>
-        /// Handles the synchronize pair updated event
+        /// Sends the initial screen.
         /// </summary>
-        /// <param name="sender">The sender.</param>
-        /// <param name="e">The e.</param>
-        private void ManagerStateUpdated(object sender, SyncPair e)
+        public void SendInitialScreen()
         {
-            MonitorScreen screen = GenerateMonitorScreen();
-
-            pipeSender.SendMessage(screen);
+            this.pipeSender.SendMessage(new MonitorScreen(100, 50));
         }
 
         /// <summary>
         /// Generates the monitor screen.
         /// </summary>
-        /// <returns></returns>
+        /// <returns>
+        /// The <see cref="MonitorScreen"/>.
+        /// </returns>
         private MonitorScreen GenerateMonitorScreen()
         {
             MonitorScreen screen = new MonitorScreen(100, 50);
 
-            foreach (var pair in Manager.SyncPairs.Where(sp => !sp.IsSynced)
-                                        .OrderBy(sp => sp.ConfigurationPair.Name)
-                                        .Take(MaxViewQueues))
+            foreach (
+                var pair in
+                    this.Manager.SyncPairs.Where(sp => !sp.IsSynced)
+                        .OrderBy(sp => sp.ConfigurationPair.Name)
+                        .Take(MaxViewQueues))
             {
                 screen.AddPairBlock(pair);
             }
 
             return screen;
+        }
+
+        /// <summary>
+        /// Handles the synchronize pair updated event.
+        /// </summary>
+        /// <param name="sender">
+        /// The sender value.
+        /// </param>
+        /// <param name="e">
+        /// The exception.
+        /// </param>
+        private void ManagerStateUpdated(object sender, SyncPair e)
+        {
+            MonitorScreen screen = this.GenerateMonitorScreen();
+
+            this.pipeSender.SendMessage(screen);
         }
     }
 }

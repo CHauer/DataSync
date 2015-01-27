@@ -1,18 +1,28 @@
-﻿using System;
-using System.IO;
-
+﻿// -----------------------------------------------------------------------
+// <copyright file="SyncFolder.cs" company="FH Wr.Neustadt">
+//      Copyright Christoph Hauer. All rights reserved.
+// </copyright>
+// <author>Christoph Hauer</author>
+// <summary>DataSync.Lib - SyncFolder.cs</summary>
+// -----------------------------------------------------------------------
 namespace DataSync.Lib.Sync.Items
 {
+    using System.IO;
+
     /// <summary>
-    /// 
+    /// The sync folder class.
     /// </summary>
     public class SyncFolder : ISyncItem
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="SyncFolder"/> class.
         /// </summary>
-        /// <param name="sourcePath">The source path.</param>
-        /// <param name="targetFolderPath">The target folder path.</param>
+        /// <param name="sourcePath">
+        /// The source path.
+        /// </param>
+        /// <param name="targetFolderPath">
+        /// The target folder path.
+        /// </param>
         public SyncFolder(string sourcePath, string targetFolderPath)
         {
             this.SourcePath = sourcePath;
@@ -25,20 +35,20 @@ namespace DataSync.Lib.Sync.Items
         /// <value>
         /// The source path.
         /// </value>
-        public string SourcePath { get; private set; }
+        public string SourcePath { get; set; }
 
         /// <summary>
         /// Gets a value indicating whether target file exists.
         /// </summary>
         /// <value>
-        ///   <c>true</c> if target file exists; otherwise, <c>false</c>.
+        /// <c>true</c> if target file exists; otherwise, <c>false</c>.
         /// </value>
         public bool TargetExists
         {
             get
             {
                 // ReSharper disable once ConvertPropertyToExpressionBody
-                return Directory.Exists(TargetPath);
+                return Directory.Exists(this.TargetPath);
             }
         }
 
@@ -48,36 +58,44 @@ namespace DataSync.Lib.Sync.Items
         /// <value>
         /// The target path.
         /// </value>
-        public string TargetPath { get; private set; }
+        public string TargetPath { get; set; }
 
         /// <summary>
         /// Gets the source file system information.
         /// </summary>
-        /// <returns></returns>
-        /// <exception cref="System.IO.DirectoryNotFoundException"></exception>
+        /// <returns>
+        /// The <see cref="FileSystemInfo"/> value.
+        /// </returns>
+        /// <exception cref="System.IO.DirectoryNotFoundException">
+        /// Directory not found exception.
+        /// </exception>
         public FileSystemInfo GetSourceInfo()
         {
-            if (!Directory.Exists(SourcePath))
+            if (!Directory.Exists(this.SourcePath))
             {
                 throw new DirectoryNotFoundException();
             }
 
-            return new DirectoryInfo(SourcePath);
+            return new DirectoryInfo(this.SourcePath);
         }
 
         /// <summary>
         /// Gets the target file system information.
         /// </summary>
-        /// <returns></returns>
-        /// <exception cref="System.IO.DirectoryNotFoundException"></exception>
+        /// <returns>
+        /// The <see cref="FileSystemInfo"/> value.
+        /// </returns>
+        /// <exception cref="System.IO.DirectoryNotFoundException">
+        /// Directory not found exception.
+        /// </exception>
         public FileSystemInfo GetTargetInfo()
         {
-            if (!Directory.Exists(TargetPath))
+            if (!Directory.Exists(this.TargetPath))
             {
                 throw new DirectoryNotFoundException();
             }
 
-            return new DirectoryInfo(TargetPath);
+            return new DirectoryInfo(this.TargetPath);
         }
     }
 }

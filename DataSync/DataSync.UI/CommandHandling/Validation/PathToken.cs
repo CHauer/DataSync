@@ -5,19 +5,18 @@
 // <author>Christoph Hauer</author>
 // <summary>DataSync.UI - PathToken.cs</summary>
 // -----------------------------------------------------------------------
-
-using System;
-using System.IO;
-
 namespace DataSync.UI.CommandHandling.Validation
 {
+    using System;
+    using System.IO;
+
     /// <summary>
-    /// 
+    /// The path token class.
     /// </summary>
     public class PathToken : IValidationToken
     {
         /// <summary>
-        /// Gets or sets the validation error message.
+        /// Gets the validation error message.
         /// </summary>
         /// <value>
         /// The validation error message.
@@ -27,8 +26,12 @@ namespace DataSync.UI.CommandHandling.Validation
         /// <summary>
         /// Validates the specified validation element.
         /// </summary>
-        /// <param name="validationElement">The validation element.</param>
-        /// <returns></returns>
+        /// <param name="validationElement">
+        /// The validation element.
+        /// </param>
+        /// <returns>
+        /// The validation status.
+        /// </returns>
         public bool Validate(string validationElement)
         {
             if (string.IsNullOrWhiteSpace(validationElement))
@@ -46,8 +49,10 @@ namespace DataSync.UI.CommandHandling.Validation
             }
             catch (Exception ex)
             {
-                this.ValidationErrorMessage = String.Format("'{0}' is not a valid path or file name!" +
-                                                            " Details:{1}", validationElement, ex.Message);
+                this.ValidationErrorMessage = string.Format(
+                    "'{0}' is not a valid path or file name!" + " Details:{1}", 
+                    validationElement, 
+                    ex.Message);
                 return false;
             }
 

@@ -5,19 +5,21 @@
 // <author>Christoph Hauer</author>
 // <summary>DataSync.Lib - JobStatusChangedEventArgs.cs</summary>
 // -----------------------------------------------------------------------
-
-using System;
-
 namespace DataSync.Lib.Sync.Jobs
 {
+    using System;
+
     /// <summary>
-    /// 
+    /// The job status changed event args class.
     /// </summary>
     public class JobStatusChangedEventArgs : EventArgs
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="JobStatusChangedEventArgs"/> class.
         /// </summary>
+        /// <param name="status">
+        /// The status.
+        /// </param>
         public JobStatusChangedEventArgs(JobStatus status)
         {
             this.Status = status;

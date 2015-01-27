@@ -5,21 +5,21 @@
 // <author>Christoph Hauer</author>
 // <summary>DataSync.Lib - Logger.cs</summary>
 // -----------------------------------------------------------------------
-
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using DataSync.Lib.Log.Messages;
-
 namespace DataSync.Lib.Log
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Linq;
+
+    using DataSync.Lib.Log.Messages;
+
     /// <summary>
-    /// 
+    /// The logger class.
     /// </summary>
     public class Logger : ILog
     {
         /// <summary>
-        /// The log listeners
+        /// The log listeners.
         /// </summary>
         private List<ILogListener> logListeners;
 
@@ -28,22 +28,27 @@ namespace DataSync.Lib.Log
         /// </summary>
         public Logger()
         {
-            Initialize();
-        }
-
-        /// <summary>
-        /// Initializes this instance.
-        /// </summary>
-        private void Initialize()
-        {
-            this.LogMessages = new List<LogMessage>();
-            this.logListeners = new List<ILogListener>();
+            this.Initialize();
         }
 
         /// <summary>
         /// Occurs when a message gets logged.
         /// </summary>
         public event EventHandler<LogMessage> MessageLogged;
+
+        /// <summary>
+        /// Gets the debug messages.
+        /// </summary>
+        /// <value>
+        /// The debug messages.
+        /// </value>
+        public List<LogMessage> DebugMessages
+        {
+            get
+            {
+                return this.LogMessages.Where(lm => lm.IsDebug).ToList();
+            }
+        }
 
         /// <summary>
         /// Gets the log messages.
@@ -54,48 +59,32 @@ namespace DataSync.Lib.Log
         public List<LogMessage> LogMessages { get; private set; }
 
         /// <summary>
-        /// Gets the debug messages.
-        /// </summary>
-        /// <value>
-        /// The debug messages.
-        /// </value>
-        public List<LogMessage> DebugMessages
-        {
-            get { return this.LogMessages.Where(lm => lm.IsDebug).ToList(); }
-        }
-
-        /// <summary>
-        /// Adds the log message.
-        /// </summary>
-        /// <param name="message">The message.</param>
-        public void AddLogMessage(LogMessage message)
-        {
-            this.LogMessages.Add(message);
-
-            OnMessageLogged(message);
-
-            if (this.logListeners != null)
-            {
-                this.logListeners.ForEach(listener => listener.WriteLogMessage(message));
-            }
-        }
-
-        /// <summary>
         /// Adds the listener.
         /// </summary>
-        /// <param name="listener">The listener.</param>
+        /// <param name="listener">
+        /// The listener.
+        /// </param>
         public void AddListener(ILogListener listener)
         {
             this.logListeners.Add(listener);
         }
 
         /// <summary>
-        /// Removes the listener.
+        /// Adds the log message.
         /// </summary>
-        /// <param name="listener">The listener.</param>
-        public void RemoveListener(ILogListener listener)
+        /// <param name="message">
+        /// The message.
+        /// </param>
+        public void AddLogMessage(LogMessage message)
         {
-            this.logListeners.Remove(listener);
+            this.LogMessages.Add(message);
+
+            this.OnMessageLogged(message);
+
+            if (this.logListeners != null)
+            {
+                this.logListeners.ForEach(listener => listener.WriteLogMessage(message));
+            }
         }
 
         /// <summary>
@@ -107,15 +96,37 @@ namespace DataSync.Lib.Log
         }
 
         /// <summary>
+        /// Removes the listener.
+        /// </summary>
+        /// <param name="listener">
+        /// The listener.
+        /// </param>
+        public void RemoveListener(ILogListener listener)
+        {
+            this.logListeners.Remove(listener);
+        }
+
+        /// <summary>
         /// Called when a message gets logged.
         /// </summary>
-        /// <param name="e">The e.</param>
+        /// <param name="e">
+        /// The log message parameter.
+        /// </param>
         protected virtual void OnMessageLogged(LogMessage e)
         {
-            if (MessageLogged != null)
+            if (this.MessageLogged != null)
             {
-                MessageLogged(this, e);
+                this.MessageLogged(this, e);
             }
+        }
+
+        /// <summary>
+        /// Initializes this instance.
+        /// </summary>
+        private void Initialize()
+        {
+            this.LogMessages = new List<LogMessage>();
+            this.logListeners = new List<ILogListener>();
         }
     }
 }

@@ -5,40 +5,32 @@
 // <author>Christoph Hauer</author>
 // <summary>DataSync.UI - ConsoleWindowPositioner.cs</summary>
 // -----------------------------------------------------------------------
-
-using System;
-using System.Runtime.InteropServices;
-
 namespace DataSync.UI.Monitor
 {
+    using System;
+    using System.Runtime.InteropServices;
+
+    /// <summary>
+    /// The console window positioner.
+    /// </summary>
     public class ConsoleWindowPositioner
     {
         /// <summary>
-        /// The Pointer to the current console window
-        /// </summary>
-        private IntPtr consoleWindow;
-
-        /// <summary>
-        /// The SWP nosize
+        /// The no size constant.
         /// </summary>
         private const int SwpNosize = 0x0001;
+
+        /// <summary>
+        /// The Pointer to the current console window.
+        /// </summary>
+        private IntPtr consoleWindow;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ConsoleWindowPositioner"/> class.
         /// </summary>
         public ConsoleWindowPositioner()
         {
-            consoleWindow = GetConsoleWindow();
-        }
-
-        /// <summary>
-        /// Sets the console window position.
-        /// </summary>
-        /// <param name="left">The left.</param>
-        /// <param name="top">The top.</param>
-        public void SetConsoleWindowPosition(int left, int top)
-        {
-            SetWindowPos(consoleWindow, 0, left, top, 0, 0, SwpNosize);
+            this.consoleWindow = GetConsoleWindow();
         }
 
         /// <summary>
@@ -46,39 +38,64 @@ namespace DataSync.UI.Monitor
         /// </summary>
         public void BringConsoleWindowToFront()
         {
-            SetForegroundWindow(consoleWindow);
+            SetForegroundWindow(this.consoleWindow);
+        }
+
+        /// <summary>
+        /// Sets the console window position.
+        /// </summary>
+        /// <param name="left">
+        /// The left parameter.
+        /// </param>
+        /// <param name="top">
+        /// The top parameter.
+        /// </param>
+        public void SetConsoleWindowPosition(int left, int top)
+        {
+            SetWindowPos(this.consoleWindow, 0, left, top, 0, 0, SwpNosize);
         }
 
         /// <summary>
         /// Gets the console window.
         /// </summary>
-        /// <returns></returns>
+        /// <returns>
+        /// The <see cref="IntPtr"/>.
+        /// </returns>
         [DllImport("kernel32.dll", ExactSpelling = true)]
         private static extern IntPtr GetConsoleWindow();
 
         /// <summary>
-        /// Sets the window position.
-        /// </summary>
-        /// <param name="hWnd">The h WND.</param>
-        /// <param name="hWndInsertAfter">The h WND insert after.</param>
-        /// <param name="x">The x.</param>
-        /// <param name="Y">The y.</param>
-        /// <param name="cx">The cx.</param>
-        /// <param name="cy">The cy.</param>
-        /// <param name="wFlags">The w flags.</param>
-        /// <returns></returns>
-        [DllImport("user32.dll", EntryPoint = "SetWindowPos")]
-        private static extern IntPtr SetWindowPos(IntPtr hWnd, int hWndInsertAfter, int x, int Y, int cx, int cy,
-                                                  int wFlags);
-
-        /// <summary>
         /// Sets the foreground window.
         /// </summary>
-        /// <param name="hWnd">The h WND.</param>
-        /// <returns></returns>
+        /// <param name="parameter">The parameter.</param>
+        /// <returns>
+        /// The a boolean value.
+        /// </returns>
         [DllImport("user32.dll")]
         [return: MarshalAs(UnmanagedType.Bool)]
-        private static extern bool SetForegroundWindow(IntPtr hWnd);
+        private static extern bool SetForegroundWindow(IntPtr parameter);
 
+        /// <summary>
+        /// Sets the window position.
+        /// </summary>
+        /// <param name="parameter">The parameter.</param>
+        /// <param name="parameterInsertAfter">The parameter insert after.</param>
+        /// <param name="x">The x parameter.</param>
+        /// <param name="y">The y parameter.</param>
+        /// <param name="cx">The cx parameter.</param>
+        /// <param name="cy">The cy parameter.</param>
+        /// <param name="flags">The flags parameter.</param>
+        /// <returns>
+        /// The windows position pointer.
+        /// </returns>
+        [DllImport("user32.dll", EntryPoint = "SetWindowPos")]
+        private static extern IntPtr SetWindowPos(
+            IntPtr parameter,
+            int parameterInsertAfter, 
+            int x, 
+            int y, 
+            int cx, 
+            int cy, 
+            int flags);
     }
 }

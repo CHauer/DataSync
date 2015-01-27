@@ -5,18 +5,22 @@
 // <author>Christoph Hauer</author>
 // <summary>DataSync.UI - ArgumentHandlerAttribute.cs</summary>
 // -----------------------------------------------------------------------
-
-using System;
-
 namespace DataSync.UI.Arguments
 {
+    using System;
+
+    /// <summary>
+    /// The argument handler attribute.
+    /// </summary>
     [AttributeUsage(AttributeTargets.Method, AllowMultiple = true)]
     public class ArgumentHandlerAttribute : Attribute
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="ArgumentHandlerAttribute"/> class.
         /// </summary>
-        /// <param name="argumentToHandle">The argument to handle.</param>
+        /// <param name="argumentToHandle">
+        /// The argument to handle.
+        /// </param>
         public ArgumentHandlerAttribute(string argumentToHandle)
         {
             this.Argument = argumentToHandle;
