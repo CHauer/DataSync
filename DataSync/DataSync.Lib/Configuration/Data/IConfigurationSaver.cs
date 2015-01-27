@@ -5,7 +5,6 @@
 // <author>Christoph Hauer</author>
 // <summary>DataSync.Lib - IConfigurationSaver.cs</summary>
 // -----------------------------------------------------------------------
-
 namespace DataSync.Lib.Configuration.Data
 {
     /// <summary>
@@ -16,7 +15,9 @@ namespace DataSync.Lib.Configuration.Data
         /// <summary>
         /// Saves the configuration.
         /// </summary>
-        /// <param name="configuration">The configuration.</param>
+        /// <param name="configuration">
+        /// The configuration.
+        /// </param>
         void SaveConfiguration(SyncConfiguration configuration);
     }
 }

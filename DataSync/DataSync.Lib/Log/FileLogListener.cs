@@ -1,12 +1,20 @@
-﻿using System;
-using System.Diagnostics;
-using System.IO;
-using DataSync.Lib.Log.Messages;
-
+﻿// -----------------------------------------------------------------------
+// <copyright file="FileLogListener.cs" company="FH Wr.Neustadt">
+//      Copyright Christoph Hauer. All rights reserved.
+// </copyright>
+// <author>Christoph Hauer</author>
+// <summary>DataSync.Lib - FileLogListener.cs</summary>
+// -----------------------------------------------------------------------
 namespace DataSync.Lib.Log
 {
+    using System;
+    using System.Diagnostics;
+    using System.IO;
+
+    using DataSync.Lib.Log.Messages;
+
     /// <summary>
-    /// 
+    /// The file log listener class.
     /// </summary>
     public class FileLogListener : ILogListener
     {
@@ -18,12 +26,16 @@ namespace DataSync.Lib.Log
         /// <summary>
         /// Initializes a new instance of the <see cref="FileLogListener"/> class.
         /// </summary>
-        /// <param name="logFilePath">The log file path.</param>
-        /// <param name="logFileSize">Size of the log file.</param>
+        /// <param name="logFilePath">
+        /// The log file path.
+        /// </param>
+        /// <param name="logFileSize">
+        /// Size of the log file.
+        /// </param>
         /// <exception cref="System.ArgumentException">
-        /// logFileSize
+        /// LogFileSize
         /// or
-        /// logFilePath
+        /// logFilePath.
         /// </exception>
         public FileLogListener(string logFilePath, int logFileSize)
         {
@@ -42,21 +54,6 @@ namespace DataSync.Lib.Log
         }
 
         /// <summary>
-        /// Initializes the log file.
-        /// </summary>
-        private void OpenLogFile()
-        {
-            try
-            {
-                logWriter = new StreamWriter(File.Open(LogFilePath, FileMode.Append, FileAccess.Write));
-            }
-            catch (Exception ex)
-            {
-                Debug.WriteLine(ex.Message);
-            }
-        }
-
-        /// <summary>
         /// Gets the log file path.
         /// </summary>
         /// <value>
@@ -70,43 +67,38 @@ namespace DataSync.Lib.Log
         /// <value>
         /// The size of the log file.
         /// </value>
-        public int LogFileSize{ get; private set; }
+        public int LogFileSize { get; private set; }
 
         /// <summary>
         /// Writes the log message.
         /// </summary>
-        /// <param name="message">The message.</param>
+        /// <param name="message">
+        /// The message.
+        /// </param>
         public void WriteLogMessage(LogMessage message)
         {
             try
             {
-                OpenLogFile();
+                this.OpenLogFile();
 
-                logWriter.WriteLine(message.ToString());
+                this.logWriter.WriteLine(message.ToString());
 
-                CloseLogFile();
+                this.CloseLogFile();
             }
             catch (Exception ex)
             {
                 Debug.WriteLine(ex.Message);
             }
 
-            CheckBackupFile();
-        }
-
-        /// <summary>
-        /// Closes the log file.
-        /// </summary>
-        private void CloseLogFile()
-        {
-            logWriter.Flush();
-            logWriter.Close();
+            this.CheckBackupFile();
         }
 
         /// <summary>
         /// Checks the backup file.
         /// </summary>
-        /// <returns></returns>
+        /// <returns>
+        /// The status of check backup file.
+        /// </returns>
         private bool CheckBackupFile()
         {
             FileInfo info = null;
@@ -114,7 +106,7 @@ namespace DataSync.Lib.Log
 
             try
             {
-                 info = new FileInfo(LogFilePath);
+                info = new FileInfo(this.LogFilePath);
             }
             catch (Exception ex)
             {
@@ -122,7 +114,7 @@ namespace DataSync.Lib.Log
                 info = null;
             }
 
-            if (info != null && info.Length > LogFileSize)
+            if (info != null && info.Length > this.LogFileSize)
             {
                 bakPath = info.FullName + ".bak";
 
@@ -151,6 +143,30 @@ namespace DataSync.Lib.Log
             }
 
             return false;
+        }
+
+        /// <summary>
+        /// Closes the log file.
+        /// </summary>
+        private void CloseLogFile()
+        {
+            this.logWriter.Flush();
+            this.logWriter.Close();
+        }
+
+        /// <summary>
+        /// Initializes the log file.
+        /// </summary>
+        private void OpenLogFile()
+        {
+            try
+            {
+                this.logWriter = new StreamWriter(File.Open(this.LogFilePath, FileMode.Append, FileAccess.Write));
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine(ex.Message);
+            }
         }
     }
 }

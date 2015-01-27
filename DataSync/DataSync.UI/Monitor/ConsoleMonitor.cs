@@ -1,31 +1,39 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Reflection;
-using System.Text;
-
+﻿// -----------------------------------------------------------------------
+// <copyright file="ConsoleMonitor.cs" company="FH Wr.Neustadt">
+//      Copyright Christoph Hauer. All rights reserved.
+// </copyright>
+// <author>Christoph Hauer</author>
+// <summary>DataSync.UI - ConsoleMonitor.cs</summary>
+// -----------------------------------------------------------------------
 namespace DataSync.UI.Monitor
 {
+    using System;
+    using System.Diagnostics;
+
+    /// <summary>
+    /// The console monitor.
+    /// </summary>
     public class ConsoleMonitor
     {
         /// <summary>
-        /// The process log monitor
-        /// </summary>
-        private Process processMonitor;
-
-        /// <summary>
-        /// The monitor type
+        /// The monitor type.
         /// </summary>
         private MonitorType monitorType;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="ConsoleMonitor" /> class.
+        /// The process log monitor.
         /// </summary>
-        /// <param name="type">The type.</param>
+        private Process processMonitor;
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ConsoleMonitor"/> class.
+        /// </summary>
+        /// <param name="type">
+        /// The type parameter.
+        /// </param>
         public ConsoleMonitor(MonitorType type)
         {
-            monitorType = type;
+            this.monitorType = type;
         }
 
         /// <summary>
@@ -33,17 +41,17 @@ namespace DataSync.UI.Monitor
         /// </summary>
         public void Start()
         {
-            processMonitor = new Process
+            this.processMonitor = new Process
             {
                 StartInfo =
                 {
-                    FileName = "DataSync.Monitor.exe",
-                    Arguments = String.Format("{0}", monitorType.ToString("g").ToUpper()),
+                    FileName = "DataSync.Monitor.exe", 
+                    Arguments = string.Format("{0}", this.monitorType.ToString("g").ToUpper()), 
                     UseShellExecute = true
-                },
+                }, 
             };
 
-            processMonitor.Start();
+            this.processMonitor.Start();
         }
 
         /// <summary>
@@ -53,13 +61,13 @@ namespace DataSync.UI.Monitor
         {
             try
             {
-                processMonitor.CloseMainWindow();
+                this.processMonitor.CloseMainWindow();
             }
             catch (Exception ex)
             {
                 try
                 {
-                    processMonitor.Kill();
+                    this.processMonitor.Kill();
                 }
                 catch (Exception exi)
                 {
@@ -68,6 +76,5 @@ namespace DataSync.UI.Monitor
                 }
             }
         }
-
     }
 }

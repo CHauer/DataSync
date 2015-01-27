@@ -5,23 +5,22 @@
 // <author>Christoph Hauer</author>
 // <summary>DataSync.UI - Instruction.cs</summary>
 // -----------------------------------------------------------------------
-
-using System.Collections.Generic;
-
 namespace DataSync.UI.CommandHandling.Instructions
 {
+    using System.Collections.Generic;
+
     /// <summary>
-    /// 
+    /// The instruction class.
     /// </summary>
     public class Instruction
     {
         /// <summary>
-        /// Gets or sets the type.
+        /// Gets or sets the parameters.
         /// </summary>
         /// <value>
-        /// The type.
+        /// The parameters.
         /// </value>
-        public InstructionType Type { get; set; }
+        public List<Parameter> Parameters { get; set; }
 
         /// <summary>
         /// Gets or sets the plain instruction.
@@ -32,11 +31,11 @@ namespace DataSync.UI.CommandHandling.Instructions
         public string PlainInstruction { get; set; }
 
         /// <summary>
-        /// Gets or sets the parameters.
+        /// Gets or sets the type.
         /// </summary>
         /// <value>
-        /// The parameters.
+        /// The type value.
         /// </value>
-        public List<Parameter> Parameters { get; set; }
+        public InstructionType Type { get; set; }
     }
 }

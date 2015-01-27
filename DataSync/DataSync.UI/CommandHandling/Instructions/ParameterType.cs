@@ -5,7 +5,6 @@
 // <author>Christoph Hauer</author>
 // <summary>DataSync.UI - ParameterType.cs</summary>
 // -----------------------------------------------------------------------
-
 namespace DataSync.UI.CommandHandling.Instructions
 {
     /// <summary>
@@ -16,12 +15,11 @@ namespace DataSync.UI.CommandHandling.Instructions
         /// <summary>
         /// The string value.
         /// </summary>
-        StringValue,
+        StringValue, 
 
         /// <summary>
         /// The integer value.
         /// </summary>
-        IntegerValue,
-
+        IntegerValue, 
     }
 }

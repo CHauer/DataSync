@@ -5,25 +5,21 @@
 // <author>Christoph Hauer</author>
 // <summary>DataSync.Lib - CopyFile.cs</summary>
 // -----------------------------------------------------------------------
-
-using System;
-using System.IO;
-using System.Linq;
-using DataSync.Lib.Configuration;
-using DataSync.Lib.Log;
-using DataSync.Lib.Log.Messages;
-using DataSync.Lib.Sync.Items;
-
 namespace DataSync.Lib.Sync.Operations
 {
+    using System;
+    using System.Diagnostics;
+    using System.IO;
     using System.Threading;
 
+    using DataSync.Lib.Log.Messages;
+    using DataSync.Lib.Sync.Items;
+
     /// <summary>
-    /// 
+    /// The copy file operation class.
     /// </summary>
     public class CopyFile : SyncOperation
     {
-
         /// <summary>
         /// Gets a value indicating whether this instance is block copy.
         /// </summary>
@@ -35,21 +31,25 @@ namespace DataSync.Lib.Sync.Operations
         /// <summary>
         /// Runs the specified item.
         /// </summary>
-        /// <param name="item">The item.</param>
-        /// <returns></returns>
+        /// <param name="item">
+        /// The item parameter.
+        /// </param>
+        /// <returns>
+        /// The boolean return value.
+        /// </returns>
         public override bool Execute(ISyncItem item)
         {
-            IsBlockCopy = false;
+            this.IsBlockCopy = false;
 
-            if (item == null || Configuration == null || !(item is SyncFile))
+            if (item == null || this.Configuration == null || !(item is SyncFile))
             {
-                LogMessage(new ErrorLogMessage("Execution not possible - Invalid  Operation Properties", true));
+                this.LogMessage(new ErrorLogMessage("Execution not possible - Invalid  Operation Properties", true));
                 return false;
             }
 
             SyncFile file = item as SyncFile;
 
-            while (IsFileLocked(file.SourcePath))
+            while (this.IsFileLocked(file.SourcePath))
             {
                 Thread.Sleep(100);
             }
@@ -61,18 +61,19 @@ namespace DataSync.Lib.Sync.Operations
                     var sourceLength = ((FileInfo)file.GetSourceInfo()).Length;
                     var targetLength = ((FileInfo)file.GetTargetInfo()).Length;
 
-                    IsBlockCopy = sourceLength == targetLength && sourceLength >= this.Configuration.BlockCompareFileSize;
+                    this.IsBlockCopy = sourceLength == targetLength
+                                       && sourceLength >= this.Configuration.BlockCompareFileSize;
                 }
                 catch (Exception ex)
                 {
-                    LogMessage(new ErrorLogMessage(ex));
-                    IsBlockCopy = false; 
+                    this.LogMessage(new ErrorLogMessage(ex));
+                    this.IsBlockCopy = false;
                 }
             }
 
-            if (IsBlockCopy)
+            if (this.IsBlockCopy)
             {
-                return ExecuteBlockCopy(file);
+                return this.ExecuteBlockCopy(file);
             }
 
             try
@@ -81,18 +82,18 @@ namespace DataSync.Lib.Sync.Operations
             }
             catch (Exception ex)
             {
-                LogMessage(new ErrorLogMessage(ex));
+                this.LogMessage(new ErrorLogMessage(ex));
                 return false;
             }
 
-            //Copy File Attributes
+            // Copy File Attributes
             try
             {
                 File.SetAttributes(file.TargetPath, file.GetSourceInfo().Attributes);
             }
             catch (Exception ex)
             {
-                LogMessage(new ErrorLogMessage(ex));
+                this.LogMessage(new ErrorLogMessage(ex));
             }
 
             return true;
@@ -102,8 +103,10 @@ namespace DataSync.Lib.Sync.Operations
         /// Determines whether the file is locked.
         /// </summary>
         /// <param name="filePath">The file path.</param>
-        /// <param name="access">The access.</param>
-        /// <returns></returns>
+        /// <param name="access">The access parameter.</param>
+        /// <returns>
+        /// The boolean return value.
+        /// </returns>
         private bool IsFileLocked(string filePath, FileAccess access = FileAccess.Read)
         {
             FileStream stream = null;
@@ -115,6 +118,7 @@ namespace DataSync.Lib.Sync.Operations
             }
             catch (Exception ex)
             {
+                Debug.WriteLine(ex.Message);
                 return true;
             }
 
@@ -125,15 +129,14 @@ namespace DataSync.Lib.Sync.Operations
 
             try
             {
-                
                 stream = file.Open(FileMode.Open, access, FileShare.None);
             }
             catch (IOException)
             {
-                //the file is unavailable because it is:
-                //still being written to
-                //or being processed by another thread
-                //or does not exist (has already been processed)
+                // the file is unavailable because it is:
+                // still being written to
+                // or being processed by another thread
+                // or does not exist (has already been processed)
                 return true;
             }
             finally
@@ -144,23 +147,28 @@ namespace DataSync.Lib.Sync.Operations
                 }
             }
 
-            //file is not locked
+            // file is not locked
             return false;
         }
 
         /// <summary>
         /// Executes the block copy.
         /// </summary>
-        /// <param name="file">The file.</param>
-        /// <returns></returns>
+        /// <param name="file">
+        /// The file parameter.
+        /// </param>
+        /// <returns>
+        /// The boolean return value.
+        /// </returns>
         private bool ExecuteBlockCopy(SyncFile file)
         {
-            int bufferSize = Configuration.BlockSize;
-            
+            int bufferSize = this.Configuration.BlockSize;
+
             try
             {
                 // ReSharper disable once TooWideLocalVariableScope
                 byte[] bufferSource;
+
                 // ReSharper disable once TooWideLocalVariableScope                
                 byte[] bufferTarget;
 
@@ -174,7 +182,7 @@ namespace DataSync.Lib.Sync.Operations
 
                 for (int runner = 1; runner <= maxFullBlock; runner++)
                 {
-                    //end of file reached - change buffer size to "rest size"
+                    // end of file reached - change buffer size to "rest size"
                     if (runner == maxFullBlock)
                     {
                         bufferSize = (int)(sourceStream.Length - sourceStream.Position);
@@ -183,8 +191,8 @@ namespace DataSync.Lib.Sync.Operations
                     bufferSource = readerSource.ReadBytes(bufferSize);
                     bufferTarget = readerTarget.ReadBytes(bufferSize);
 
-                    //compare buffer
-                    if (!EqualByteArrays(bufferSource, bufferTarget))
+                    // compare buffer
+                    if (!this.EqualByteArrays(bufferSource, bufferTarget))
                     {
                         writer.Seek(-bufferSize, SeekOrigin.Current);
                         writer.Write(bufferSource);
@@ -198,6 +206,7 @@ namespace DataSync.Lib.Sync.Operations
             }
             catch (Exception ex)
             {
+                Debug.WriteLine(ex.Message);
                 return false;
             }
 
@@ -206,11 +215,17 @@ namespace DataSync.Lib.Sync.Operations
 
         /// <summary>
         /// Check if byte arrays are equal.
-        /// Safe manged .NET version - for speed gain use an unmanaged version.
+        /// Safe managed .NET version - for speed gain use an unmanaged version.
         /// </summary>
-        /// <param name="a">a.</param>
-        /// <param name="b">The b.</param>
-        /// <returns></returns>
+        /// <param name="a">
+        /// The a parameter.
+        /// </param>
+        /// <param name="b">
+        /// The b parameter.
+        /// </param>
+        /// <returns>
+        /// The boolean return value.
+        /// </returns>
         private bool EqualByteArrays(byte[] a, byte[] b)
         {
             if (a.Length != b.Length)
@@ -228,6 +243,5 @@ namespace DataSync.Lib.Sync.Operations
 
             return true;
         }
-
     }
 }

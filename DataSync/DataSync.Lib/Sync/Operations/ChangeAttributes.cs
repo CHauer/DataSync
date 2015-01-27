@@ -1,20 +1,32 @@
-﻿using System;
-using System.IO;
-using DataSync.Lib.Configuration;
-using DataSync.Lib.Log;
-using DataSync.Lib.Log.Messages;
-using DataSync.Lib.Sync.Items;
-
+﻿// -----------------------------------------------------------------------
+// <copyright file="ChangeAttributes.cs" company="FH Wr.Neustadt">
+//      Copyright Christoph Hauer. All rights reserved.
+// </copyright>
+// <author>Christoph Hauer</author>
+// <summary>DataSync.Lib - ChangeAttributes.cs</summary>
+// -----------------------------------------------------------------------
 namespace DataSync.Lib.Sync.Operations
 {
+    using System;
+    using System.IO;
+
+    using DataSync.Lib.Log.Messages;
+    using DataSync.Lib.Sync.Items;
+
+    /// <summary>
+    /// The change attributes.
+    /// </summary>
     public class ChangeAttributes : SyncOperation
     {
-
         /// <summary>
         /// Runs the specified item.
         /// </summary>
-        /// <param name="item">The item.</param>
-        /// <returns></returns>
+        /// <param name="item">
+        /// The sync item.
+        /// </param>
+        /// <returns>
+        /// The execution status.
+        /// </returns>
         public override bool Execute(ISyncItem item)
         {
             FileAttributes attributes;
@@ -22,7 +34,7 @@ namespace DataSync.Lib.Sync.Operations
 
             if (item == null)
             {
-                LogMessage(new ErrorLogMessage("Execution not possible - Invalid  Operation Properties", true));
+                this.LogMessage(new ErrorLogMessage("Execution not possible - Invalid  Operation Properties", true));
                 return false;
             }
 
@@ -40,10 +52,9 @@ namespace DataSync.Lib.Sync.Operations
                 }
                 catch (Exception ex)
                 {
-                    LogMessage(new ErrorLogMessage(ex));
+                    this.LogMessage(new ErrorLogMessage(ex));
                     return false;
                 }
-
             }
             else
             {
@@ -51,6 +62,7 @@ namespace DataSync.Lib.Sync.Operations
                 {
                     return false;
                 }
+
                 try
                 {
                     attributes = new DirectoryInfo(item.SourcePath).Attributes;
@@ -58,7 +70,7 @@ namespace DataSync.Lib.Sync.Operations
                 }
                 catch (Exception ex)
                 {
-                    LogMessage(new ErrorLogMessage(ex));
+                    this.LogMessage(new ErrorLogMessage(ex));
                     return false;
                 }
             }
@@ -69,12 +81,11 @@ namespace DataSync.Lib.Sync.Operations
             }
             catch (Exception ex)
             {
-                LogMessage(new ErrorLogMessage(ex));
+                this.LogMessage(new ErrorLogMessage(ex));
                 return false;
             }
 
             return true;
         }
-
     }
 }

@@ -5,27 +5,23 @@
 // <author>Christoph Hauer</author>
 // <summary>DataSync.Lib - ISyncJob.cs</summary>
 // -----------------------------------------------------------------------
-
-using System;
-using System.Collections.Generic;
-using DataSync.Lib.Log;
-using DataSync.Lib.Sync.Jobs;
-
 namespace DataSync.Lib.Sync
 {
+    using System;
+    using System.Collections.Generic;
+
+    using DataSync.Lib.Log;
+    using DataSync.Lib.Sync.Jobs;
+
     /// <summary>
-    /// 
+    /// The sync job interface.
     /// </summary>
     public interface ISyncJob
     {
-       
         /// <summary>
-        /// Gets or sets the status.
+        /// Occurs when a job status changed.
         /// </summary>
-        /// <value>
-        /// The status.
-        /// </value>
-        JobStatus Status { get; set; }
+        event EventHandler JobStatusChanged;
 
         /// <summary>
         /// Gets or sets the logger.
@@ -36,9 +32,12 @@ namespace DataSync.Lib.Sync
         ILog Logger { get; set; }
 
         /// <summary>
-        /// Occurs when a job status changed.
+        /// Gets or sets the status.
         /// </summary>
-        event EventHandler JobStatusChanged;
+        /// <value>
+        /// The status.
+        /// </value>
+        JobStatus Status { get; set; }
 
         /// <summary>
         /// Runs this instance.
@@ -46,11 +45,13 @@ namespace DataSync.Lib.Sync
         void Run();
 
         /// <summary>
-        /// Returns a <see cref="System.String" /> that represents this instance.
+        /// Returns a <see cref="System.String"/> that represents this instance.
         /// </summary>
-        /// <param name="columns">The columns.</param>
+        /// <param name="columns">
+        /// The columns.
+        /// </param>
         /// <returns>
-        /// A <see cref="System.String" /> that represents this instance.
+        /// A <see cref="System.String"/> that represents this instance.
         /// </returns>
         string ToString(List<int> columns);
     }

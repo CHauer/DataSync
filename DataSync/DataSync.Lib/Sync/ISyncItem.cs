@@ -5,11 +5,10 @@
 // <author>Christoph Hauer</author>
 // <summary>DataSync.Lib - ISyncItem.cs</summary>
 // -----------------------------------------------------------------------
-
-using System.IO;
-
 namespace DataSync.Lib.Sync
 {
+    using System.IO;
+
     /// <summary>
     /// The ISyncItem Interface.
     /// </summary>
@@ -27,12 +26,12 @@ namespace DataSync.Lib.Sync
         /// Gets a value indicating whether target file exists.
         /// </summary>
         /// <value>
-        ///   <c>true</c> if target file exists; otherwise, <c>false</c>.
+        /// <c>true</c> if target file exists; otherwise, <c>false</c>.
         /// </value>
         bool TargetExists { get; }
 
         /// <summary>
-        /// Gets or sets the target path.
+        /// Gets the target path.
         /// </summary>
         /// <value>
         /// The target path.
@@ -42,13 +41,17 @@ namespace DataSync.Lib.Sync
         /// <summary>
         /// Gets the source file system information.
         /// </summary>
-        /// <returns></returns>
+        /// <returns>
+        /// The <see cref="FileSystemInfo"/>.
+        /// </returns>
         FileSystemInfo GetSourceInfo();
 
         /// <summary>
         /// Gets the target file system information.
         /// </summary>
-        /// <returns></returns>
+        /// <returns>
+        /// The <see cref="FileSystemInfo"/>.
+        /// </returns>
         FileSystemInfo GetTargetInfo();
     }
 }

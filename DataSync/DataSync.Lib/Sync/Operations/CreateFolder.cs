@@ -1,26 +1,37 @@
-﻿using System;
-using System.IO;
-using System.Security.AccessControl;
-using DataSync.Lib.Configuration;
-using DataSync.Lib.Log;
-using DataSync.Lib.Log.Messages;
-using DataSync.Lib.Sync.Items;
-
+﻿// -----------------------------------------------------------------------
+// <copyright file="CreateFolder.cs" company="FH Wr.Neustadt">
+//      Copyright Christoph Hauer. All rights reserved.
+// </copyright>
+// <author>Christoph Hauer</author>
+// <summary>DataSync.Lib - CreateFolder.cs</summary>
+// -----------------------------------------------------------------------
 namespace DataSync.Lib.Sync.Operations
 {
+    using System;
+    using System.IO;
+
+    using DataSync.Lib.Log.Messages;
+    using DataSync.Lib.Sync.Items;
+
+    /// <summary>
+    /// The create folder.
+    /// </summary>
     public class CreateFolder : SyncOperation
     {
-
         /// <summary>
         /// Runs the specified item.
         /// </summary>
-        /// <param name="item">The item.</param>
-        /// <returns></returns>
+        /// <param name="item">
+        /// The item value.
+        /// </param>
+        /// <returns>
+        /// The status of the execution.
+        /// </returns>
         public override bool Execute(ISyncItem item)
         {
             if (!(item is SyncFolder))
             {
-                LogMessage(new ErrorLogMessage("Execution not possible - Invalid  Operation Properties", true));
+                this.LogMessage(new ErrorLogMessage("Execution not possible - Invalid  Operation Properties", true));
                 return false;
             }
 
@@ -34,23 +45,23 @@ namespace DataSync.Lib.Sync.Operations
                 }
                 catch (Exception ex)
                 {
-                    LogMessage(new ErrorLogMessage("Create Folder Error", ex));
+                    this.LogMessage(new ErrorLogMessage("Create Folder Error", ex));
                     return false;
                 }
             }
 
-            //Copy attributes
+            // Copy attributes
             try
             {
                 folder.GetTargetInfo().Attributes = folder.GetSourceInfo().Attributes;
             }
             catch (Exception ex)
             {
-                LogMessage(new ErrorLogMessage("Copy Folder Attributes Error", ex));
+                this.LogMessage(new ErrorLogMessage("Copy Folder Attributes Error", ex));
                 return false;
             }
 
-            //Copy security
+            // Copy security
             try
             {
                 var directoryInfo = folder.GetSourceInfo() as DirectoryInfo;
@@ -62,14 +73,14 @@ namespace DataSync.Lib.Sync.Operations
             }
             catch (Exception ex)
             {
-                LogMessage(new WarningLogMessage(String.Format("Copy Folder Security Problem. Details:{0}", ex.Message)));
-                
-                //Dont treat as error
-                //return false;
+                this.LogMessage(
+                    new WarningLogMessage(string.Format("Copy Folder Security Problem. Details:{0}", ex.Message)));
+
+                // Dont treat as error
+                // return false;
             }
 
             return true;
         }
-
     }
 }

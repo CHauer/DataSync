@@ -1,36 +1,43 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.IO.Pipes;
-using System.Linq;
-using System.Runtime.Serialization.Formatters.Binary;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
-using DataSync.Lib.Log.Messages;
-
+﻿// -----------------------------------------------------------------------
+// <copyright file="PipeReceiver.cs" company="FH Wr.Neustadt">
+//      Copyright Christoph Hauer. All rights reserved.
+// </copyright>
+// <author>Christoph Hauer</author>
+// <summary>DataSync.UI - PipeReceiver.cs</summary>
+// -----------------------------------------------------------------------
 namespace DataSync.UI.Monitor.Pipe
 {
-    /// <summary>
-    /// 
-    /// </summary>
-    public class PipeReceiver<T> where T : class
-    {
+    using System;
+    using System.Diagnostics;
+    using System.IO.Pipes;
+    using System.Runtime.Serialization.Formatters.Binary;
+    using System.Threading.Tasks;
 
+    /// <summary>
+    /// The pipe receiver class.
+    /// </summary>
+    /// <typeparam name="T">
+    /// Generic type class.
+    /// </typeparam>
+    public class PipeReceiver<T>
+        where T : class
+    {
         /// <summary>
-        /// The is running
+        /// The is running.
         /// </summary>
         private bool isRunning;
 
         /// <summary>
-        /// The serializer
+        /// The serializer.
         /// </summary>
         private BinaryFormatter serializer;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="PipeReceiver{T}" /> class.
+        /// Initializes a new instance of the <see cref="PipeReceiver{T}"/> class.
         /// </summary>
-        /// <param name="pipeName">Name of the pipe.</param>
+        /// <param name="pipeName">
+        /// Name of the pipe.
+        /// </param>
         public PipeReceiver(string pipeName)
         {
             this.PipeName = pipeName;
@@ -51,20 +58,27 @@ namespace DataSync.UI.Monitor.Pipe
         public string PipeName { get; private set; }
 
         /// <summary>
-        /// Initializes the pipe.
-        /// </summary>
-        private void InitializePipe()
-        {
-
-        }
-
-        /// <summary>
         /// Starts the receiving process.
         /// </summary>
         public void StartReceiving()
         {
-            isRunning = true;
-            Task.Run(() => Run());
+            this.isRunning = true;
+            Task.Run(() => this.Run());
+        }
+
+        /// <summary>
+        /// Stops the receiving.
+        /// </summary>
+        public void StopReceiving()
+        {
+            this.isRunning = false;
+        }
+
+        /// <summary>
+        /// Initializes the pipe.
+        /// </summary>
+        private void InitializePipe()
+        {
         }
 
         /// <summary>
@@ -72,15 +86,14 @@ namespace DataSync.UI.Monitor.Pipe
         /// </summary>
         private void Run()
         {
-            var pipeServer = new NamedPipeServerStream(PipeName, PipeDirection.In);
+            var pipeServer = new NamedPipeServerStream(this.PipeName, PipeDirection.In);
             T receivedMessage = null;
 
-            while (isRunning)
+            while (this.isRunning)
             {
                 try
                 {
                     pipeServer.WaitForConnection();
-
                 }
                 catch (Exception ex)
                 {
@@ -91,30 +104,21 @@ namespace DataSync.UI.Monitor.Pipe
                 {
                     try
                     {
-                        receivedMessage = (T)serializer.Deserialize(pipeServer);
+                        receivedMessage = (T)this.serializer.Deserialize(pipeServer);
                     }
                     catch (Exception ex)
                     {
                         Debug.WriteLine(ex.Message);
                     }
 
-
-                    if (MessageReceived != null && receivedMessage != null)
+                    if (this.MessageReceived != null && receivedMessage != null)
                     {
-                        MessageReceived(this, new ReceivedEventArgs<T>(receivedMessage));
+                        this.MessageReceived(this, new ReceivedEventArgs<T>(receivedMessage));
                     }
                 }
             }
 
             pipeServer.Close();
-        }
-
-        /// <summary>
-        /// Stops the receiving.
-        /// </summary>
-        public void StopReceiving()
-        {
-            isRunning = false;
         }
     }
 }

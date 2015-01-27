@@ -5,17 +5,21 @@
 // <author>Christoph Hauer</author>
 // <summary>DataSync.UI - ArgumentErrorEventArgs.cs</summary>
 // -----------------------------------------------------------------------
-
-using System;
-
 namespace DataSync.UI.Arguments
 {
+    using System;
+
+    /// <summary>
+    /// The argument error event args.
+    /// </summary>
     public class ArgumentErrorEventArgs : EventArgs
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="ArgumentErrorEventArgs"/> class.
         /// </summary>
-        /// <param name="message">The message.</param>
+        /// <param name="message">
+        /// The message.
+        /// </param>
         public ArgumentErrorEventArgs(string message)
         {
             this.ErrorMessage = message;
@@ -24,8 +28,12 @@ namespace DataSync.UI.Arguments
         /// <summary>
         /// Initializes a new instance of the <see cref="ArgumentErrorEventArgs"/> class.
         /// </summary>
-        /// <param name="message">The message.</param>
-        /// <param name="ex">The ex.</param>
+        /// <param name="message">
+        /// The message.
+        /// </param>
+        /// <param name="ex">
+        /// The exception.
+        /// </param>
         public ArgumentErrorEventArgs(string message, Exception ex)
         {
             this.Exception = ex;
@@ -49,19 +57,19 @@ namespace DataSync.UI.Arguments
         public Exception Exception { get; private set; }
 
         /// <summary>
-        /// Returns a <see cref="System.String" /> that represents this instance.
+        /// Returns a <see cref="System.String"/> that represents this instance.
         /// </summary>
         /// <returns>
-        /// A <see cref="System.String" /> that represents this instance.
+        /// A <see cref="System.String"/> that represents this instance.
         /// </returns>
         public override string ToString()
         {
-            if (Exception != null)
+            if (this.Exception != null)
             {
-                return String.Format("{0}\nDetails: {1}", ErrorMessage, Exception.Message);
+                return string.Format("{0}\nDetails: {1}", this.ErrorMessage, this.Exception.Message);
             }
 
-            return ErrorMessage;
+            return this.ErrorMessage;
         }
     }
 }

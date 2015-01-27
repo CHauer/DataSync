@@ -5,25 +5,28 @@
 // <author>Christoph Hauer</author>
 // <summary>DataSync.UI - OutputEventArgs.cs</summary>
 // -----------------------------------------------------------------------
-
-using System;
-
 namespace DataSync.UI.CommandHandling
 {
+    using System;
+
     /// <summary>
-    /// 
+    /// The output event args.
     /// </summary>
     public class OutputEventArgs : EventArgs
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="OutputEventArgs"/> class.
         /// </summary>
-        public OutputEventArgs() {}
+        public OutputEventArgs()
+        {
+        }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="OutputEventArgs"/> class.
         /// </summary>
-        /// <param name="color">The color.</param>
+        /// <param name="color">
+        /// The color.
+        /// </param>
         public OutputEventArgs(ConsoleColor color)
         {
             this.Color = color;

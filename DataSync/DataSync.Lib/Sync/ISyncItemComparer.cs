@@ -5,28 +5,32 @@
 // <author>Christoph Hauer</author>
 // <summary>DataSync.Lib - ISyncItemComparer.cs</summary>
 // -----------------------------------------------------------------------
-
-using DataSync.Lib.Configuration;
-using DataSync.Lib.Log;
-
 namespace DataSync.Lib.Sync
 {
+    using DataSync.Lib.Log;
+
     /// <summary>
-    /// 
+    /// The sync item comparer interface.
     /// </summary>
     public interface ISyncItemComparer
     {
         /// <summary>
         /// Gets or sets the logger.
         /// </summary>
-        /// <value>The logger.</value>
+        /// <value>
+        /// The logger.
+        /// </value>
         ILog Logger { get; set; }
 
         /// <summary>
         /// Compares the specified compare item.
         /// </summary>
-        /// <param name="compareItem">The compare item.</param>
-        /// <returns></returns>
+        /// <param name="compareItem">
+        /// The compare item.
+        /// </param>
+        /// <returns>
+        /// The <see cref="SyncOperation"/>.
+        /// </returns>
         SyncOperation Compare(ISyncItem compareItem);
     }
 }

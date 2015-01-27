@@ -52,13 +52,13 @@
     <Compile Include="Sync\Jobs\JobStatusChangedEventArgs.cs" />
     <Compile Include="Sync\Operations\ChangeAttributes.cs" />
     <Compile Include="Configuration\Data\IConfigurationLoader.cs" />
-    <Compile Include="Log\ConsoleLogger.cs" />
+    <Compile Include="Log\ConsoleLogListener.cs" />
     <Compile Include="Sync\Operations\CopyFile.cs" />
     <Compile Include="Sync\Operations\CreateFolder.cs" />
     <Compile Include="Sync\Operations\DeleteFile.cs" />
     <Compile Include="Sync\Operations\DeleteFolder.cs" />
     <Compile Include="Log\Messages\ErrorLogMessage.cs" />
-    <Compile Include="Log\FileLogger.cs" />
+    <Compile Include="Log\FileLogListener.cs" />
     <Compile Include="Sync\SyncOperation.cs" />
     <Compile Include="Sync\Jobs\JobStatus.cs" />
     <Compile Include="Log\Messages\LogMessage.cs" />
@@ -78,7 +78,7 @@
     <Compile Include="Sync\SyncManager.cs" />
     <Compile Include="Configuration\ConfigurationPair.cs" />
     <Compile Include="Sync\SyncQueue.cs" />
-    <Compile Include="Configuration\Data\XmlDataManager.cs" />
+    <Compile Include="Configuration\Data\XmlConfigurationSerializer.cs" />
     <Compile Include="Log\Messages\WarningLogMessage.cs" />
   </ItemGroup>
   <ItemGroup>

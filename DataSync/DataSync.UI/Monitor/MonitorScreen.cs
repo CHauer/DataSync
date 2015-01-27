@@ -1,52 +1,59 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using DataSync.Lib.Sync;
-using DataSync.Lib.Sync.Jobs;
-
+﻿// -----------------------------------------------------------------------
+// <copyright file="MonitorScreen.cs" company="FH Wr.Neustadt">
+//      Copyright Christoph Hauer. All rights reserved.
+// </copyright>
+// <author>Christoph Hauer</author>
+// <summary>DataSync.UI - MonitorScreen.cs</summary>
+// -----------------------------------------------------------------------
 namespace DataSync.UI.Monitor
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Linq;
+    using System.Text;
+
+    using DataSync.Lib.Sync;
+    using DataSync.Lib.Sync.Jobs;
+
+    /// <summary>
+    /// The monitor screen.
+    /// </summary>
     [Serializable]
-    public class MonitorScreen 
+    public class MonitorScreen
     {
         /// <summary>
-        /// The builder
-        /// </summary>
-        private StringBuilder builder;
-
-        /// <summary>
-        /// The maximum view jobs
+        /// The maximum view jobs.
         /// </summary>
         private const int MaxViewJobs = 10;
 
         /// <summary>
-        /// The columns
+        /// The builder.
+        /// </summary>
+        private StringBuilder builder;
+
+        /// <summary>
+        /// The columns.
         /// </summary>
         private List<int> columnWidths;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="MonitorScreen"/> class.
         /// </summary>
-        /// <param name="width">The width.</param>
-        /// <param name="height">The height.</param>
+        /// <param name="width">
+        /// The width.
+        /// </param>
+        /// <param name="height">
+        /// The height.
+        /// </param>
         public MonitorScreen(int width, int height)
         {
             this.builder = new StringBuilder();
             this.Width = width;
             this.Height = height;
 
-            columnWidths = new List<int>() { 30, 30, 15, 14, 7};
-            AddHeader();
+            this.columnWidths = new List<int>() { 30, 30, 15, 14, 7 };
+            this.AddHeader();
         }
-
-        /// <summary>
-        /// Gets or sets the width.
-        /// </summary>
-        /// <value>
-        /// The width.
-        /// </value>
-        public int Width { get; set; }
 
         /// <summary>
         /// Gets or sets the height.
@@ -57,13 +64,23 @@ namespace DataSync.UI.Monitor
         public int Height { get; set; }
 
         /// <summary>
+        /// Gets or sets the width.
+        /// </summary>
+        /// <value>
+        /// The width.
+        /// </value>
+        public int Width { get; set; }
+
+        /// <summary>
         /// Adds the pair block.
         /// </summary>
-        /// <param name="pair">The pair.</param>
+        /// <param name="pair">
+        /// The pair value.
+        /// </param>
         public void AddPairBlock(SyncPair pair)
         {
-            builder.AppendFormat("# {0} #", pair.ConfigurationPair.Name);
-            builder.AppendLine();
+            this.builder.AppendFormat("# {0} #", pair.ConfigurationPair.Name);
+            this.builder.AppendLine();
 
             var jobs = new List<ISyncJob>();
             if (pair.SyncQueue.CurrentJob != null)
@@ -75,8 +92,19 @@ namespace DataSync.UI.Monitor
 
             foreach (var job in jobs.Take(MaxViewJobs))
             {
-                builder.AppendLine(job.ToString(columnWidths));
+                this.builder.AppendLine(job.ToString(this.columnWidths));
             }
+        }
+
+        /// <summary>
+        /// Returns a <see cref="System.String"/> that represents this instance.
+        /// </summary>
+        /// <returns>
+        /// A <see cref="System.String"/> that represents this instance.
+        /// </returns>
+        public override string ToString()
+        {
+            return this.builder.ToString();
         }
 
         /// <summary>
@@ -84,21 +112,15 @@ namespace DataSync.UI.Monitor
         /// </summary>
         private void AddHeader()
         {
-            builder.AppendLine(String.Format("{0} {1} {2} {3} {4}", 
-                "Source".PadRight(30), "Target".PadRight(30), "File".PadRight(15), 
-                "Operation".PadRight(14), "Status".PadRight(7)));
-            builder.AppendLine();
-        }
-
-        /// <summary>
-        /// Returns a <see cref="System.String" /> that represents this instance.
-        /// </summary>
-        /// <returns>
-        /// A <see cref="System.String" /> that represents this instance.
-        /// </returns>
-        public override string ToString()
-        {
-            return builder.ToString();
+            this.builder.AppendLine(
+                string.Format(
+                    "{0} {1} {2} {3} {4}", 
+                    "Source".PadRight(30), 
+                    "Target".PadRight(30), 
+                    "File".PadRight(15), 
+                    "Operation".PadRight(14), 
+                    "Status".PadRight(7)));
+            this.builder.AppendLine();
         }
     }
 }

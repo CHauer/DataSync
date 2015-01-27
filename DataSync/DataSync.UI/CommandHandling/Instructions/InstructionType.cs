@@ -5,58 +5,67 @@
 // <author>Christoph Hauer</author>
 // <summary>DataSync.UI - InstructionType.cs</summary>
 // -----------------------------------------------------------------------
-
 // ReSharper disable InconsistentNaming
 namespace DataSync.UI.CommandHandling.Instructions
 {
     /// <summary>
-    /// 
+    /// The instruction type enumeration.
     /// </summary>
     public enum InstructionType
     {
         /// <summary>
-        /// The addpair
+        /// The add pair.
         /// </summary>
-        ADDPAIR,
+        ADDPAIR, 
+
         /// <summary>
-        /// The deletepair
+        /// The delete pair.
         /// </summary>
-        DELETEPAIR,
+        DELETEPAIR, 
+
         /// <summary>
-        /// The clearpairs
+        /// The clear pairs.
         /// </summary>
-        CLEARPAIRS,
+        CLEARPAIRS, 
+
         /// <summary>
-        /// The exit
+        /// The exit command.
         /// </summary>
-        EXIT,
+        EXIT, 
+
         /// <summary>
-        /// The set
+        /// The set command.
         /// </summary>
-        SET,
+        SET, 
+
         /// <summary>
-        /// The logto
+        /// The log to command.
         /// </summary>
-        LOGTO,
+        LOGTO, 
+
         /// <summary>
-        /// The switch
+        /// The switch command.
         /// </summary>
-        SWITCH,
+        SWITCH, 
+
         /// <summary>
-        /// The listpairs
+        /// The list pairs command.
         /// </summary>
-        LISTPAIRS,
+        LISTPAIRS, 
+
         /// <summary>
-        /// The listpairs
+        /// The list pairs command.
         /// </summary>
-        LISTSETTINGS,
+        LISTSETTINGS, 
+
         /// <summary>
-        /// The showpairdetail
+        /// The show pair detail command.
         /// </summary>
-        SHOWPAIRDETAIL,
+        SHOWPAIRDETAIL, 
+
         /// <summary>
-        /// The help
+        /// The help command.
         /// </summary>
-        HELP,
+        HELP, 
     }
 }

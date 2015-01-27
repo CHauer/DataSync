@@ -5,16 +5,15 @@
 // <author>Christoph Hauer</author>
 // <summary>DataSync.UI - IValidationToken.cs</summary>
 // -----------------------------------------------------------------------
-
 namespace DataSync.UI.CommandHandling.Validation
 {
     /// <summary>
-    /// 
+    /// The validation token interface.
     /// </summary>
     public interface IValidationToken
     {
         /// <summary>
-        /// Gets or sets the validation error message.
+        /// Gets the validation error message.
         /// </summary>
         /// <value>
         /// The validation error message.
@@ -24,8 +23,12 @@ namespace DataSync.UI.CommandHandling.Validation
         /// <summary>
         /// Validates the specified validation element.
         /// </summary>
-        /// <param name="validationElement">The validation element.</param>
-        /// <returns></returns>
+        /// <param name="validationElement">
+        /// The validation element.
+        /// </param>
+        /// <returns>
+        /// The validation status.
+        /// </returns>
         bool Validate(string validationElement);
     }
 }

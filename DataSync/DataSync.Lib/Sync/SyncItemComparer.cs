@@ -5,20 +5,19 @@
 // <author>Christoph Hauer</author>
 // <summary>DataSync.Lib - SyncItemComparer.cs</summary>
 // -----------------------------------------------------------------------
-
-using System;
-using System.IO;
-using System.Security.Cryptography;
-using DataSync.Lib.Configuration;
-using DataSync.Lib.Log;
-using DataSync.Lib.Log.Messages;
-using DataSync.Lib.Sync.Items;
-using DataSync.Lib.Sync.Operations;
-
 namespace DataSync.Lib.Sync
 {
+    using System;
+    using System.IO;
+    using System.Security.Cryptography;
+
+    using DataSync.Lib.Log;
+    using DataSync.Lib.Log.Messages;
+    using DataSync.Lib.Sync.Items;
+    using DataSync.Lib.Sync.Operations;
+
     /// <summary>
-    /// 
+    /// The sync item comparer class.
     /// </summary>
     public class SyncItemComparer : ISyncItemComparer
     {
@@ -27,7 +26,7 @@ namespace DataSync.Lib.Sync
         /// </summary>
         public SyncItemComparer()
         {
-            IsHashCompare = false;
+            this.IsHashCompare = false;
         }
 
         /// <summary>
@@ -39,12 +38,28 @@ namespace DataSync.Lib.Sync
         public ILog Logger { get; set; }
 
         /// <summary>
+        /// Gets or sets a value indicating whether this instance is hash compare.
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if this instance is hash compare; otherwise, <c>false</c>.
+        /// </value>
+        public bool IsHashCompare { get; set; }
+
+        /// <summary>
         /// Compares the specified compare item.
         /// </summary>
-        /// <param name="compareItem">The compare item.</param>
-        /// <returns></returns>
-        /// <exception cref="System.ArgumentNullException">compareItem</exception>
-        /// <exception cref="System.ArgumentException">CompareItem Type is not supported for the compare function!</exception>
+        /// <param name="compareItem">
+        /// The compare item.
+        /// </param>
+        /// <returns>
+        /// The <see cref="SyncOperation"/>.
+        /// </returns>
+        /// <exception cref="System.ArgumentNullException">
+        /// Compare Item.
+        /// </exception>
+        /// <exception cref="System.ArgumentException">
+        /// CompareItem Type is not supported for the compare function!.
+        /// </exception>
         public SyncOperation Compare(ISyncItem compareItem)
         {
             if (compareItem == null)
@@ -55,40 +70,38 @@ namespace DataSync.Lib.Sync
             if (compareItem is SyncFolder)
             {
                 // ReSharper disable once TryCastAlwaysSucceeds
-                return CompareFolder(compareItem);
+                return this.CompareFolder(compareItem);
             }
 
             if (compareItem is SyncFile)
             {
                 // ReSharper disable once TryCastAlwaysSucceeds
-                return CompareFile(compareItem);
+                return this.CompareFile(compareItem);
             }
 
             throw new ArgumentException("CompareItem Type is not supported for the compare function!");
         }
 
         /// <summary>
-        /// Gets or sets a value indicating whether this instance is hash compare.
-        /// </summary>
-        /// <value>
-        /// <c>true</c> if this instance is hash compare; otherwise, <c>false</c>.
-        /// </value>
-        public bool IsHashCompare { get; set; }
-
-        /// <summary>
         /// Compares the file.
         /// </summary>
-        /// <param name="syncFile">The synchronize file.</param>
-        /// <returns></returns>
-        /// <exception cref="System.InvalidOperationException">File Compare failed.</exception>
+        /// <param name="syncFile">
+        /// The synchronize file.
+        /// </param>
+        /// <returns>
+        /// The <see cref="SyncOperation"/>.
+        /// </returns>
+        /// <exception cref="System.InvalidOperationException">
+        /// File Compare failed.
+        /// </exception>
         private SyncOperation CompareFile(ISyncItem syncFile)
         {
-            //Standard operation - copy/override file
+            // Standard operation - copy/override file
             SyncOperation standardOperation = new CopyFile();
 
             if (!syncFile.TargetExists)
             {
-                //copy file and attributes
+                // copy file and attributes
                 return standardOperation;
             }
 
@@ -104,46 +117,47 @@ namespace DataSync.Lib.Sync
                 }
                 catch (Exception ex)
                 {
-                    LogMessage(new ErrorLogMessage(ex, true));
+                    this.LogMessage(new ErrorLogMessage(ex, true));
                     targetFile = null;
                 }
 
                 if (sourceFile == null)
                 {
-                    LogMessage(new ErrorLogMessage(String.Format("{0} Source File not found!", syncFile.SourcePath), true));
+                    this.LogMessage(
+                        new ErrorLogMessage(string.Format("{0} Source File not found!", syncFile.SourcePath), true));
 
-                    //no operation possible
+                    // no operation possible
                     return null;
                 }
 
-                //error with target file - copy/override
+                // error with target file - copy/override
                 if (targetFile == null)
                 {
                     return standardOperation;
                 }
 
-                //file length unequal
+                // file length unequal
                 if (sourceFile.Length != targetFile.Length)
                 {
                     return standardOperation;
                 }
 
-                //source file lastwrite 
+                // source file lastwrite 
                 if (sourceFile.LastWriteTime > targetFile.LastWriteTime)
                 {
                     return standardOperation;
                 }
 
-                if (IsHashCompare)
+                if (this.IsHashCompare)
                 {
-                    //file content (hash) different
-                    if (!ComputeHash(syncFile.SourcePath).Equals(ComputeHash(syncFile.TargetPath)))
+                    // file content (hash) different
+                    if (!this.ComputeHash(syncFile.SourcePath).Equals(this.ComputeHash(syncFile.TargetPath)))
                     {
                         return standardOperation;
                     }
                 }
 
-                //attributes unequal 
+                // attributes unequal 
                 if (!sourceFile.Attributes.Equals(targetFile.Attributes))
                 {
                     return new ChangeAttributes();
@@ -151,21 +165,25 @@ namespace DataSync.Lib.Sync
             }
             catch (Exception ex)
             {
-                LogMessage(new ErrorLogMessage(ex, true));
+                this.LogMessage(new ErrorLogMessage(ex, true));
             }
 
-            //no operation found
+            // no operation found
             return null;
         }
 
         /// <summary>
         /// Compares the folder.
         /// </summary>
-        /// <param name="syncFolder">The synchronize folder.</param>
-        /// <returns></returns>
+        /// <param name="syncFolder">
+        /// The synchronize folder.
+        /// </param>
+        /// <returns>
+        /// The <see cref="SyncOperation"/>.
+        /// </returns>
         private SyncOperation CompareFolder(ISyncItem syncFolder)
         {
-            //target folder does not exists  - create
+            // target folder does not exists  - create
             if (!syncFolder.TargetExists)
             {
                 return new CreateFolder();
@@ -174,21 +192,25 @@ namespace DataSync.Lib.Sync
             var targetInfo = syncFolder.GetTargetInfo();
             var soureInfo = syncFolder.GetSourceInfo();
 
-            //attributes differ - change attributes
+            // attributes differ - change attributes
             if (!soureInfo.Attributes.Equals(targetInfo.Attributes))
             {
                 return new ChangeAttributes();
             }
 
-            //no operation found
+            // no operation found
             return null;
         }
 
         /// <summary>
-        /// Computes the hash for the given file
+        /// Computes the hash for the given file.
         /// </summary>
-        /// <param name="filepath">The filepath.</param>
-        /// <returns></returns>
+        /// <param name="filepath">
+        /// The file path.
+        /// </param>
+        /// <returns>
+        /// The <see cref="string"/>.
+        /// </returns>
         private string ComputeHash(string filepath)
         {
             using (var md5 = MD5.Create())
@@ -198,13 +220,14 @@ namespace DataSync.Lib.Sync
                     return BitConverter.ToString(md5.ComputeHash(stream));
                 }
             }
-
         }
 
         /// <summary>
         /// Adds the log message.
         /// </summary>
-        /// <param name="message">The message.</param>
+        /// <param name="message">
+        /// The message.
+        /// </param>
         private void LogMessage(LogMessage message)
         {
             // ReSharper disable once UseNullPropagation
@@ -213,6 +236,5 @@ namespace DataSync.Lib.Sync
                 this.Logger.AddLogMessage(message);
             }
         }
-
     }
 }
