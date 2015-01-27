@@ -168,7 +168,7 @@ namespace DataSync.Monitor
             int screenWidth = Screen.PrimaryScreen.Bounds.Width;
             int screenHeight = Screen.PrimaryScreen.Bounds.Height;
 
-            int width = 100;
+            int width = 101;
             int height = 25;
             int left = 0;
             int top = 0;
