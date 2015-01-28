@@ -108,10 +108,18 @@ namespace DataSync.UI.Arguments
                     "The syncpair definition has to contain" + " a sourcefolder - delimited by '>'.");
             }
 
+            var targets = this.ParseFolderList(target);
+
+            if (targets.Count < 1)
+            {
+                throw new InvalidDataException(
+                       "The syncpair definition has to contain one" + " source folder and at least one target folder!");
+            }
+
             return new ConfigurationPair()
             {
-                SoureFolder = sourceFolder, 
-                TargetFolders = this.ParseFolderList(target), 
+                SoureFolder = sourceFolder,
+                TargetFolders = targets,
                 ExceptFolders = this.ParseFolderList(exept)
             };
         }
@@ -129,19 +137,24 @@ namespace DataSync.UI.Arguments
         {
             List<string> folders = new List<string>();
 
+            if (string.IsNullOrEmpty(folderlist))
+            {
+                return folders;
+            }
+
             var parts = folderlist.Split(new[] { '|' });
 
             parts.ToList().ForEach(
                 part =>
+                {
+                    if (part.Contains("\""))
                     {
-                        if (part.Contains("\""))
-                        {
-                            part = part.Replace("\"", string.Empty);
-                        }
+                        part = part.Replace("\"", string.Empty);
+                    }
 
-                        // throws exception if sourcefolder is invalid!
-                        folders.Add(Path.GetFullPath(part));
-                    });
+                    // throws exception if sourcefolder is invalid!
+                    folders.Add(Path.GetFullPath(part));
+                });
 
             return folders;
         }
