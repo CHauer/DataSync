@@ -124,7 +124,7 @@
     <value>DataSync.exe 
 Startet "UI" Modus und lädt bereits eingegebene Sync Pairs aus Configuration File.
 
-DataSync.exe { (SyncPair1) (SyncPair2) … (SyncPairN) }
+DataSync.exe { "SyncPair1" "SyncPair2" … "SyncPairN" }
 [/r|/recursiv] 
 [/log:logfilename] 
 [/logsize:logfilesize]
@@ -132,7 +132,7 @@ DataSync.exe { (SyncPair1) (SyncPair2) … (SyncPairN) }
 [/blocksize:blocksize|/bs:blocksize] 
 [/ps|/parallelsync]
 
-(SyncPair) = SourceFolder&gt;TargetFolder1| … |TargetFolderN[&lt;ExceptFolder1| … |ExceptFolderN]</value>
+"SyncPair" = "SourceFolder&gt;TargetFolder1| … |TargetFolderN[&lt;ExceptFolder1| … |ExceptFolderN]"</value>
   </data>
   <data name="HelpInstruction" xml:space="preserve">
     <value>Instructions:

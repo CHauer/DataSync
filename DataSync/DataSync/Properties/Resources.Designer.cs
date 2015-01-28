@@ -73,7 +73,7 @@ namespace DataSync.Properties {
         ///   Sucht eine lokalisierte Zeichenfolge, die DataSync.exe 
         ///Startet &quot;UI&quot; Modus und lädt bereits eingegebene Sync Pairs aus Configuration File.
         ///
-        ///DataSync.exe { (SyncPair1) (SyncPair2) … (SyncPairN) }
+        ///DataSync.exe { &quot;SyncPair1&quot; &quot;SyncPair2&quot; … &quot;SyncPairN&quot; }
         ///[/r|/recursiv] 
         ///[/log:logfilename] 
         ///[/logsize:logfilesize]
@@ -81,7 +81,7 @@ namespace DataSync.Properties {
         ///[/blocksize:blocksize|/bs:blocksize] 
         ///[/ps|/parallelsync]
         ///
-        ///(SyncPair) = SourceFolder&gt;TargetFolder1| … |TargetFolderN[&lt;ExceptFolder1| … |ExceptFolderN] ähnelt.
+        ///&quot;SyncPair&quot; = &quot;SourceFolder&gt;TargetFolder1| … |TargetFolderN[&lt;ExceptFolder1| … |ExceptFolderN]&quot; ähnelt.
         /// </summary>
         internal static string HelpConsole {
             get {
