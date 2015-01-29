@@ -126,7 +126,7 @@
       <Compartment Name="Fields" Collapsed="true" />
     </Compartments>
     <TypeIdentifier>
-      <HashCode>AAAAlQBAAgIAAQBAQQBiQCQBCAQgAJAAAAACQAAUAQc=</HashCode>
+      <HashCode>AAAAlQBAAgIAAQBAQQBiQCQBCAQgAJAAAAASQAAUEQc=</HashCode>
       <FileName>CommandHandling\InputInstructionHandler.cs</FileName>
     </TypeIdentifier>
   </Class>
@@ -143,11 +143,11 @@
   <Class Name="DataSync.UI.Monitor.MonitorScreenGenerator">
     <Position X="3.5" Y="5.25" Width="2.25" />
     <TypeIdentifier>
-      <HashCode>AIAAAAAQAAAAAAAAAAAIAAAAAAAABAAAAAAAAABAAAA=</HashCode>
+      <HashCode>AAAAAAAQAAAAAAAAAAAIAAAAAAAABAAgAAAAAABAQAA=</HashCode>
       <FileName>Monitor\MonitorScreenGenerator.cs</FileName>
     </TypeIdentifier>
   </Class>
-  <Class Name="DataSync.UI.Monitor.ReceivedEventArgs&lt;T&gt;">
+  <Class Name="DataSync.UI.Monitor.Pipe.ReceivedEventArgs&lt;T&gt;">
     <Position X="17" Y="6.75" Width="2.5" />
     <TypeIdentifier>
       <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAIAAAAAA=</HashCode>
@@ -164,7 +164,7 @@
   <Class Name="DataSync.UI.Monitor.Pipe.PipeSender&lt;T&gt;">
     <Position X="14.25" Y="8.5" Width="2" />
     <TypeIdentifier>
-      <HashCode>AQAAAAAAIAAAAAAAACAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <HashCode>AQAAAAAAIIAAAADAACAAAAAAEAAAAAAAAAAAAAAAAAA=</HashCode>
       <FileName>Monitor\Pipe\PipeSender.cs</FileName>
     </TypeIdentifier>
   </Class>
@@ -222,14 +222,14 @@
     <Position X="6" Y="4.75" Width="2" />
     <TypeIdentifier />
   </Interface>
-  <Interface Name="DataSync.Lib.Configuration.Data.IConfigurationLoader" Collapsed="true">
-    <Position X="8.5" Y="4.25" Width="2.5" />
+  <Interface Name="DataSync.Lib.Configuration.Data.IConfigurationLoader">
+    <Position X="8.5" Y="3.75" Width="2.5" />
     <TypeIdentifier />
   </Interface>
   <Enum Name="DataSync.UI.CommandHandling.Instructions.InstructionType">
     <Position X="4" Y="2.25" Width="1.5" />
     <TypeIdentifier>
-      <HashCode>AAAAAEAAQCAAAMAAAIAACACCAAQAAAAAAAAAAAAAAAA=</HashCode>
+      <HashCode>AAAAAEAAQCAAAMAAAIAACACCAAQIAAAAAAAAAAAAAAA=</HashCode>
       <FileName>CommandHandling\Instructions\InstructionType.cs</FileName>
     </TypeIdentifier>
   </Enum>
