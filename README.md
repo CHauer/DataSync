@@ -1,7 +1,7 @@
 # DataSync
 Simple tool to synchronize from one source to multiple target directories.
 
-## UI Example]
+## UI Example
 
 ![UI Example](docs/ui.png)
 
